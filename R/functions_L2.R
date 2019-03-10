@@ -1,0 +1,397 @@
+#' Process Dendrometer Data
+#'
+#' \code{cleanoutofrange} removes implausible data points lower or higher
+#' than specified values in \code{val_range}.
+#'
+#' \code{creategapflag} adds a flag to gaps that are longer than
+#' \code{gaplength}. Used to be called \code{cleanaftergaps}.
+#'
+#' \code{fillna} fills rows with NA with previous non NA value (function
+#' adapted from \code{na.locf} of the \code{zoo} package).
+#'
+#' \code{calcdiff} calculates an hourly change in \code{value}. In case there
+#' are gaps, the difference is also calculated at an hourly rate respective to
+#' the length of the preceding gap.
+#'
+#' \code{createfrostflag} adds a flag for potential frost.
+#'
+#' \code{removeoutliers} removes outliers that are above or below a specified
+#' quantile within a defined window. (used to be implemented in createflags1)
+#'
+#' \code{createflagdiff} creates a flag for large differences in value.
+#'
+#' \code{executeflagdiff} removes consecutive values with large differences.
+#'
+#' \code{createjumpoutflag} creates flag for jumps and ouliers. Don't know what
+#' flagout is for???
+#'
+#' \code{executejumpout} removes jumps that occur after resetting the dendrometer
+#' needle.
+#'
+#' \code{calcmax} calculates the maximum of measured values.
+#'
+#' \code{calctwd_mds_gro} calculates the tree water deficit (twd), maximum
+#' daily shrinkage (mds) and the growth since the beginning of the year (gro).
+#'
+#' \code{summariseflags} summarises all previously created flags in one column.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @inheritParams proc_L1
+#'
+#' @inheritParams proc_dendro_L2
+#'
+#' @return
+#'
+#' @examples
+#'
+
+reso_check <- function(df) {
+  reso_check <- df %>%
+    dplyr::group_by(series) %>%
+    dplyr::mutate(reso_check = as.numeric(difftime(ts, dplyr::lag(ts, 1),
+                                                   units = "mins"))) %>%
+    dplyr::filter(!is.na(reso_check)) %>%
+    dplyr::summarise(reso_check = unique(reso_check)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-series) %>%
+    unlist(use.names = FALSE)
+  if (length(unique(reso_check)) > 1) {
+    stop("please provide time-aligned data.")
+  } else {
+    reso <- unique(reso_check)
+  }
+  return(reso)
+}
+
+
+ts_overlap_check <- function(df, tem) {
+  df_start <- df$ts[1]
+  df_end <- df$ts[nrow(df)]
+  tem_start <- tem$ts[1]
+  tem_end <- tem$ts[nrow(tem)]
+
+  if (tem_start > df_end) {
+    stop("there is no overlap between dendrometer and temperature data.")
+  }
+  if (tem_end < df_start) {
+    stop("there is no overlap between dendrometer and temperature data.")
+  }
+}
+
+
+cleanoutofrange <- function(df, val_range) {
+  df <- df %>%
+    dplyr::mutate(flagrangemin = ifelse(value < val_range[1],
+                                        TRUE, FALSE)) %>%
+    dplyr::mutate(flagrangemax = ifelse(value > val_range[2],
+                                        TRUE, FALSE)) %>%
+    dplyr::mutate(value = ifelse(value < val_range[1], NA, value)) %>%
+    dplyr::mutate(value = ifelse(value > val_range[2], NA, value))
+
+  return(df)
+}
+
+
+creategapflag <- function(df, reso, gaplength = 12 * (60 / reso)) {
+  # This function is Copyright (used to be called cleanaftergaps)
+  # add a gapflag to all gaps longer than gaplength
+  # how long should gaplength be for a flag?
+  if ("gapflag" %in% colnames(df)) {
+    df <- dplyr::select(df, -gapflag)
+  }
+
+  wnd <- gaplength
+  nc <- ncol(df)
+
+  df <- df %>%
+    dplyr::arrange(ts) %>%
+    dplyr::mutate(isgap = is.na(value)) %>%
+    dplyr::mutate(gaps = cumsum(isgap)) %>%
+    dplyr::mutate(y = c(0, diff(gaps, lag = 1))) %>%
+    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+    dplyr::mutate(gapnr = cumsum(z)) %>%
+    dplyr::mutate(diff_ts = as.numeric(difftime(ts, dplyr::lag(ts, 1),
+                                                units = "mins"))) %>%
+    dplyr::mutate(diff_ts = c(0, diff_ts[2:dplyr::n()])) %>%
+    dplyr::group_by(gapnr) %>%
+    dplyr::mutate(gaple_mins = sum(diff_ts)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(gapflag = ifelse(isgap & gaple_mins > wnd, 1, 0)) %>%
+    dplyr::select(1:nc, gapflag)
+
+  return(df)
+}
+
+
+fill_na <- function(x) {
+  nonaid <- !is.na(x)
+  val_nona <- c(NA, x[nonaid])
+  fillid <- cumsum(nonaid) + 1
+  x <- val_nona[fillid]
+}
+
+
+calcdiff <- function(df, reso) {
+  ### Should gaplength be the number of missing timestamps or the number
+  ### + 1 (to include also timestep to next nonna value)?
+  ### at the moment it is the number of missing timestamps!!!
+
+  ### there needs to be a calcdiff which calculates hourly values and
+  ### a calcdiff for the jump correction (these need to be different!!!)
+  if ("diff_val" %in% colnames(df)) {
+    df <- dplyr::select(df, -diff_val)
+  }
+
+  nc <- ncol(df)
+  df <- df %>%
+    # calculate gaplenght in minutes
+    dplyr::arrange(ts) %>%
+    dplyr::mutate(isgap = is.na(value)) %>%
+    dplyr::mutate(gaps = cumsum(isgap)) %>%
+    dplyr::mutate(y = c(0, diff(gaps, lag = 1))) %>%
+    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+    dplyr::mutate(gapnr = cumsum(z)) %>%
+    dplyr::group_by(gapnr) %>%
+    dplyr::mutate(gaple = dplyr::n()) %>%
+    dplyr::mutate(gaple_mins = gaple * reso) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(gaple_mins = dplyr::lag(gaple_mins, n = 1)) %>%
+    dplyr::select(1:nc, gaple_mins) %>%
+    # calculate hourly change in value
+    dplyr::mutate(diff_val = c(NA, diff(value)) * (60 / reso)) %>%
+    dplyr::mutate(val_gap = fill_na(value)) %>%
+    dplyr::mutate(diff_gap = c(NA, diff(val_gap))) %>%
+    dplyr::mutate(diff_gap = ifelse(is.na(diff_val) & diff_gap != 0,
+                  diff_gap, NA)) %>%
+    dplyr::mutate(diff_gap = diff_gap / (gaple_mins / 60)) %>%
+    dplyr::mutate(diff_val = ifelse(!is.na(diff_gap),
+                                    diff_gap, diff_val)) %>%
+    dplyr::select(1:nc, diff_val)
+
+  return(df)
+}
+
+
+createfrostflag <- function(df, tem, lowtemp = 5) {
+  df <- tem %>%
+    dplyr::mutate(frost = ifelse(value < lowtemp, TRUE, FALSE)) %>%
+    dplyr::select(-value, -series, -version) %>%
+    dplyr::left_join(df, ., by = "ts") %>%
+    dplyr::arrange(ts)
+
+  na_temp <- sum(is.na(df$frost))
+  if (na_temp > (0.5 * nrow(df))) {
+    na_perc <- round(na_temp / nrow(df) * 100, 1)
+    message(paste0(na_perc, "% of temperature data is missing!"))
+  }
+
+  return(df)
+}
+
+
+removeoutliers <- function(df, quan = 0.001, wnd = 3, reso) {
+  # This function is Copyright
+  span <- 60 / reso * 24 * (wnd / 2)
+  by <- 60 / reso * 24
+
+  if (nrow(df) < 2 * span) {
+    message("you don't have enough data for window flag!")
+  }
+  st <- span + 1
+  en <- nrow(df) - span + 1
+  steps <- seq(st, en, by = by)
+  if (length(steps) == 0) {
+    stop("something went terribly wrong with the timestamp")
+  }
+
+  df$flagqlow <- FALSE
+  df$flagqhigh <- FALSE
+  for (qq in steps) {
+    b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
+    low <- quantile(df$diff_val[ran], quan, na.rm = TRUE)
+    hig <- quantile(df$diff_val[ran], 1 - quan, na.rm = TRUE)
+    if (!is.na(low)) {
+      df$flagqlow[ran][df$diff_val[ran] < low] <- TRUE
+    }
+    if (!is.na(hig)) {
+      df$flagqhigh[ran][df$diff_val[ran] > hig] <- TRUE
+    }
+  }
+
+  df <- df %>%
+    dplyr::mutate(value = ifelse(flagqlow, NA, value)) %>%
+    dplyr::mutate(value = ifelse(flagqhigh, NA, value))
+
+  return(df)
+}
+
+
+createflagdiff <- function(df, reso, diffwin = 1000, diffsum = 150) {
+  # This function is Copyright
+  flagdiff_nr <- length(grep("flagdiff", colnames(df)))
+  if (flagdiff_nr > 0) {
+    df <- dplyr::select(df, -flagdiff)
+  } else {
+    flagdiff_nr <- 1
+  }
+
+  df <- df %>%
+    dplyr::mutate(flagdiff = dplyr::case_when(
+      abs(diff_val) > diffsum / (60 / reso) & !frost ~ TRUE,
+      abs(diff_val) > diffwin / (60 / reso) & frost ~ TRUE
+    )) %>%
+    dplyr::mutate(flagdiff = ifelse(is.na(flagdiff), FALSE, flagdiff)) %>%
+    dplyr::mutate(!!paste0("flagdiff", flagdiff_nr) := flagdiff)
+
+  return(df)
+}
+
+
+executeflagdiff <- function(df, length = 2) {
+  # This function is Copyright
+  wnd <- length
+  nc <- ncol(df)
+
+  df <- df %>%
+    dplyr::mutate(gaps = cumsum(flagdiff)) %>%
+    dplyr::mutate(y = c(0, diff(gaps, lag = 1))) %>%
+    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+    dplyr::mutate(gapnr = cumsum(z)) %>%
+    dplyr::group_by(gapnr) %>%
+    dplyr::mutate(gaple = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(value = ifelse(gaple >= wnd & flagdiff, NA, value)) %>%
+    dplyr::select(1:nc)
+
+  return(df)
+}
+
+
+createjumpoutflag <- function(df, thr = 0.2) {
+  # This function is Copyright
+  df$flagout <- FALSE
+  df$flagjump <- FALSE
+  ran <- which(df$flagdiff)
+
+  if (length(ran) != 0) {
+    for (iu in ran) {
+      hhj <- sum(df$diff_val[c((iu + 1):(iu + 3))], na.rm = TRUE)
+      if (abs(df$diff_val[iu] + hhj) < df$diff_val[iu] * thr) {
+        df$flagout[iu] <- TRUE
+      } else {
+        df$flagjump[iu] <- TRUE
+      }
+    }
+  }
+  return(df)
+}
+
+
+executejumpout <- function(df) {
+  # This function is Copyright
+  nc <- ncol(df)
+  le <- nrow(df)
+  ran <- which(df$flagjump)
+
+  diff_jump <- df %>%
+    dplyr::filter(!is.na(value)) %>%
+    dplyr::mutate(diff_jump = c(NA, diff(value))) %>%
+    dplyr::select(ts, diff_jump)
+  df <- dplyr::left_join(df, diff_jump, by = "ts")
+
+  if (length(ran) > 0) {
+    for (uu in c(1:length(ran))) {
+      zz <- ran[uu]
+      dx <- df$gapflag[(zz - 1)]
+      dx <- dx + 1
+      df$value[zz:le] <- df$value[zz:le] - (df$diff_jump[zz] * dx)
+    }
+  }
+
+  df <- df %>%
+    dplyr::mutate(value = ifelse(flagout, NA, value)) %>%
+    dplyr::select(1:nc)
+
+  return(df)
+}
+
+
+calcmax <- function(df) {
+  # This function is Copyright
+  nc <- ncol(df)
+  first_val <- df$value[which(!is.na(df$value))[1]]
+
+  df <- df %>%
+    dplyr::mutate(val_nona = fill_na(value)) %>%
+    dplyr::mutate(diff_nona = c(0, diff(val_nona, lag = 1))) %>%
+    dplyr::mutate(diff_sum = cumsum(diff_nona))
+
+  max_sum <- df$diff_sum
+  for (i in 2:nrow(df)) {
+    if (max_sum[i - 1] < max_sum[i]) {
+      next
+    } else {
+      max_sum[i] <- max_sum[i - 1]
+    }
+  }
+
+  df <- df %>%
+    dplyr::mutate(max = max_sum + first_val) %>%
+    dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
+    dplyr::select(1:nc, max)
+
+  return(df)
+}
+
+
+calctwd_mds_gro  <- function(df) {
+  nc <- ncol(df)
+
+  df <- df %>%
+    dplyr::mutate(twd = abs(value - max)) %>%
+    dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
+                                   tz = "GMT")) %>%
+    dplyr::group_by(day) %>%
+    dplyr::mutate(daily_max = max(value, na.rm = T)) %>%
+    dplyr::mutate(daily_max = ifelse(daily_max == -Inf, NA, daily_max)) %>%
+    dplyr::mutate(daily_min = min(value, na.rm = T)) %>%
+    dplyr::mutate(daily_min = ifelse(daily_min == -Inf, NA, daily_min)) %>%
+    dplyr::mutate(mds = ifelse(is.na(daily_max - daily_min), NA,
+                               daily_max - daily_min)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(gro = c(0, diff(max))) %>%
+    dplyr::mutate(gro = ifelse(is.na(gro), 0, gro)) %>%
+    dplyr::mutate(year = substr(ts, 1, 4)) %>%
+    dplyr::group_by(year) %>%
+    dplyr::mutate(gro_year = cumsum(gro)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(1:nc, twd, mds, gro_year)
+
+  return(df)
+}
+
+
+summariseflags <- function(df) {
+  df <- df %>%
+    dplyr::mutate(flagrangemax = ifelse(flagrangemax, 2^0, 0)) %>%
+    dplyr::mutate(flagrangemin = ifelse(flagrangemin, 2^1, 0)) %>%
+    dplyr::mutate(flagqlow = ifelse(flagqlow, 2^2, 0)) %>%
+    dplyr::mutate(flagqhigh = ifelse(flagqhigh, 2^3, 0)) %>%
+    dplyr::mutate(flagdiff1 = ifelse(flagdiff1, 2^4, 0)) %>%
+    dplyr::mutate(flagdiff2 = ifelse(flagdiff2, 2^5, 0)) %>%
+    dplyr::mutate(flagout = ifelse(flagout, 2^6, 0)) %>%
+    dplyr::mutate(flagjump = ifelse(flagjump, 2^7, 0)) %>%
+    dplyr::mutate(
+      flags = rowSums(dplyr::select(., "flagrangemax", "flagrangemin",
+                                    "flagqlow", "flagqhigh",
+                                    "flagdiff1", "flagdiff2",
+                                    "flagout", "flagjump"))) %>%
+    dplyr::select(-flagrangemax, -flagrangemin, -flagqlow, -flagqhigh,
+                  -flagdiff, -flagdiff1, -flagdiff2, -flagout, -flagjump)
+
+  return(df)
+}
