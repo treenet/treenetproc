@@ -1,0 +1,20 @@
+Package: treenetproc
+Type: Package
+Title: Process Raw Dendrometer Data
+Version: 0.1.0
+Authors@R: c(person("Simon", "Knüsel", email = "simon.knuesel@wsl.ch",
+    role = c("aut")),
+    person("Matthias", "Haeni", email = "matthias.haeni@wsl.ch",
+    role = c("aut", "cre")))
+Description: Process raw dendrometer data for later analysis. The processing
+    aligns the measurements at regular time intervals, removes jumps and
+    outliers.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
+Imports: 
+    dplyr (>= 0.7.8),
+    magrittr
+Suggests: 
+    testthat
