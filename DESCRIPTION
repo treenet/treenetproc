@@ -9,6 +9,7 @@ Authors@R: c(person("Simon", "Knüsel", email = "simon.knuesel@wsl.ch",
 Description: Process raw dendrometer data for later analysis. The processing
     aligns the measurements at regular time intervals, removes jumps and
     outliers.
+Depends: R (>= 3.5.0)
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
