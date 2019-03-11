@@ -23,12 +23,13 @@
 #' \code{series}) column specifying the sensors) or in \code{"wide"} format
 #' (i.e. one sensor per column).
 #'
-#' @return
+#' @return \code{data.frame} with measurements aligned to regular time
+#' intervals, i.e. to \code{reso}.
+#'
 #' @export
 #'
 #' @examples
 #'
-
 proc_L1 <- function(data, reso = 10, year = "asis", tz = "Etc/GMT-1",
                     input = "long") {
   data <- data_L0_long_temp
@@ -78,7 +79,8 @@ proc_L1 <- function(data, reso = 10, year = "asis", tz = "Etc/GMT-1",
 
     df <- df %>%
       dplyr::mutate(series = series_vec[s]) %>%
-      dplyr::mutate(version = 1)
+      dplyr::mutate(version = 1) %>%
+      dplyr::select(series, ts, value, version)
     list_L1[[s]] <- df
   }
 
