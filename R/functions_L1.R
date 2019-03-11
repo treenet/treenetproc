@@ -1,52 +1,17 @@
-#' Alignement of Measurements to Regular Time Intervals
+#' Time-Alignement of Measurements to Regular Time Intervals
 #'
-#' \code(check_format) checks whether input table is in long or wide format.
-#'
-#' \code{tsalign} alinges measurements to regular time intervals by
+#' \code{tsalign} aligns measurements to regular time intervals by
 #' interpolating between irregular time intervals.
 #'
-#' \code{tsalign_prec} alignes precipitation measurements to regular time
-#' intervals by summing up values of irregular time intervals.
-#'
-#' \code{generatets} generates regular time stamps over whole period.
-#'
-#' \code{roundtimetoreso} rounds first and last irregular time to
-#' closest regular timestep.
-#'
-#' \code{fillintergaps} fills gaps between irregular and regular
-#' timesteps, i.e. only over very small gaps (more an alignement than
-#' an interpolation).
-#'
-#' \code{fillintergaps_prec} fills gaps between irregular and regular
-#' timesteps for precipitation data. In contrast to \code{fillintergaps}
-#' the values are summed up and not lineraly interpolated.
-#'
 #' @param df input \code{data.frame}.
-#'
-#' @param wnd length of time window over which values are interpolated.
-#'
-#' @param type type of interpolation used.
 #'
 #' @inheritParams proc_dendro_L1
 #'
 #' @return \code{data.frame} with measurements aligned to regular time
-#' intervals specified in \code{reso}.
+#' intervals, i.e. to \code{reso}.
 #'
 #' @examples
 #'
-
-check_format <- function(df) {
-  nr_value_col <- length(which(sapply(df, class) == "numeric" &
-                                 sapply(sapply(df, unique), length) > 1))
-  if (nr_value_col > 1 & input == "long") {
-    stop("provided data is not in 'long' format.")
-  }
-  if (nr_value_col == 1 & input == "wide") {
-    stop("provided data is not in 'wide' format.")
-  }
-}
-
-
 tsalign <- function(df, reso, year, tz) {
   # This function is Copyright
   df <- generatets(df, reso, all = TRUE, year, tz)
@@ -57,16 +22,37 @@ tsalign <- function(df, reso, year, tz) {
 }
 
 
+#' Time-Alignement of Precipitation Data to Regular Time Intervals
+#'
+#' \code{tsalign_prec} aligns precipitation measurements to regular time
+#' intervals by summing up values of irregular time intervals.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @inheritParams proc_L1
+#'
+#' @examples
+#'
 tsalign_prec <- function(df, reso, year, tz) {
   # This function is Copyright
   df <- generatets(df, reso, all = TRUE, year, tz)
-  df <- fillintergaps_prec(df, wnd, reso)
+  df <- fillintergaps_prec(df, reso)
   df <- generatets(df, reso, all = FALSE, year, tz)
 
   return(df)
 }
 
 
+#' Generate Regular Time Stamps
+#'
+#' \code{generatets} generates regular time stamps over whole period.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @inheritParams proc_L1
+#'
+#' @examples
+#'
 generatets <- function(df, reso, all, year, tz) {
   # This function is Copyright
   if (all != TRUE & all != FALSE) {
@@ -110,6 +96,17 @@ generatets <- function(df, reso, all, year, tz) {
 }
 
 
+#' Rounds Irregular Time Stamp to Regular
+#'
+#' \code{roundtimetoreso} rounds first and last irregular timestep to
+#' next or previous regular timestep.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @inheritParams proc_L1
+#'
+#' @examples
+#'
 roundtimetoreso <- function(df, reso, pos, tz) {
   if (!(pos %in% c("start", "end"))) {
     stop("provide 'pos' with either 'start' or 'end'")
@@ -143,6 +140,22 @@ roundtimetoreso <- function(df, reso, pos, tz) {
 }
 
 
+#' Interpolate Between Irregular and Regular Timesteps
+#'
+#' \code{fillintergaps} interpolates gaps between irregular and regular
+#' timesteps, i.e. only over very small gaps (more an alignement than an
+#' interpolation).
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @param wnd length of time window over which values are interpolated.
+#'
+#' @param type specify type of interpolation between regular timesteps.
+#'
+#' @inheritParams proc_L1
+#'
+#' @examples
+#'
 fillintergaps <- function(df, reso, wnd = reso * 2.1, type = "linear") {
   # This function is Copyright
   if (type != "linear" | length(type) == 0) {
@@ -198,6 +211,18 @@ fillintergaps <- function(df, reso, wnd = reso * 2.1, type = "linear") {
 }
 
 
+#' Interpolate Precipitation Data Between Irregular and Regular Timesteps
+#'
+#' \code{fillintergaps_prec} interpolates gaps between irregular and regular
+#' timesteps for precipitation data. In contrast to \code{fillintergaps}
+#' the values are summed up and not lineraly interpolated.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @inheritParams proc_L1
+#'
+#' @examples
+#'
 fillintergaps_prec <- function(df, reso) {
   nc <- ncol(df)
   df[2, -which(names(df) == "ts")] <- df[1, -which(names(df) == "ts")]
