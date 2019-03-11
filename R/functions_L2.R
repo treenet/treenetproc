@@ -3,83 +3,12 @@
 #' \code{cleanoutofrange} removes implausible data points lower or higher
 #' than specified values in \code{val_range}.
 #'
-#' \code{creategapflag} adds a flag to gaps that are longer than
-#' \code{gaplength}. Used to be called \code{cleanaftergaps}.
-#'
-#' \code{fillna} fills rows with NA with previous non NA value (function
-#' adapted from \code{na.locf} of the \code{zoo} package).
-#'
-#' \code{calcdiff} calculates an hourly change in \code{value}. In case there
-#' are gaps, the difference is also calculated at an hourly rate respective to
-#' the length of the preceding gap.
-#'
-#' \code{createfrostflag} adds a flag for potential frost.
-#'
-#' \code{removeoutliers} removes outliers that are above or below a specified
-#' quantile within a defined window. (used to be implemented in createflags1)
-#'
-#' \code{createflagdiff} creates a flag for large differences in value.
-#'
-#' \code{executeflagdiff} removes consecutive values with large differences.
-#'
-#' \code{createjumpoutflag} creates flag for jumps and ouliers. Don't know what
-#' flagout is for???
-#'
-#' \code{executejumpout} removes jumps that occur after resetting the dendrometer
-#' needle.
-#'
-#' \code{calcmax} calculates the maximum of measured values.
-#'
-#' \code{calctwd_mds_gro} calculates the tree water deficit (twd), maximum
-#' daily shrinkage (mds) and the growth since the beginning of the year (gro).
-#'
-#' \code{summariseflags} summarises all previously created flags in one column.
-#'
 #' @param df input \code{data.frame}.
-#'
-#' @inheritParams proc_L1
 #'
 #' @inheritParams proc_dendro_L2
 #'
-#' @return
-#'
 #' @examples
 #'
-
-reso_check <- function(df) {
-  reso_check <- df %>%
-    dplyr::group_by(series) %>%
-    dplyr::mutate(reso_check = as.numeric(difftime(ts, dplyr::lag(ts, 1),
-                                                   units = "mins"))) %>%
-    dplyr::filter(!is.na(reso_check)) %>%
-    dplyr::summarise(reso_check = unique(reso_check)) %>%
-    dplyr::ungroup() %>%
-    dplyr::select(-series) %>%
-    unlist(use.names = FALSE)
-  if (length(unique(reso_check)) > 1) {
-    stop("please provide time-aligned data.")
-  } else {
-    reso <- unique(reso_check)
-  }
-  return(reso)
-}
-
-
-ts_overlap_check <- function(df, tem) {
-  df_start <- df$ts[1]
-  df_end <- df$ts[nrow(df)]
-  tem_start <- tem$ts[1]
-  tem_end <- tem$ts[nrow(tem)]
-
-  if (tem_start > df_end) {
-    stop("there is no overlap between dendrometer and temperature data.")
-  }
-  if (tem_end < df_start) {
-    stop("there is no overlap between dendrometer and temperature data.")
-  }
-}
-
-
 cleanoutofrange <- function(df, val_range) {
   df <- df %>%
     dplyr::mutate(flagrangemin = ifelse(value < val_range[1],
@@ -93,10 +22,21 @@ cleanoutofrange <- function(df, val_range) {
 }
 
 
+#' Creates Flag for Gaps
+#'
+#' \code{creategapflag} adds a flag to gaps that are longer than
+#' \code{gaplength}. Used to be called \code{cleanaftergaps}.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @param gaplength specify minimum length of gap for flagging.
+#'
+#' @inheritParams proc_dendro_L2
+#'
+#' @examples
+#'
 creategapflag <- function(df, reso, gaplength = 12 * (60 / reso)) {
-  # This function is Copyright (used to be called cleanaftergaps)
-  # add a gapflag to all gaps longer than gaplength
-  # how long should gaplength be for a flag?
+  # This function is Copyright
   if ("gapflag" %in% colnames(df)) {
     df <- dplyr::select(df, -gapflag)
   }
@@ -125,21 +65,41 @@ creategapflag <- function(df, reso, gaplength = 12 * (60 / reso)) {
 }
 
 
+#' Fills NA's With Last Non-NA Value
+#'
+#' \code{fillna} fills rows with NA with previous non-NA value (function
+#' adapted from \code{na.locf} of the \code{zoo} package).
+#'
+#' @param x input \code{vector}.
+#'
+#' @examples
+#'
 fill_na <- function(x) {
   nonaid <- !is.na(x)
   val_nona <- c(NA, x[nonaid])
   fillid <- cumsum(nonaid) + 1
   x <- val_nona[fillid]
+
+  return(x)
 }
 
 
+#' Calculates Hourly Change in Data
+#'
+#' \code{calcdiff} calculates an hourly change in \code{value}. In case there
+#' are gaps, the difference is also calculated at an hourly rate respective to
+#' the length of the preceding gap.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @inheritParams proc_dendro_L2
+#'
+#' @examples
+#'
 calcdiff <- function(df, reso) {
   ### Should gaplength be the number of missing timestamps or the number
   ### + 1 (to include also timestep to next nonna value)?
   ### at the moment it is the number of missing timestamps!!!
-
-  ### there needs to be a calcdiff which calculates hourly values and
-  ### a calcdiff for the jump correction (these need to be different!!!)
   if ("diff_val" %in% colnames(df)) {
     df <- dplyr::select(df, -diff_val)
   }
@@ -175,6 +135,19 @@ calcdiff <- function(df, reso) {
 }
 
 
+#' Creates Flag for Potential Frost
+#'
+#' \code{createfrostflag} adds a flag for potential frost.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @param lowtemp specifies temperature below which shrinkage in stem diameter
+#' due to frost is expected.
+#'
+#' @inheritParams proc_dendro_L2
+#'
+#' @examples
+#'
 createfrostflag <- function(df, tem, lowtemp = 5) {
   df <- tem %>%
     dplyr::mutate(frost = ifelse(value < lowtemp, TRUE, FALSE)) %>%
@@ -192,11 +165,27 @@ createfrostflag <- function(df, tem, lowtemp = 5) {
 }
 
 
-removeoutliers <- function(df, quan = 0.001, wnd = 3, reso) {
+#' Removes Outliers Based on Quantile
+#'
+#' \code{removeoutliers} removes outliers that are above or below a specified
+#' quantile within a defined window. (used to be implemented in createflags1)
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @param quan quantile that identifies outliers.
+#'
+#' @param span size of window for which quantiles are calculated.
+#'
+#' @param by spacing between time windows for quantile calculation.
+#'
+#' @inheritParams proc_dendro_L2
+#'
+#' @examples
+#'
+removeoutliers <- function(df, quan = 0.001, wnd = 3, reso,
+                           span = 60 / reso * 24 * (wnd / 2),
+                           by = 60 / reso * 24) {
   # This function is Copyright
-  span <- 60 / reso * 24 * (wnd / 2)
-  by <- 60 / reso * 24
-
   if (nrow(df) < 2 * span) {
     message("you don't have enough data for window flag!")
   }
@@ -229,6 +218,16 @@ removeoutliers <- function(df, quan = 0.001, wnd = 3, reso) {
 }
 
 
+#' Create Flag for Abrubt Changes in Data
+#'
+#' \code{createflagdiff} creates a flag for large differences in value.
+#'
+#' @param df input \{data.frame}.
+#'
+#' @inheritParams proc_dendro_L2
+#'
+#' @examples
+#'
 createflagdiff <- function(df, reso, diffwin = 1000, diffsum = 150) {
   # This function is Copyright
   flagdiff_nr <- length(grep("flagdiff", colnames(df)))
@@ -250,27 +249,49 @@ createflagdiff <- function(df, reso, diffwin = 1000, diffsum = 150) {
 }
 
 
+#' Remove Values With Diff Flag
+#'
+#' \code{executeflagdiff} removes consecutive values with large differences.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @param length specifies the minimal number of consecutive flags above which
+#' values are overwritten with NA.
+#'
+#' @examples
+#'
 executeflagdiff <- function(df, length = 2) {
   # This function is Copyright
   wnd <- length
   nc <- ncol(df)
 
   df <- df %>%
-    dplyr::mutate(gaps = cumsum(flagdiff)) %>%
-    dplyr::mutate(y = c(0, diff(gaps, lag = 1))) %>%
+    dplyr::mutate(flagdiff_group = cumsum(flagdiff)) %>%
+    dplyr::mutate(y = c(0, diff(flagdiff_group, lag = 1))) %>%
     dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
     dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
-    dplyr::mutate(gapnr = cumsum(z)) %>%
-    dplyr::group_by(gapnr) %>%
-    dplyr::mutate(gaple = dplyr::n()) %>%
+    dplyr::mutate(flagdiff_nr = cumsum(z)) %>%
+    dplyr::group_by(flagdiff_nr) %>%
+    dplyr::mutate(flagdiff_le = dplyr::n()) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(value = ifelse(gaple >= wnd & flagdiff, NA, value)) %>%
+    dplyr::mutate(value = ifelse(flagdiff_le >= wnd & flagdiff, NA, value)) %>%
     dplyr::select(1:nc)
 
   return(df)
 }
 
 
+#' Creates Flag for Outliers and Jumps in Data
+#'
+#' \code{createjumpoutflag} creates flag for jumps and ouliers.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @param thr specifies the threshold to discriminate between outliers and
+#' jumps due to adjustments of the dendrometer needle.
+#'
+#' @examples
+#'
 createjumpoutflag <- function(df, thr = 0.2) {
   # This function is Copyright
   df$flagout <- FALSE
@@ -279,7 +300,7 @@ createjumpoutflag <- function(df, thr = 0.2) {
 
   if (length(ran) != 0) {
     for (iu in ran) {
-      hhj <- sum(df$diff_val[c((iu + 1):(iu + 3))], na.rm = TRUE)
+      hhj <- sum(df$diff_val[(iu + 1):(iu + 3)], na.rm = TRUE)
       if (abs(df$diff_val[iu] + hhj) < df$diff_val[iu] * thr) {
         df$flagout[iu] <- TRUE
       } else {
@@ -291,6 +312,15 @@ createjumpoutflag <- function(df, thr = 0.2) {
 }
 
 
+#' Remove Jumps and Outliers
+#'
+#' \code{executejumpout} removes jumps that occur after resetting the dendrometer
+#' needle and removes outliers.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @examples
+#'
 executejumpout <- function(df) {
   # This function is Copyright
   nc <- ncol(df)
@@ -320,6 +350,14 @@ executejumpout <- function(df) {
 }
 
 
+#' Calculate Maximum
+#'
+#' \code{calcmax} calculates the maximum of measured values.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @examples
+#'
 calcmax <- function(df) {
   # This function is Copyright
   nc <- ncol(df)
@@ -348,13 +386,25 @@ calcmax <- function(df) {
 }
 
 
-calctwd_mds_gro  <- function(df) {
+#' Calculates TWD, MDS and GRO
+#'
+#' \code{calctwd_mds_gro} calculates the tree water deficit (twd), maximum
+#' daily shrinkage (mds) and the growth since the beginning of the year
+#' (gro_year).
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @inheritParams proc_dendro_L2
+#'
+#' @examples
+#'
+calctwd_mds_gro  <- function(df, tz) {
   nc <- ncol(df)
 
   df <- df %>%
     dplyr::mutate(twd = abs(value - max)) %>%
     dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
-                                   tz = "GMT")) %>%
+                                   tz = tz)) %>%
     dplyr::group_by(day) %>%
     dplyr::mutate(daily_max = max(value, na.rm = T)) %>%
     dplyr::mutate(daily_max = ifelse(daily_max == -Inf, NA, daily_max)) %>%
@@ -375,16 +425,24 @@ calctwd_mds_gro  <- function(df) {
 }
 
 
+#' Summarise Flags
+#'
+#' \code{summariseflags} summarises all previously created flags in one column.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @examples
+#'
 summariseflags <- function(df) {
   df <- df %>%
-    dplyr::mutate(flagrangemax = ifelse(flagrangemax, 2^0, 0)) %>%
-    dplyr::mutate(flagrangemin = ifelse(flagrangemin, 2^1, 0)) %>%
-    dplyr::mutate(flagqlow = ifelse(flagqlow, 2^2, 0)) %>%
-    dplyr::mutate(flagqhigh = ifelse(flagqhigh, 2^3, 0)) %>%
-    dplyr::mutate(flagdiff1 = ifelse(flagdiff1, 2^4, 0)) %>%
-    dplyr::mutate(flagdiff2 = ifelse(flagdiff2, 2^5, 0)) %>%
-    dplyr::mutate(flagout = ifelse(flagout, 2^6, 0)) %>%
-    dplyr::mutate(flagjump = ifelse(flagjump, 2^7, 0)) %>%
+    dplyr::mutate(flagrangemax = ifelse(flagrangemax, 2 ^ 0, 0)) %>%
+    dplyr::mutate(flagrangemin = ifelse(flagrangemin, 2 ^ 1, 0)) %>%
+    dplyr::mutate(flagqlow = ifelse(flagqlow, 2 ^ 2, 0)) %>%
+    dplyr::mutate(flagqhigh = ifelse(flagqhigh, 2 ^ 3, 0)) %>%
+    dplyr::mutate(flagdiff1 = ifelse(flagdiff1, 2 ^ 4, 0)) %>%
+    dplyr::mutate(flagdiff2 = ifelse(flagdiff2, 2 ^ 5, 0)) %>%
+    dplyr::mutate(flagout = ifelse(flagout, 2 ^ 6, 0)) %>%
+    dplyr::mutate(flagjump = ifelse(flagjump, 2 ^ 7, 0)) %>%
     dplyr::mutate(
       flags = rowSums(dplyr::select(., "flagrangemax", "flagrangemin",
                                     "flagqlow", "flagqhigh",
