@@ -56,7 +56,7 @@ creategapflag <- function(df, reso, gaplength = 12 * (60 / reso)) {
                                                 units = "mins"))) %>%
     dplyr::mutate(diff_ts = c(0, diff_ts[2:dplyr::n()])) %>%
     dplyr::group_by(gapnr) %>%
-    dplyr::mutate(gaple_mins = sum(diff_ts)) %>%
+    dplyr::mutate(gaple_mins = sum(diff_ts) + reso) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(gapflag = ifelse(isgap & gaple_mins > wnd, 1, 0)) %>%
     dplyr::select(1:nc, gapflag)
@@ -116,7 +116,7 @@ calcdiff <- function(df, reso) {
     dplyr::mutate(gapnr = cumsum(z)) %>%
     dplyr::group_by(gapnr) %>%
     dplyr::mutate(gaple = dplyr::n()) %>%
-    dplyr::mutate(gaple_mins = gaple * reso) %>%
+    dplyr::mutate(gaple_mins = (gaple + 1) * reso) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(gaple_mins = dplyr::lag(gaple_mins, n = 1)) %>%
     dplyr::select(1:nc, gaple_mins) %>%
