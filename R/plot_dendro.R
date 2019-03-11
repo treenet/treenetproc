@@ -1,32 +1,60 @@
 #' Plot Processed Dendrometer Data
 #'
-#' @param x
-#' @param y
-#' @param type
-#' @param add specify whether L1 data should be plotted along with L2 data.
+#' \code{plot_dendro} provides plots of time-aligned (L1) and processed (L2)
+#' dendrometer data to visually assess the processing. The first panel shows
+#' the L1 data and the second panel the processed L2 data. The third panel
+#' shows the weekly difference between L1 and L2 data. Large differences
+#' without an apparent jump in the data indicate problems in the processing.
+#'
+#' @param data_L1 time-aligned dendrometer data as produced by \code{proc_L1}.
+#'
+#' @param data_L2 processed dendrometer data as produced by
+#' \code{proc_dendro_L2}.
+#'
+#' @param period specify whether plots should be displayed over the whole
+#' period (\code{"full"}) or for each year separately (\code{"yearly}).
+#'
+#' @param add specify whether L1 data should be plotted along with L2 data
+#' in the second panel.
+#'
+#' @param tz time-zone of provided data. Default is \code{"Etc/GMT-1"}.
 #'
 #' @return
 #' @export
 #'
 #' @examples
 #'
-
 plot_dendro <- function(data_L1, data_L2,
-                        period = c("full", "yearly"), add = FALSE,
+                        period = "full", add = FALSE,
                         tz = "Etc/GMT-1", ...) {
 
-  #data_L1 <- data_L1_dendro %>%
-  #  dplyr::filter(series == unique(series)[1])
-  #data_L2 <- data_L2_dendro %>%
-  #  dplyr::filter(series == unique(series)[1])
-  #add <- TRUE
-  #tz <- "Etc/GMT-1"
+  data_L1 <- data_L1_dendro %>%
+    dplyr::filter(series == unique(series)[1])
+  data_L2 <- data_L2_dendro %>%
+    dplyr::filter(series == unique(series)[1])
+  add <- TRUE
+  period <- "full"
+  tz <- "Etc/GMT-1"
 
 
   # Check input variables -----------------------------------------------------
+  if (!(period %in% c("full", "yearly"))) {
+    stop("period needs to be either 'full' or 'yearly'.")
+  }
+
+  if (!(add %in% c(TRUE, FALSE))) {
+    stop("add can only be 'TRUE' or 'FALSE'.")
+  }
 
 
   # Check input data ----------------------------------------------------------
+  if (sum(colnames(data_L1) %in% c("series", "ts", "value", "version")) != 4) {
+    stop("provide time-aligned dendrometer data generated with 'proc_L1'.")
+  }
+  if (sum(colnames(data_L2) %in% c("series", "ts", "value", "version", "max",
+                                   "twd")) != 6) {
+    stop("provide processed dendrometer data generated with 'proc_dendro_L2'.")
+  }
 
 
   # Calculate weekly difference -----------------------------------------------
