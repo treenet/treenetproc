@@ -386,11 +386,10 @@ calcmax <- function(df) {
 }
 
 
-#' Calculates TWD, MDS and GRO
+#' Calculates TWD and GRO
 #'
-#' \code{calctwd_mds_gro} calculates the tree water deficit (twd), maximum
-#' daily shrinkage (mds) and the growth since the beginning of the year
-#' (gro_year).
+#' \code{calctwdgro} calculates the tree water deficit (twd) and the growth
+#' since the beginning of the year (gro_year).
 #'
 #' @param df input \code{data.frame}.
 #'
@@ -398,28 +397,112 @@ calcmax <- function(df) {
 #'
 #' @examples
 #'
-calctwd_mds_gro  <- function(df, tz) {
+calctwdgro  <- function(df, tz) {
   nc <- ncol(df)
 
   df <- df %>%
     dplyr::mutate(twd = abs(value - max)) %>%
-    dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
-                                   tz = tz)) %>%
-    dplyr::group_by(day) %>%
-    dplyr::mutate(daily_max = max(value, na.rm = T)) %>%
-    dplyr::mutate(daily_max = ifelse(daily_max == -Inf, NA, daily_max)) %>%
-    dplyr::mutate(daily_min = min(value, na.rm = T)) %>%
-    dplyr::mutate(daily_min = ifelse(daily_min == -Inf, NA, daily_min)) %>%
-    dplyr::mutate(mds = ifelse(is.na(daily_max - daily_min), NA,
-                               daily_max - daily_min)) %>%
-    dplyr::ungroup() %>%
     dplyr::mutate(gro = c(0, diff(max))) %>%
     dplyr::mutate(gro = ifelse(is.na(gro), 0, gro)) %>%
     dplyr::mutate(year = substr(ts, 1, 4)) %>%
     dplyr::group_by(year) %>%
     dplyr::mutate(gro_year = cumsum(gro)) %>%
     dplyr::ungroup() %>%
-    dplyr::select(1:nc, twd, mds, gro_year)
+    dplyr::select(1:nc, twd, gro_year)
+
+  return(df)
+}
+
+
+#' Calculate Maximum Daily Shrinkage (MDS)
+#'
+#' \code{calcmds} calculates the maximum daily shrinkage (mds). Mds is defined
+#' as the largest daily shrinkage.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @examples
+#'
+calcmds <- function(df, tz) {
+  nc <- ncol(df)
+
+  maxmin <- df %>%
+    dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
+                                   tz = tz)) %>%
+    dplyr::select(ts, day, value) %>%
+    dplyr::mutate(diff_sign = c(sign(diff(value)), NA)) %>%
+    dplyr::mutate(diff_sign_lag = dplyr::lag(diff_sign, n = 1)) %>%
+    dplyr::mutate(sign_change = diff_sign * diff_sign_lag) %>%
+    dplyr::mutate(min1 = ifelse(sign_change == -1 & diff_sign_lag == -1,
+                               value, NA)) %>%
+    dplyr::mutate(max1 = ifelse(sign_change == -1 & diff_sign_lag == 1,
+                               value, NA))
+
+  span <- 60 / reso * 6
+  by <- 60 / reso * 6
+  st <- span + 1
+  en <- nrow(maxmin) - span + 1
+  steps <- seq(st, en, by = by)
+
+  maxmin$max2 <- 0
+  maxmin$min2 <- 0
+  for (qq in steps) {
+    b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
+    max_row <- which.max(maxmin$max1[ran]) + ran[1] - 1
+    if (length(max_row) > 0) {
+      maxmin$max2[max_row] <- maxmin$max2[max_row] + 1
+    }
+    min_row <- which.min(maxmin$min1[ran]) + ran[1] - 1
+    if (length(min_row) > 0) {
+      maxmin$min2[min_row] <- maxmin$min2[min_row] + 1
+    }
+  }
+
+  maxmin <- maxmin %>%
+    dplyr::filter(max2 == 2 | min2 == 2) %>%
+    dplyr::mutate(max2 = rep(rle(max2)[[1]],
+                                   times = rle(max2)[[1]])) %>%
+    dplyr::mutate(iscons = ifelse(max2 == 2 & !is.na(max2), TRUE, FALSE)) %>%
+    dplyr::mutate(cons = cumsum(iscons)) %>%
+    dplyr::mutate(y = c(0, diff(cons, lag = 1))) %>%
+    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+    dplyr::mutate(cons_nr = cumsum(z)) %>%
+    dplyr::group_by(cons_nr) %>%
+    dplyr::mutate(max2 = max(max1, na.rm = T)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(max1 = dplyr::case_when(iscons & max1 == max2 ~ max1,
+                  !iscons ~ max1)) %>%
+    dplyr::mutate(min2 = rep(rle(min2)[[1]],
+                             times = rle(min2)[[1]])) %>%
+    dplyr::mutate(iscons = ifelse(min2 == 2 & !is.na(min2), TRUE, FALSE)) %>%
+    dplyr::mutate(cons = cumsum(iscons)) %>%
+    dplyr::mutate(y = c(0, diff(cons, lag = 1))) %>%
+    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+    dplyr::mutate(cons_nr = cumsum(z)) %>%
+    dplyr::group_by(cons_nr) %>%
+    dplyr::mutate(min2 = min(min1, na.rm = T)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(min1 = dplyr::case_when(iscons & min1 == min2 ~ min1,
+                                         !iscons ~ min1)) %>%
+    dplyr::filter(!(is.na(max1) & is.na(min1))) %>%
+    dplyr::select(ts, day, max1, min1) %>%
+    dplyr::group_by(day) %>%
+    dplyr::mutate(min_lag = dplyr::lead(min1, n = 1)) %>%
+    dplyr::mutate(mds = max1 - min_lag) %>%
+    dplyr::mutate(mds = max(mds, na.rm = T)) %>%
+    dplyr::mutate(mds = ifelse(mds >= 0, mds, NA)) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(day) %>%
+    dplyr::summarise(mds = mds[1]) %>%
+    dplyr::ungroup()
+
+  df <- df %>%
+    dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
+                                   tz = tz)) %>%
+    dplyr::full_join(., maxmin, by = "day") %>%
+    dplyr::select(1:nc, mds)
 
   return(df)
 }
