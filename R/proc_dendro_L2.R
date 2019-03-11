@@ -22,7 +22,8 @@
 #'
 #' @inheritParams proc_L1
 #'
-#' @return
+#' @return \code{data.frame} with processed dendrometer data.
+#'
 #' @export
 #'
 #' @examples
@@ -31,16 +32,15 @@
 #'                val_range = c(0, 20000))
 #' }
 #'
-
 proc_dendro_L2 <- function(dendro_data, temp_data, val_range = c(0, 20000),
-                           diffwin = 1500, diffsum = 2000) {
+                           diffwin = 2000, diffsum = 1000, tz = "Etc/GMT-1") {
 
-  #dendro_data <- data_L1_dendro
-  #temp_data <- data_L1_temp
-  #val_range <- c(0, 20000)
-  #diffwin <- 1000
-  #diffsum <- 800
-  #s <- 1
+  dendro_data <- data_L1_dendro
+  temp_data <- data_L1_temp
+  val_range <- c(0, 20000)
+  diffwin <- 2000
+  diffsum <- 1000
+  s <- 1
 
 
   # Check input variables -----------------------------------------------------
@@ -55,10 +55,10 @@ proc_dendro_L2 <- function(dendro_data, temp_data, val_range = c(0, 20000),
   df <- dendro_data
   tem <- temp_data
 
-  if (sum(colnames(df) %in% c("ts", "series", "value", "version")) != 4) {
+  if (sum(colnames(df) %in% c("series", "ts", "value", "version")) != 4) {
     stop("provide time-aligned dendrometer data generated with 'proc_L1'")
   }
-  if (sum(colnames(tem) %in% c("ts", "series", "value", "version")) != 4) {
+  if (sum(colnames(tem) %in% c("series", "ts", "value", "version")) != 4) {
     stop("provide time-aligned temperature data generated with 'proc_L1'")
   }
 
@@ -119,12 +119,6 @@ proc_dendro_L2 <- function(dendro_data, temp_data, val_range = c(0, 20000),
     df <- cleanoutofrange(df = df, val_range = val_range)
     df <- creategapflag(df = df, reso = reso, gaplength = 24 * (60 / reso))
     df <- calcdiff(df = df, reso = reso)
-
-    if (sum(!is.na(df$diff_val)) + 1 != sum(!is.na(df$value))) {
-      message(paste("Error: diff_val has more NA than value (except first",
-                    "value). Error in", series_vec[s], "."))
-    }
-
     df <- createfrostflag(df = df, tem = tem, lowtemp = 5)
     df <- removeoutliers(df = df, quan = 0.001, wnd = 3, reso = reso)
     df <- calcdiff(df = df, reso = reso)
@@ -140,7 +134,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data, val_range = c(0, 20000),
     df <- fillintergaps(df = df, reso = reso, wnd = 4 * 60 / reso,
                         type = "linear")
     df <- calcmax(df = df)
-    df <- calctwd_mds_gro(df = df)
+    df <- calctwd_mds_gro(df = df, tz = tz)
     df <- summariseflags(df = df)
 
     if (lead) {
@@ -156,10 +150,9 @@ proc_dendro_L2 <- function(dendro_data, temp_data, val_range = c(0, 20000),
       dplyr::mutate(twd = ifelse(is.na(value), NA, twd)) %>%
       dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
       dplyr::mutate(version = 2) %>%
-      dplyr::select(series, ts, value, max, twd, mds, gro_year, flags)
+      dplyr::select(series, ts, value, max, twd, mds, gro_year, flags, version)
 
     list_L2[[s]] <- df
-    #print(paste(series_vec[s], "Done!"))
   }
 
   df <- dplyr::bind_rows(list_L2)
