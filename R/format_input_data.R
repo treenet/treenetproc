@@ -1,12 +1,14 @@
 #' Check Format of Input Data
 #'
-#' \code(check_format) checks whether input table is in long or wide format.
+#' \code{check_format()} checks whether input table is in long or wide format.
 #'
-#' @param df input \{data.frame}.
+#' @param df input \code{data.frame}.
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
-check_format <- function(df) {
+check_format <- function(df, input) {
   nr_value_col <- length(which(sapply(df, class) == "numeric" &
                                  sapply(sapply(df, unique), length) > 1))
   if (nr_value_col > 1 & input == "long") {
@@ -21,17 +23,16 @@ check_format <- function(df) {
 #' Format Input Data
 #'
 #' \code{format_input} formats input data. Wide format is convertet to long
-#' and correct column classes are assigned.
+#'   and correct column classes are assigned.
 #'
 #' @param df input \code{data.frame}.
+#' @inheritParams proc_dendro_L2
 #'
-#' @inheritParams process_dendro
-#'
-#' @return \code{data.frame}
+#' @keywords internal
 #'
 #' @examples
 #'
-format_input <- function(df, input) {
+format_input <- function(df, input, tz) {
   if (input == "wide") {
     nc <- ncol(df)
     nr <- nrow(df)
@@ -75,6 +76,8 @@ format_input <- function(df, input) {
 #'
 #' @param df input \code{data.frame}.
 #'
+#' @keywords internal
+#'
 #' @examples
 #'
 reso_check <- function(df) {
@@ -101,11 +104,12 @@ reso_check <- function(df) {
 #' Check for Time Overlap Between Datasets
 #'
 #' \code{ts_overlap_check} checks whether measurement periods of dendrometer
-#' data and temperature data overlap.
+#'   data and temperature data overlap.
 #'
 #' @param df input \code{data.frame} of dendrometer data.
-#'
 #' @param tem input \code{data.frame} of temperature or climate data.
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
@@ -121,4 +125,61 @@ ts_overlap_check <- function(df, tem) {
   if (tem_end < df_start) {
     stop("there is no overlap between dendrometer and temperature data.")
   }
+}
+
+
+#' Create Dummy Temperature Dataset
+#'
+#' \code{create_temp_dummy} creates a dummy temperature dataset if local
+#'   temperature measurements are missing. Temperatures in the months December,
+#'   January and February are 0°C (i.e. frost shrinkage is possible).
+#'   Tempeartures in the other months are 10°C (i.e. no frost shrinkage).
+#'
+#' @param df input \code{data.frame} of dendrometer data.
+#' @inheritParams proc_L1
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+create_temp_dummy <- function(df) {
+  start_posix <- df$ts[1]
+  end_posix <- df$ts[length(df$ts)]
+  reso <- as.numeric(difftime(df$ts[2], df$ts[1], units = "mins"))
+  dd <- seq(start_posix, end_posix, by = paste0(reso, " min"))
+
+  df <- as.data.frame(dd) %>%
+    dplyr::select("ts" = 1) %>%
+    dplyr::mutate(series = "airtemperature") %>%
+    dplyr::mutate(month = as.numeric(substr(ts, 6, 7))) %>%
+    dplyr::mutate(value = ifelse(month %in% c(1, 2, 12), 0, 10)) %>%
+    dplyr::select(series, ts, value)
+
+  return(df)
+}
+
+
+#' Create Dummy Temperature Dataset for Treenet Data
+#'
+#' \code{create_temp_dummy} creates a dummy temperature dataset if local
+#'   temperature measurements are missing. Temperatures in the months December,
+#'   January and February are 0°C (i.e. frost shrinkage is possible).
+#'   Tempeartures in the other months are 10°C (i.e. no frost shrinkage).
+#'
+#' @param df input \code{data.frame} of dendrometer data.
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+create_temp_dummy_treenet <- function(df) {
+  df <- df %>%
+    dplyr::distinct(ts) %>%
+    dplyr::mutate(month = as.numeric(substr(ts, 6, 7))) %>%
+    dplyr::mutate(value = ifelse(month %in% c(1, 2, 12), 0, 10)) %>%
+    dplyr::mutate(series = "airtemperature") %>%
+    dplyr::mutate(version = 0) %>%
+    dplyr::select(series, ts, value, version)
+
+  return(df)
 }
