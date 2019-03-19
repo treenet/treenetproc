@@ -1,47 +1,38 @@
 #' Plot Processed Dendrometer Data
 #'
-#' \code{plot_dendro} provides plots of time-aligned (L1) and processed (L2)
-#' dendrometer data to visually assess the processing. The first panel shows
-#' the L1 data and the second panel the processed L2 data. The third panel
-#' shows the weekly difference between L1 and L2 data. Large differences
-#' without an apparent jump in the data indicate problems in the processing.
+#' \code{plot_dendro()} provides plots of time-aligned (\code{L1}) and
+#'   processed (\code{L2}) dendrometer data to visually assess the processing.
+#'   The first panel shows the \code{L1} data and the second panel the
+#'   processed \code{L2} data. The third panel shows the weekly difference
+#'   between \code{L1} and \code{L2} data. Large differences without an
+#'   apparent jump in the data indicate problems in the processing.
 #'
 #' @param data_L1 time-aligned dendrometer data as produced by \code{proc_L1}.
-#'
 #' @param data_L2 processed dendrometer data as produced by
-#' \code{proc_dendro_L2}.
-#'
+#'   \code{proc_dendro_L2}.
 #' @param period specify whether plots should be displayed over the whole
-#' period (\code{"full"}) or for each year separately (\code{"yearly}).
-#'
-#' @param add specify whether L1 data should be plotted along with L2 data
-#' in the second panel.
-#'
+#'   period (\code{"full"}) or for each year separately (\code{"yearly"}).
+#' @param add specify whether \code{L1} data should be plotted along with
+#'   \code{L2} data in the second panel.
 #' @param tz time-zone of provided data. Default is \code{"Etc/GMT-1"}.
 #'
-#' @return
+#' @return Plots are saved to current working directory as
+#'   \code{processing_L2_plot.pdf}.
+#'
 #' @export
 #'
 #' @examples
-#'
-plot_dendro <- function(data_L1, data_L2,
-                        period = "full", add = FALSE,
-                        tz = "Etc/GMT-1", ...) {
-
-  data_L1 <- data_L1_dendro %>%
-    dplyr::filter(series == unique(series)[1])
-  data_L2 <- data_L2_dendro %>%
-    dplyr::filter(series == unique(series)[1])
-  add <- TRUE
-  period <- "full"
-  tz <- "Etc/GMT-1"
-
+#' \dontrun{
+#' plot_dendro(data_L1 = data_L1_dendro, data_L2 = data_L2_dendro,
+#'             period = "yearly", add = TRUE)
+#' }
+plot_dendro <- function(data_L1, data_L2, period = "full", add = TRUE,
+                        tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
   if (!(period %in% c("full", "yearly"))) {
     stop("period needs to be either 'full' or 'yearly'.")
   }
-
   if (!(add %in% c(TRUE, FALSE))) {
     stop("add can only be 'TRUE' or 'FALSE'.")
   }
@@ -58,52 +49,77 @@ plot_dendro <- function(data_L1, data_L2,
 
 
   # Calculate weekly difference -----------------------------------------------
-  diff <- data_L1 %>%
-    dplyr::select(series, ts, value_L1 = value) %>%
-    dplyr::full_join(., data_L2, by = c("series", "ts")) %>%
-    dplyr::select(series, ts, value_L1, value_L2 = value) %>%
-    dplyr::mutate(year = substr(ts, 1, 4)) %>%
-    dplyr::mutate(month = substr(ts, 6, 7)) %>%
-    dplyr::mutate(day = substr(ts, 9, 10)) %>%
-    dplyr::mutate(week = strftime(ts, format = "%W")) %>%
-    dplyr::group_by(year, week) %>%
-    dplyr::mutate(value_L1_zero =
-                    value_L1 - value_L1[which(!is.na(value_L1))[1]]) %>%
-    dplyr::mutate(value_L2_zero =
-                    value_L2 - value_L2[which(!is.na(value_L2))[1]]) %>%
-    dplyr::summarise(diff =
-                       abs(dplyr::last(
-                         value_L1_zero[which(!is.na(value_L1_zero))]) -
-                           dplyr::last(
-                             value_L2_zero[which(!is.na(value_L2_zero))])),
-                     month = month[1],
-                     day = day[1]) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(ts = as.POSIXct(paste0(year, "-", month, "-", day),
-                                  format = "%Y-%m-%d", tz = tz))
+  environment(plot_command) <- environment()
+  sensors <- unique(data_L1$series)
+  data_L1 <- data_L1 %>%
+    dplyr::mutate(year = substr(ts, 1, 4))
+  data_L2 <- data_L2 %>%
+    dplyr::mutate(year = substr(ts, 1, 4))
+  years <- unique(data_L1$year)
+
+  pdf("processing_L2_plot.pdf", width = 8.3, height = 11.7)
+  for (s in 1:length(sensors)) {
+    sensor_label <- sensors[s]
+    data_L1_sensor <- data_L1 %>%
+      dplyr::filter(series == sensor_label)
+    data_L2_sensor <- data_L2 %>%
+      dplyr::filter(series == sensor_label)
+
+    diff_sensor <- data_L1_sensor %>%
+      dplyr::select(series, ts, value_L1 = value) %>%
+      dplyr::full_join(., data_L2_sensor, by = c("series", "ts")) %>%
+      dplyr::select(series, ts, value_L1, value_L2 = value) %>%
+      dplyr::mutate(year = substr(ts, 1, 4)) %>%
+      dplyr::mutate(month = substr(ts, 6, 7)) %>%
+      dplyr::mutate(day = substr(ts, 9, 10)) %>%
+      dplyr::mutate(week = strftime(ts, format = "%W")) %>%
+      dplyr::group_by(year, week) %>%
+      dplyr::mutate(value_L1_zero =
+                      value_L1 - value_L1[which(!is.na(value_L1))[1]]) %>%
+      dplyr::mutate(value_L2_zero =
+                      value_L2 - value_L2[which(!is.na(value_L2))[1]]) %>%
+      dplyr::summarise(diff =
+                         abs(dplyr::last(
+                           value_L1_zero[which(!is.na(value_L1_zero))]) -
+                             dplyr::last(
+                               value_L2_zero[which(!is.na(value_L2_zero))])),
+                       month = month[1],
+                       day = day[1]) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(ts = as.POSIXct(paste0(year, "-", month, "-", day),
+                                    format = "%Y-%m-%d", tz = tz))
 
 
-  # Plot L1, L2 and weekly diff -----------------------------------------------
-  layout(matrix(c(1, 2, 3), nrow = 3), heights = c(2, 1.6, 1), widths = 1)
-  par(mar = c(0, 5, 4.1, 2.1))
-  plot(data = data_L1, value ~ ts, type = "l", xaxt = "n", ylab = "",
-       las = 1)
-  title(ylab = "value_L1", mgp = c(3.5, 1, 0))
-  par(mar = c(0, 5, 0, 2.1))
-  plot(data = data_L2, value ~ ts, type = "n", xaxt = "n", ylab = "", las = 1)
-  if (add) {
-    lines(data = data_L1, value ~ ts, col = "grey85")
+    # Plot L1, L2 and weekly diff ---------------------------------------------
+    if (period == "yearly") {
+
+      for (y in 1:length(years)) {
+        year_label = years[y]
+        data_L1_year <- data_L1_sensor %>%
+          dplyr::filter(year == year_label)
+        data_L2_year <- data_L2_sensor %>%
+          dplyr::filter(year == year_label)
+        diff_year <- diff_sensor %>%
+          dplyr::filter(year == year_label)
+
+        if (sum(!is.na(data_L1_year$value)) != 0 &
+            sum(!is.na(data_L2_year$value)) != 0) {
+          plot_command(data_L1 = data_L1_year, data_L2 = data_L2_year,
+                       diff = diff_year, sensor_label = sensor_label,
+                       year_label = year_label)
+        } else {
+          next
+        }
+      }
+    }
+
+    if (period == "full") {
+      year_label <- paste0(years[1], "-", years[length(years)])
+
+      plot_command(data_L1 = data_L1_sensor, data_L2 = data_L2_sensor,
+                   diff = diff_sensor, sensor_label = sensor_label,
+                   year_label = year_label)
+    }
   }
-  lines(data = data_L2, value ~ ts, col = "#08519c")
-  title(ylab = "value_L2", mgp = c(3.5, 1, 0))
-  par(mar = c(4.1, 5, 0, 2.1))
-  #options(warn = -1)
-  plot(data = diff, diff ~ ts, type = "h", xlab = "", log = "y",
-       yaxt = "n", ylab = "", ylim = c(0.1, 1200), las = 1,
-       col = "#b30000")
-  axis(2, at = c(0.1, 1, 10, 100, 1000),
-       labels = c(0, 1, 10, 100, 1000), las = 1)
-  title(ylab = "diff", mgp = c(3.5, 1, 0))
-  #options(warn = 0)
-
+  dev.off()
 }
