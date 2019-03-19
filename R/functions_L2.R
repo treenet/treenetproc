@@ -1,11 +1,12 @@
 #' Process Dendrometer Data
 #'
 #' \code{cleanoutofrange} removes implausible data points lower or higher
-#' than specified values in \code{val_range}.
+#'   than specified values in \code{val_range}.
 #'
 #' @param df input \code{data.frame}.
-#'
 #' @inheritParams proc_dendro_L2
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
@@ -25,13 +26,13 @@ cleanoutofrange <- function(df, val_range) {
 #' Creates Flag for Gaps
 #'
 #' \code{creategapflag} adds a flag to gaps that are longer than
-#' \code{gaplength}. Used to be called \code{cleanaftergaps}.
+#'   \code{gaplength}. Used to be called \code{cleanaftergaps}.
 #'
 #' @param df input \code{data.frame}.
-#'
 #' @param gaplength specify minimum length of gap for flagging.
-#'
 #' @inheritParams proc_dendro_L2
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
@@ -68,9 +69,11 @@ creategapflag <- function(df, reso, gaplength = 12 * (60 / reso)) {
 #' Fills NA's With Last Non-NA Value
 #'
 #' \code{fillna} fills rows with NA with previous non-NA value (function
-#' adapted from \code{na.locf} of the \code{zoo} package).
+#'   adapted from \code{na.locf} of the \code{zoo} package).
 #'
 #' @param x input \code{vector}.
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
@@ -87,19 +90,17 @@ fill_na <- function(x) {
 #' Calculates Hourly Change in Data
 #'
 #' \code{calcdiff} calculates an hourly change in \code{value}. In case there
-#' are gaps, the difference is also calculated at an hourly rate respective to
-#' the length of the preceding gap.
+#'   are gaps, the difference is also calculated at an hourly rate respective
+#'   to the length of the preceding gap.
 #'
 #' @param df input \code{data.frame}.
-#'
 #' @inheritParams proc_dendro_L2
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
 calcdiff <- function(df, reso) {
-  ### Should gaplength be the number of missing timestamps or the number
-  ### + 1 (to include also timestep to next nonna value)?
-  ### at the moment it is the number of missing timestamps!!!
   if ("diff_val" %in% colnames(df)) {
     df <- dplyr::select(df, -diff_val)
   }
@@ -140,11 +141,11 @@ calcdiff <- function(df, reso) {
 #' \code{createfrostflag} adds a flag for potential frost.
 #'
 #' @param df input \code{data.frame}.
-#'
 #' @param lowtemp specifies temperature below which shrinkage in stem diameter
-#' due to frost is expected.
-#'
+#'  due to frost is expected.
 #' @inheritParams proc_dendro_L2
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
@@ -168,17 +169,15 @@ createfrostflag <- function(df, tem, lowtemp = 5) {
 #' Removes Outliers Based on Quantile
 #'
 #' \code{removeoutliers} removes outliers that are above or below a specified
-#' quantile within a defined window. (used to be implemented in createflags1)
+#'   quantile within a defined window. (used to be implemented in createflags1)
 #'
 #' @param df input \code{data.frame}.
-#'
 #' @param quan quantile that identifies outliers.
-#'
 #' @param span size of window for which quantiles are calculated.
-#'
 #' @param by spacing between time windows for quantile calculation.
-#'
 #' @inheritParams proc_dendro_L2
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
@@ -222,9 +221,10 @@ removeoutliers <- function(df, quan = 0.001, wnd = 3, reso,
 #'
 #' \code{createflagdiff} creates a flag for large differences in value.
 #'
-#' @param df input \{data.frame}.
-#'
+#' @param df input \code{data.frame}.
 #' @inheritParams proc_dendro_L2
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
@@ -254,9 +254,10 @@ createflagdiff <- function(df, reso, diffwin = 1000, diffsum = 150) {
 #' \code{executeflagdiff} removes consecutive values with large differences.
 #'
 #' @param df input \code{data.frame}.
-#'
 #' @param length specifies the minimal number of consecutive flags above which
-#' values are overwritten with NA.
+#'   values are overwritten with NA.
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
@@ -286,9 +287,10 @@ executeflagdiff <- function(df, length = 2) {
 #' \code{createjumpoutflag} creates flag for jumps and ouliers.
 #'
 #' @param df input \code{data.frame}.
-#'
 #' @param thr specifies the threshold to discriminate between outliers and
-#' jumps due to adjustments of the dendrometer needle.
+#'     jumps due to adjustments of the dendrometer needle.
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
@@ -315,9 +317,11 @@ createjumpoutflag <- function(df, thr = 0.2) {
 #' Remove Jumps and Outliers
 #'
 #' \code{executejumpout} removes jumps that occur after resetting the dendrometer
-#' needle and removes outliers.
+#'   needle and removes outliers.
 #'
 #' @param df input \code{data.frame}.
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
@@ -356,6 +360,8 @@ executejumpout <- function(df) {
 #'
 #' @param df input \code{data.frame}.
 #'
+#' @keywords internal
+#'
 #' @examples
 #'
 calcmax <- function(df) {
@@ -389,11 +395,12 @@ calcmax <- function(df) {
 #' Calculates TWD and GRO
 #'
 #' \code{calctwdgro} calculates the tree water deficit (twd) and the growth
-#' since the beginning of the year (gro_year).
+#'   since the beginning of the year (gro_yr).
 #'
 #' @param df input \code{data.frame}.
-#'
 #' @inheritParams proc_dendro_L2
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
@@ -406,9 +413,9 @@ calctwdgro  <- function(df, tz) {
     dplyr::mutate(gro = ifelse(is.na(gro), 0, gro)) %>%
     dplyr::mutate(year = substr(ts, 1, 4)) %>%
     dplyr::group_by(year) %>%
-    dplyr::mutate(gro_year = cumsum(gro)) %>%
+    dplyr::mutate(gro_yr = cumsum(gro)) %>%
     dplyr::ungroup() %>%
-    dplyr::select(1:nc, twd, gro_year)
+    dplyr::select(1:nc, twd, gro_yr)
 
   return(df)
 }
@@ -417,9 +424,15 @@ calctwdgro  <- function(df, tz) {
 #' Calculate Maximum Daily Shrinkage (MDS)
 #'
 #' \code{calcmds} calculates the maximum daily shrinkage (mds). Mds is defined
-#' as the largest daily shrinkage.
+#'   as the largest daily shrinkage. First, local maxima and minima are
+#'   identified using a moving window. Mds is only calculated if a local
+#'   maximum occurs before a local minimum (i.e. if the stem shrinks during
+#'   the day).
 #'
 #' @param df input \code{data.frame}.
+#' @inheritParams proc_dendro_L2
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
@@ -513,6 +526,8 @@ calcmds <- function(df, tz) {
 #' \code{summariseflags} summarises all previously created flags in one column.
 #'
 #' @param df input \code{data.frame}.
+#'
+#' @keywords internal
 #'
 #' @examples
 #'
