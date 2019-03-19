@@ -16,6 +16,11 @@ LazyData: true
 RoxygenNote: 6.1.1
 Imports: 
     dplyr (>= 0.7.8),
-    magrittr
+    magrittr,
+    sqldf (>= 0.4),
+    DBI (>= 1.0.0),
+    RPostgres (>= 1.1.1),
+    config (>= 0.3),
+    googlesheets (>= 0.3.0)
 Suggests: 
     testthat
