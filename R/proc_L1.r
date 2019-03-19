@@ -1,43 +1,44 @@
 #' Process Raw Dendrometer or Meteorological Data to L1
 #'
-#' \code{proc_L1()} lets you process raw dendrometer and raw
-#' meteorological data to time-aligned data.
+#' \code{proc_L1()} processes raw dendrometer and raw meteorological data to
+#'   time-aligned data.
 #'
 #' @param data input \code{data.frame} containing raw dendrometer or
-#' meteorological data. The input data needs to contain a timestamp column
-#' (named \code{ts}) formatted as: \code{%Y-%m-%d %H:%M:%S}. Data of multiple
-#' sensors can either be in \emph{long} format \code{input = "long"} with a
-#' column named \code{series} to differentiate the sensors or in \emph{wide}
-#' format \code{input = "wide"} with sensors in separate columns. The name of
-#' temperature and precipitation data have to contain \code{temp} or
-#' \code{prec}, respectively.
-#'
+#'   meteorological data. The input data needs to contain a timestamp column
+#'   (named \code{ts}) formatted as: \code{\%Y-\%m-\%d \%H:\%M:\%S}. Data of
+#'   multiple sensors can either be in \code{long} format \code{input = "long"}
+#'   with a column named \code{series} to differentiate the sensors or in
+#'   \code{wide} format \code{input = "wide"} with sensors in separate columns.
+#'   The name of temperature and precipitation data have to at least contain
+#'   \code{temp} or \code{prec}, respectively.
 #' @param reso time resolution between two timestamps (in minutes). Resolution
-#' should be chosen to be close to the actual measurement intervals.
-#' \code{reso} needs to be a multiple of 5.
-#'
+#'   should be chosen to be close to the actual measurement intervals.
+#'   \code{reso} needs to be a multiple of 5.
+#' @param year if \code{year = "full"} then the output \code{data.frame}
+#'   contains data of complete years, i.e. \code{\%Y-01-01 to \%Y-12-31}; if
+#'   \code{year = "asis"} the output \code{data.frame} contains data over the
+#'   same period as the input data.
 #' @param tz specify the desired time zone. Default is \code{"Etc/GMT-1"}.
-#'
 #' @param input specify the way the input \code{data.frame} is structured. Can
-#' be either in \code{"long"} format (i.e. sensors below each other with a
-#' \code{series}) column specifying the sensors) or in \code{"wide"} format
-#' (i.e. one sensor per column).
+#'   be either in \code{"long"} format (i.e. sensors below each other with a
+#'   \code{series}) or in \code{"wide"} format (i.e. one sensor per column).
 #'
-#' @return \code{data.frame} with measurements aligned to regular time
-#' intervals, i.e. to \code{reso}.
+#' @return a \code{data.frame} with measurements aligned to regular time
+#'   intervals (interval specified in \code{reso}) containing the following
+#'   columns:
+#'    \item{series}{name of the series.}
+#'    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
+#'    \item{value}{dendrometer value.}
+#'    \item{version}{processing version.}
 #'
 #' @export
 #'
 #' @examples
-#'
+#' \dontrun{
+#' proc_L1(data = data_L0_long)
+#' }
 proc_L1 <- function(data, reso = 10, year = "asis", tz = "Etc/GMT-1",
                     input = "long") {
-  data <- data_L0_long_temp
-  reso <- 10
-  year <- "asis"
-  tz <- "Etc/GMT-1"
-  input <- "long"
-
 
   # Check input variables -----------------------------------------------------
   if (!(year %in% c("asis", "full"))) {
@@ -50,11 +51,11 @@ proc_L1 <- function(data, reso = 10, year = "asis", tz = "Etc/GMT-1",
 
   # Check input data ----------------------------------------------------------
   df <- data
-  check_format(df)
+  check_format(df, input = input)
 
 
   # Format input data ---------------------------------------------------------
-  df <- format_input(df = df, input = input)
+  df <- format_input(df = df, input = input, tz = tz)
   series_vec <- unique(df$series)
 
 
@@ -70,8 +71,8 @@ proc_L1 <- function(data, reso = 10, year = "asis", tz = "Etc/GMT-1",
       df <- tsalign_prec(df = df, reso = reso, year = year, tz = tz)
       prec_sum_proc <- sum(df$value, na.rm = T)
       if (!(identical(prec_sum_raw, prec_sum_proc))) {
-        stop("there was an error with the time-alignement in the precipitation
-             data.")
+        stop(paste0("there was an error with the time-alignement in the ",
+             "precipitation data. Error in ", series_vec[s], "."))
       }
     } else {
       df <- tsalign(df = df, reso = reso, year = year, tz = tz)
