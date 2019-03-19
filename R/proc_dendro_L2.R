@@ -1,28 +1,52 @@
 #' Process L1 Dendrometer Data to L2
 #'
-#' \code{proc_dendro_L2()} lets you process time-aligned (\code{L1})
-#' dendrometer data to processed (\code{L2}) dendrometer data without
-#' jumps, some gap correction, and the calculation of growth.
+#' \code{proc_dendro_L2()} processes time-aligned (\code{L1}) dendrometer data
+#'   to processed (\code{L2}) dendrometer data. It removes jumps, corrects
+#'   small gaps and calculates growth, tree water deficit and maximum daily
+#'   shrinkage.
 #'
 #' @param dendro_data \code{data.frame} with time-aligned dendrometer
-#' data. Output of function \code{proc_L1}.
-#'
+#'   data. Output of function \code{proc_L1}.
 #' @param temp_data \code{data.frame} with time-aligned temperature data.
-#' Output of function \code{proc_L1}. Can also contain other climate data.
-#' In this case the name of the temperature data in the \code{series} column
-#' has to contain \code{temp}.
-#'
+#'   Output of function \code{proc_L1} (see Details for further information).
 #' @param val_range numeric vector specifying the minimum and maximum
-#' \code{c(min, max)} of credible dendrometer measurement values. Values
-#' lower than \code{min} or higher than \code{max} are deleted without notice.
-#'
+#'   \code{c(min, max)} of credible dendrometer measurement values. Values
+#'   lower than \code{min} or higher than \code{max} are deleted without
+#'   notice.
 #' @param diffwin maximal hourly difference expected in winter.
-#'
 #' @param diffsum maximal hourly difference expected in summer.
-#'
 #' @inheritParams proc_L1
 #'
-#' @return \code{data.frame} with processed dendrometer data.
+#' @details \code{temp_data} is used to define periods in which frost shrinkage
+#'   is probable, i.e. when temperature is <5°C. Without temperature data,
+#'   frost shrinkage may be classified as outliers.
+#'
+#'   \code{temp_data} can also contain other climate data. In this case, the
+#'   \code{series} name of temperature data has to contain the string
+#'   \code{temp}. In case no temperature dataset is specified, a sample
+#'   temperature dataset will be used with a warning. The sample temperature
+#'   dataset assumes probable frost shringkage in the months December, January
+#'   and February.
+#'
+#' @return The function returns:
+#'  a \code{data.frame} with processed dendrometer data containing the
+#'  following columns
+#'    \item{series}{name of the series.}
+#'    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
+#'    \item{value}{dendrometer value.}
+#'    \item{max}{highest measured value up to this timestamp.}
+#'    \item{twd}{tree water deficit, i.e. the amount of stem shrinkage
+#'      expressed as the difference between \code{max} and \code{value}.}
+#'    \item{mds}{maximum daily shrinkage, calculated as the difference between
+#'      a local maximum that occurs before a local minimum during one day. If
+#'      there is no local maximum or minimum or if the minimum occurs prior to
+#'      the maximum, then \code{mds = NA}. This may occur on days with rain or
+#'      in winter.}
+#'    \item{gro_yr}{growth since the beginning of the year. Also calculated if
+#'      for years with missing data.}
+#'    \item{flags}{number specifying whether and which changes occurred during
+#'      the processing.}
+#'    \item{version}{processing version.}
 #'
 #' @export
 #'
@@ -32,16 +56,9 @@
 #'                val_range = c(0, 20000))
 #' }
 #'
-proc_dendro_L2 <- function(dendro_data, temp_data, val_range = c(0, 20000),
-                           diffwin = 2000, diffsum = 1000, tz = "Etc/GMT-1") {
-
-  dendro_data <- data_L1_dendro
-  temp_data <- data_L1_temp
-  val_range <- c(0, 20000)
-  diffwin <- 2000
-  diffsum <- 1000
-  s <- 1
-
+proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
+                           val_range = c(0, 20000), diffwin = 2000,
+                           diffsum = 1000, tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
   if (!is.numeric(val_range)) {
@@ -53,39 +70,52 @@ proc_dendro_L2 <- function(dendro_data, temp_data, val_range = c(0, 20000),
 
   # Check input data ----------------------------------------------------------
   df <- dendro_data
-  tem <- temp_data
 
   if (sum(colnames(df) %in% c("series", "ts", "value", "version")) != 4) {
-    stop("provide time-aligned dendrometer data generated with 'proc_L1'")
-  }
-  if (sum(colnames(tem) %in% c("series", "ts", "value", "version")) != 4) {
-    stop("provide time-aligned temperature data generated with 'proc_L1'")
+    stop("provide time-aligned data generated with 'proc_L1'")
   }
 
-  reso_df <- reso_check(df)
-  reso_tem <- reso_check(tem)
+  if (length(temp_data) != 0) {
+    tem <- temp_data
+    tem_series <- unique(tem$series)
+
+    if (length(grep("temp", tem_series, ignore.case = T)) == 0) {
+      message("check temperature data, series name does not contain 'temp'.")
+    }
+    if (length(grep("temp", tem_series, ignore.case = T)) > 1) {
+      stop("provide single temperature dataset.")
+    }
+    if (sum(colnames(tem) %in% c("series", "ts", "value", "version")) != 4) {
+      stop("provide time-aligned temperature data generated with 'proc_L1'")
+    }
+  }
+
+  if (length(temp_data) == 0) {
+    df_series <- unique(df$series)
+
+    if (length(grep("temp", df_series, ignore.case = T)) > 1) {
+      stop("provide single temperature dataset.")
+    }
+    if (length(grep("temp", df_series, ignore.case = T)) == 0) {
+      tem <- create_temp_dummy(df = df)
+      message("sample temperature dataset will be used.")
+    }
+    if (length(grep("temp", df_series, ignore.case = T)) == 1) {
+      temp_series <- df_series[grep("temp", df_series, ignore.case = T)]
+      tem <- df %>%
+        dplyr::filter(series == temp_series)
+      df <- df %>%
+        dplyr::filter(series != temp_series)
+    }
+  }
+
+  reso_df <- reso_check(df = df)
+  reso_tem <- reso_check(df = tem)
   if (reso_df != reso_tem) {
-    stop("provide both dendrometer and temperature data at the same time
-         resolution.")
+    stop("provide both dendrometer and temperature data at the same time ",
+         "resolution.")
   } else {
-    reso <- reso_df
-  }
-
-  if (length(grep("temp", unique(tem$series), ignore.case = T)) > 1) {
-    stop("provide single temperature dataset.")
-  }
-  if (length(grep("temp", unique(tem$series), ignore.case = T)) == 1) {
-    tem <- tem %>%
-      dplyr::group_by(series) %>%
-      dplyr::mutate(temp_series =
-                      ifelse(length(grep("temp", unique(series),
-                                         ignore.case = T)) == 0, 0, 1)) %>%
-      dplyr::ungroup() %>%
-      dplyr::filter(temp_series == 1) %>%
-      dplyr::select(-temp_series)
-  }
-  if (length(grep("temp", unique(tem$series), ignore.case = T)) == 0) {
-    message("check temperature data, series name does not contain 'temp'.")
+    reso <<- reso_df
   }
 
   ts_overlap_check(df = df, tem = tem)
@@ -134,7 +164,8 @@ proc_dendro_L2 <- function(dendro_data, temp_data, val_range = c(0, 20000),
     df <- fillintergaps(df = df, reso = reso, wnd = 4 * 60 / reso,
                         type = "linear")
     df <- calcmax(df = df)
-    df <- calctwd_mds_gro(df = df, tz = tz)
+    df <- calctwdgro(df = df, tz = tz)
+    df <- calcmds(df = df, tz = tz)
     df <- summariseflags(df = df)
 
     if (lead) {
@@ -145,12 +176,12 @@ proc_dendro_L2 <- function(dendro_data, temp_data, val_range = c(0, 20000),
     }
 
     df <- df %>%
-      dplyr::mutate(gro_year = ifelse(is.na(value), NA, gro_year)) %>%
+      dplyr::mutate(gro_yr = ifelse(is.na(value), NA, gro_yr)) %>%
       dplyr::mutate(mds = ifelse(is.na(value), NA, mds)) %>%
       dplyr::mutate(twd = ifelse(is.na(value), NA, twd)) %>%
       dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
       dplyr::mutate(version = 2) %>%
-      dplyr::select(series, ts, value, max, twd, mds, gro_year, flags, version)
+      dplyr::select(series, ts, value, max, twd, mds, gro_yr, flags, version)
 
     list_L2[[s]] <- df
   }
