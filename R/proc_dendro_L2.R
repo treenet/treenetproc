@@ -15,6 +15,8 @@
 #'   notice.
 #' @param diffwin maximal hourly difference expected in winter.
 #' @param diffsum maximal hourly difference expected in summer.
+#' @param lowtemp numeric, specifies temperature in °C below which shrinkage
+#'   in stem diameter due to frost is expected.
 #' @inheritParams proc_L1
 #'
 #' @details \code{temp_data} is used to define periods in which frost shrinkage
@@ -58,7 +60,7 @@
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                            val_range = c(0, 20000), diffwin = 2000,
-                           diffsum = 1000, tz = "Etc/GMT-1") {
+                           diffsum = 1000, lowtemp = 5, tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
   if (!is.numeric(val_range)) {
@@ -115,7 +117,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     stop("provide both dendrometer and temperature data at the same time ",
          "resolution.")
   } else {
-    reso <<- reso_df
+    passenv$reso <- reso_df
   }
 
   ts_overlap_check(df = df, tem = tem)
@@ -123,7 +125,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
 
   # Process to L2 (jump and gap corrections) ----------------------------------
   series_vec <- unique(df$series)
-  list_L2 <- list()
+  list_L2 <- vector("list", length = length(series_vec))
   df_L1 <- df
   for (s in 1:length(series_vec)) {
     df <- df_L1 %>%
@@ -147,25 +149,29 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     }
 
     df <- cleanoutofrange(df = df, val_range = val_range)
-    df <- creategapflag(df = df, reso = reso, gaplength = 24 * (60 / reso))
-    df <- calcdiff(df = df, reso = reso)
+    df <- creategapflag(df = df, reso = passobj("reso"),
+                        gaplength = 24 * (60 / passobj("reso")))
+    df <- calcdiff(df = df, reso = passobj("reso"))
     df <- createfrostflag(df = df, tem = tem, lowtemp = 5)
-    df <- removeoutliers(df = df, quan = 0.001, wnd = 3, reso = reso)
-    df <- calcdiff(df = df, reso = reso)
-    df <- createflagdiff(df = df, reso = reso, diffwin = diffwin,
+    df <- removeoutliers(df = df, quan = 0.001, wnd = 3,
+                         reso = passobj("reso"))
+    df <- calcdiff(df = df, reso = passobj("reso"))
+    df <- createflagdiff(df = df, reso = passobj("reso"), diffwin = diffwin,
                          diffsum = diffsum)
     df <- executeflagdiff(df, length = 1)
-    df <- calcdiff(df, reso = reso)
-    df <- createflagdiff(df = df, reso = reso, diffwin = diffwin,
+    df <- calcdiff(df, reso = passobj("reso"))
+    df <- createflagdiff(df = df, reso = passobj("reso"), diffwin = diffwin,
                          diffsum = diffsum)
-    df <- creategapflag(df = df, reso = reso, gaplength = 24 * (60 / reso))
+    df <- creategapflag(df = df, reso = passobj("reso"),
+                        gaplength = 24 * (60 / passobj("reso")))
     df <- createjumpoutflag(df = df, thr = 0.2)
     df <- executejumpout(df = df)
-    df <- fillintergaps(df = df, reso = reso, wnd = 4 * 60 / reso,
+    df <- fillintergaps(df = df, reso = passobj("reso"),
+                        wnd = 4 * 60 / passobj("reso"),
                         type = "linear")
     df <- calcmax(df = df)
     df <- calctwdgro(df = df, tz = tz)
-    df <- calcmds(df = df, tz = tz)
+    df <- calcmds(df = df, reso = passobj("reso"), tz = tz)
     df <- summariseflags(df = df)
 
     if (lead) {
