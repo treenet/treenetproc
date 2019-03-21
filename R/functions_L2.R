@@ -1,4 +1,23 @@
-#' Process Dendrometer Data
+#' Helper Function for Reso
+#'
+#' \code{passobj} passes an object to a function call that is saved in a
+#'   separate environment accessible for all functions. Environment is
+#'   saved outside function call to be accessible for all functions.
+#'
+#' @param value name of the variable as character string.
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+passenv <- new.env(parent = emptyenv())
+passobj <- function(value) {
+  value <- get(x = value, envir = passenv, inherits = FALSE)
+  return(value)
+}
+
+
+#' Remove Outliers
 #'
 #' \code{cleanoutofrange} removes implausible data points lower or higher
 #'   than specified values in \code{val_range}.
@@ -141,8 +160,6 @@ calcdiff <- function(df, reso) {
 #' \code{createfrostflag} adds a flag for potential frost.
 #'
 #' @param df input \code{data.frame}.
-#' @param lowtemp specifies temperature below which shrinkage in stem diameter
-#'  due to frost is expected.
 #' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
@@ -432,50 +449,49 @@ calctwdgro  <- function(df, tz) {
 #' @param df input \code{data.frame}.
 #' @inheritParams proc_dendro_L2
 #'
+#' @details \code{calcmds} is inspired by the function
+#'   \code{\link[dendrometeR]{phase_def}} in the package \code{dendrometeR}.
+#'
 #' @keywords internal
 #'
 #' @examples
 #'
-calcmds <- function(df, tz) {
+calcmds <- function(df, tz, reso) {
   nc <- ncol(df)
-
-  maxmin <- df %>%
-    dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
-                                   tz = tz)) %>%
-    dplyr::select(ts, day, value) %>%
-    dplyr::mutate(diff_sign = c(sign(diff(value)), NA)) %>%
-    dplyr::mutate(diff_sign_lag = dplyr::lag(diff_sign, n = 1)) %>%
-    dplyr::mutate(sign_change = diff_sign * diff_sign_lag) %>%
-    dplyr::mutate(min1 = ifelse(sign_change == -1 & diff_sign_lag == -1,
-                               value, NA)) %>%
-    dplyr::mutate(max1 = ifelse(sign_change == -1 & diff_sign_lag == 1,
-                               value, NA))
 
   span <- 60 / reso * 6
   by <- 60 / reso * 6
   st <- span + 1
-  en <- nrow(maxmin) - span + 1
+  en <- nrow(df) - span + 1
   steps <- seq(st, en, by = by)
 
-  maxmin$max2 <- 0
-  maxmin$min2 <- 0
+  df$max1 <- 0
+  df$min1 <- 0
   for (qq in steps) {
     b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
-    max_row <- which.max(maxmin$max1[ran]) + ran[1] - 1
+    max_row <- which.max(df$value[ran]) + ran[1] - 1
     if (length(max_row) > 0) {
-      maxmin$max2[max_row] <- maxmin$max2[max_row] + 1
+      df$max1[max_row] <- df$max1[max_row] + 1
     }
-    min_row <- which.min(maxmin$min1[ran]) + ran[1] - 1
+    min_row <- which.min(df$value[ran]) + ran[1] - 1
     if (length(min_row) > 0) {
-      maxmin$min2[min_row] <- maxmin$min2[min_row] + 1
+      df$min1[min_row] <- df$min1[min_row] + 1
     }
   }
 
-  maxmin <- maxmin %>%
-    dplyr::filter(max2 == 2 | min2 == 2) %>%
-    dplyr::mutate(max2 = rep(rle(max2)[[1]],
-                                   times = rle(max2)[[1]])) %>%
-    dplyr::mutate(iscons = ifelse(max2 == 2 & !is.na(max2), TRUE, FALSE)) %>%
+  #plot(x = df$ts[30000:34000], df$value[30000:34000], type = "l")
+  #points(x = df$ts[df$max1 > 0], df$value[df$max1 > 0], pch = 1)
+  #points(x = df$ts[df$min1 > 0], df$value[df$min1 > 0], pch = 2)
+  #points(x = maxmin$ts, y = maxmin$max1, pch = 1)
+  #points(x = maxmin$ts, y = maxmin$min1, pch = 2)
+
+  options(warn = -1)
+  maxmin <- df %>%
+    dplyr::filter(max1 == 2 | min1 == 2) %>%
+    dplyr::mutate(max2 = rep(rle(max1)[[1]],
+                             times = rle(max1)[[1]])) %>%
+    dplyr::mutate(max1 = ifelse(max1 == 2, value, NA)) %>%
+    dplyr::mutate(iscons = ifelse(max2 > 1 & !is.na(max1), TRUE, FALSE)) %>%
     dplyr::mutate(cons = cumsum(iscons)) %>%
     dplyr::mutate(y = c(0, diff(cons, lag = 1))) %>%
     dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
@@ -485,10 +501,11 @@ calcmds <- function(df, tz) {
     dplyr::mutate(max2 = max(max1, na.rm = T)) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(max1 = dplyr::case_when(iscons & max1 == max2 ~ max1,
-                  !iscons ~ max1)) %>%
-    dplyr::mutate(min2 = rep(rle(min2)[[1]],
-                             times = rle(min2)[[1]])) %>%
-    dplyr::mutate(iscons = ifelse(min2 == 2 & !is.na(min2), TRUE, FALSE)) %>%
+                                          !iscons ~ max1)) %>%
+    dplyr::mutate(min2 = rep(rle(min1)[[1]],
+                             times = rle(min1)[[1]])) %>%
+    dplyr::mutate(min1 = ifelse(min1 == 2, value, NA)) %>%
+    dplyr::mutate(iscons = ifelse(min2 > 1 & !is.na(min1), TRUE, FALSE)) %>%
     dplyr::mutate(cons = cumsum(iscons)) %>%
     dplyr::mutate(y = c(0, diff(cons, lag = 1))) %>%
     dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
@@ -498,8 +515,10 @@ calcmds <- function(df, tz) {
     dplyr::mutate(min2 = min(min1, na.rm = T)) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(min1 = dplyr::case_when(iscons & min1 == min2 ~ min1,
-                                         !iscons ~ min1)) %>%
+                                          !iscons ~ min1)) %>%
     dplyr::filter(!(is.na(max1) & is.na(min1))) %>%
+    dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
+                                   tz = tz)) %>%
     dplyr::select(ts, day, max1, min1) %>%
     dplyr::group_by(day) %>%
     dplyr::mutate(min_lag = dplyr::lead(min1, n = 1)) %>%
@@ -510,6 +529,7 @@ calcmds <- function(df, tz) {
     dplyr::group_by(day) %>%
     dplyr::summarise(mds = mds[1]) %>%
     dplyr::ungroup()
+  options(warn = 0)
 
   df <- df %>%
     dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
