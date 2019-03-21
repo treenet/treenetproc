@@ -4,19 +4,20 @@
 #'   data from treenet server. Function imported and adapted from package
 #'   \code{treenetdown}.
 #'
-#' @param site Character string specifying the site. String is not
+#' @param site character string specifying the site. String is not
 #'   case sensitive.
-#' @param sensor_name Character string specifying the name of a single or
-#'   multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}).
-#' @param from Optional argument to select data after a specific date
+#' @param sensor_name character string specifying the name of a single or
+#'   multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}) of the
+#'   same site.
+#' @param from optional argument to select data after a specific date
 #'   (\code{"YYYY-MM-DD"}).
 #' @param to Optional argument to select data up to a specific date
 #'   (\code{"YYYY-MM-DD"}).
-#' @param path_cred Optional argument to specify the full path to the
+#' @param path_cred optional argument to specify the full path to the
 #'   file \code{config.yml} containing the database login data. File can
-#'   also be copied to the \code{Data} folder of the package for automatic
+#'   also be copied to the main folder of the package for automatic
 #'   recognition.
-#' @param temp_name Optional argument to specify the series name of a
+#' @param temp_name optional argument to specify the series name of a
 #'   temperature dataset. Needed if there are no or multiple on-site air
 #'   temperature measurements. If \code{temp_name} is not specified and no
 #'   temperature dataset is found on the server, a sample dataset will be
@@ -38,10 +39,15 @@ select_data <- function(site = NULL, sensor_name = NULL,
   # Check input variables -----------------------------------------------------
   if (length(site) == 0 & length(sensor_name) == 0) {
     stop(paste0("Specify at least one of the following: site, ",
-                "region, sensor_name."))
+                " sensor_name."))
   }
   if (length(site) > 1) {
     stop("You can only specify one site at a time.")
+  }
+  if (length(site) != 0 & length(sensor_name) != 0) {
+    if (!grepl(site, sensor_name, ignore.case = TRUE)) {
+      stop("Site and sensor_name need to correspond.")
+    }
   }
   if (length(from) != 0) {
     if (is.na(as.Date(from, format = "%Y-%m-%d"))) {
@@ -91,7 +97,7 @@ select_data <- function(site = NULL, sensor_name = NULL,
 
   spread <- suppressMessages(googlesheets::gs_title("Metadata"))
   meta <- suppressMessages(as.data.frame(
-    googlesheets::gs_read(ss = spread, ws = "Metadata")))
+    googlesheets::gs_read(ss = spread, ws = "Metadata", progress = FALSE)))
 
   meta_filter <- meta$Seriesname
   # site
@@ -105,7 +111,24 @@ select_data <- function(site = NULL, sensor_name = NULL,
       if (nrow(meta_sub) != 0) {
         meta_select <- c(meta_select, meta_sub$Seriesname)
       } else {
-        stop(paste0("Site '", site[t],"' does not exist."))
+        stop(paste0("Site '", site[t], "' does not exist."))
+      }
+    }
+    meta_filter <- meta_select
+  }
+  # sensor_name
+  if (!is.null(sensor_name)) {
+    meta_select <- vector()
+    for (t in 1:length(sensor_name)) {
+      meta_sub <- meta %>%
+        dplyr::filter(Seriesname %in% meta_filter) %>%
+        dplyr::filter(grepl(paste0(sensor_name[t]), Seriesname,
+                            ignore.case = TRUE))
+
+      if (nrow(meta_sub) != 0) {
+        meta_select <- c(meta_select, meta_sub$Seriesname)
+      } else {
+        stop(paste0("Sensor name '", sensor_name[t], "' does not exist."))
       }
     }
     meta_filter <- meta_select
@@ -113,17 +136,32 @@ select_data <- function(site = NULL, sensor_name = NULL,
   # select temperature data
   sample_temp <- FALSE
   if (length(temp_name) == 0) {
-    meta_airtemp <- vector()
-    meta_sub <- meta %>%
-      dplyr::filter(Seriesname %in% meta_filter) %>%
-      dplyr::filter(grepl("airtemperature", Sensor_query, ignore.case = TRUE))
-
+    if (length(sensor_name) == 0) {
+      meta_airtemp <- vector()
+      meta_sub <- meta %>%
+        dplyr::filter(Seriesname %in% meta_filter) %>%
+        dplyr::filter(grepl("airtemperature", Sensor_query,
+                            ignore.case = TRUE))
+    }
+    if (length(sensor_name) != 0) {
+      meta_airtemp <- vector()
+      meta_sub <- meta %>%
+        dplyr::filter(Seriesname %in% meta_filter)
+      temp_site <- unique(meta_sub$Site)
+      if (length(temp_site) > 1) {
+        stop("you can only select sensors from one site at a time.")
+      }
+      meta_sub <- meta %>%
+        dplyr::filter(Site %in% temp_site) %>%
+        dplyr::filter(grepl("airtemperature", Sensor_query,
+                            ignore.case = TRUE))
+    }
     if (nrow(meta_sub) == 1) {
       meta_airtemp <- meta_sub$Seriesname
     }
     if (nrow(meta_sub) == 0) {
-      message("No air temperature data found. Sample temperature dataset will",
-              "be used.")
+      message("No air temperature data found. Sample temperature dataset ",
+              "will be used.")
       sample_temp <- TRUE
     }
     if (nrow(meta_sub) > 1) {
@@ -143,23 +181,6 @@ select_data <- function(site = NULL, sensor_name = NULL,
                     temp_name, " found. Provide a valid 'temp_name'."))
       }
     }
-  # sensor_name
-  if (!is.null(sensor_name)) {
-    meta_select <- vector()
-    for (t in 1:length(sensor_name)) {
-      meta_sub <- meta %>%
-        dplyr::filter(Seriesname %in% meta_filter) %>%
-        dplyr::filter(grepl(paste0(sensor_name[t]), Seriesname,
-                            ignore.case = TRUE))
-
-      if (nrow(meta_sub) != 0) {
-        meta_select <- c(meta_select, meta_sub$Seriesname)
-      } else {
-        stop(paste0("Sensor name '", sensor_name[t], "' does not exist."))
-      }
-    }
-    meta_filter <- meta_select
-  }
   # select dendrometers
   meta_select <- vector()
   meta_sub <- meta %>%
@@ -185,7 +206,7 @@ select_data <- function(site = NULL, sensor_name = NULL,
 
 
   # Download series -----------------------------------------------------------
-  treenet_data <- list()
+  treenet_data <- vector("list", length = length(meta_filter))
   for (i in 1:length(meta_filter)) {
     drv <- RPostgres::Postgres()
     cred <- config::get("treenet_cred", file = path_cred)
