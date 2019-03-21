@@ -11,13 +11,13 @@
 #'   \code{wide} format \code{input = "wide"} with sensors in separate columns.
 #'   The name of temperature and precipitation data have to at least contain
 #'   \code{temp} or \code{prec}, respectively.
-#' @param reso time resolution between two timestamps (in minutes). Resolution
+#' @param reso desired time resolution of output (in minutes). Resolution
 #'   should be chosen to be close to the actual measurement intervals.
 #'   \code{reso} needs to be a multiple of 5.
 #' @param year if \code{year = "full"} then the output \code{data.frame}
-#'   contains data of complete years, i.e. \code{\%Y-01-01 to \%Y-12-31}; if
-#'   \code{year = "asis"} the output \code{data.frame} contains data over the
-#'   same period as the input data.
+#'   contains data of complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}; if
+#'   \code{year = "asis"} the output \code{data.frame} covers the same period
+#'   as the input data.
 #' @param tz specify the desired time zone. Default is \code{"Etc/GMT-1"}.
 #' @param input specify the way the input \code{data.frame} is structured. Can
 #'   be either in \code{"long"} format (i.e. sensors below each other with a
@@ -60,7 +60,7 @@ proc_L1 <- function(data, reso = 10, year = "asis", tz = "Etc/GMT-1",
 
 
   # Process to L1 (time alignement) -------------------------------------------
-  list_L1 <- list()
+  list_L1 <- vector("list", length = length(series_vec))
   df_L0 <- df
   for (s in 1:length(series_vec)) {
     df <- df_L0 %>%

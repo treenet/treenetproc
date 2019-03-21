@@ -1,10 +1,10 @@
 #' Process Treenet Data to L2
 #'
-#' \code{proc_treenet_L2()} processes L0 dendrometer data from the treenet
-#'   server directly to L2.
+#' \code{proc_treenet_L2()} processes \code{L0} dendrometer data from the
+#'   treenet server directly to \code{L2}.
 #'
-#' @param plot specify whether a comparison of \code{L1} and \code{L2} data
-#'   should be plotted.
+#' @param plot logical, specify whether a comparison of \code{L1} and \code{L2}
+#'   data should be plotted.
 #' @inheritParams select_data
 #' @inheritParams proc_L1
 #' @inheritParams proc_dendro_L2
@@ -40,14 +40,21 @@
 #' \dontrun{
 #' proc_treenet_L2(site = "sagno", year = "full", period = "yearly")
 #'
-#' proc_treenet_L2(site = "sagno", year = "obx")
+#' proc_treenet_L2(site = "lens", add = FALSE)
+#'
+#' proc_treenet_L2(sensor_name = c("Alvaneu-2.dendrometer.ch0",
+#'                 "Alvaneu-4.dendrometer.ch0"))
+#'
+#' # throws error
+#' proc_treenet_L2(sensor_name = c("Alvaneu-2.dendrometer.ch0",
+#'                 "Alvaneu-4.dendrometer.ch0", "Bachtel-2.dendrometer.ch0"))
 #' }
 proc_treenet_L2 <- function(site = NULL, sensor_name = NULL,
                             from = NULL, to = NULL, path_cred = NULL,
                             temp_name = NULL, reso = 10, year = "asis",
                             val_range = c(0, 20000), diffwin = 2000,
-                            diffsum = 1000, tz = "Etc/GMT-1", plot = TRUE,
-                            period = "full", add = TRUE) {
+                            diffsum = 1000, lowtemp = 5, tz = "Etc/GMT-1",
+                            plot = TRUE, period = "full", add = TRUE) {
 
   # Check input variables -----------------------------------------------------
   if (plot != TRUE & plot != FALSE) {
@@ -70,8 +77,8 @@ proc_treenet_L2 <- function(site = NULL, sensor_name = NULL,
 
   print("plot data...")
   if (plot) {
-    plot_dendro(data_L1 = df_L1, data_L2 = df_L2, period = period, add = add,
-                tz = tz)
+    plot_dendro(data_L1 = df_L1, data_L2 = df_L2, period = period, tz = tz,
+                add = add)
   }
   print("Done!")
   return(df_L2)
