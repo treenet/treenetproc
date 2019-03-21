@@ -5,7 +5,7 @@
 \title{Process L1 Dendrometer Data to L2}
 \usage{
 proc_dendro_L2(dendro_data, temp_data = NULL, val_range = c(0, 20000),
-  diffwin = 2000, diffsum = 1000, tz = "Etc/GMT-1")
+  diffwin = 2000, diffsum = 1000, lowtemp = 5, tz = "Etc/GMT-1")
 }
 \arguments{
 \item{dendro_data}{\code{data.frame} with time-aligned dendrometer
@@ -22,6 +22,9 @@ notice.}
 \item{diffwin}{maximal hourly difference expected in winter.}
 
 \item{diffsum}{maximal hourly difference expected in summer.}
+
+\item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
+in stem diameter due to frost is expected.}
 
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 }

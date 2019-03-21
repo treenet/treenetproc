@@ -8,24 +8,25 @@ select_data(site = NULL, sensor_name = NULL, from = NULL,
   to = NULL, path_cred = NULL, temp_name = NULL)
 }
 \arguments{
-\item{site}{Character string specifying the site. String is not
+\item{site}{character string specifying the site. String is not
 case sensitive.}
 
-\item{sensor_name}{Character string specifying the name of a single or
-multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}).}
+\item{sensor_name}{character string specifying the name of a single or
+multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}) of the
+same site.}
 
-\item{from}{Optional argument to select data after a specific date
+\item{from}{optional argument to select data after a specific date
 (\code{"YYYY-MM-DD"}).}
 
 \item{to}{Optional argument to select data up to a specific date
 (\code{"YYYY-MM-DD"}).}
 
-\item{path_cred}{Optional argument to specify the full path to the
+\item{path_cred}{optional argument to specify the full path to the
 file \code{config.yml} containing the database login data. File can
-also be copied to the \code{Data} folder of the package for automatic
+also be copied to the main folder of the package for automatic
 recognition.}
 
-\item{temp_name}{Optional argument to specify the series name of a
+\item{temp_name}{optional argument to specify the series name of a
 temperature dataset. Needed if there are no or multiple on-site air
 temperature measurements. If \code{temp_name} is not specified and no
 temperature dataset is found on the server, a sample dataset will be

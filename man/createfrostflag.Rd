@@ -9,8 +9,8 @@ createfrostflag(df, tem, lowtemp = 5)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{lowtemp}{specifies temperature below which shrinkage in stem diameter
-due to frost is expected.}
+\item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
+in stem diameter due to frost is expected.}
 }
 \description{
 \code{createfrostflag} adds a flag for potential frost.

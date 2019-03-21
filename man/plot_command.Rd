@@ -4,15 +4,19 @@
 \alias{plot_command}
 \title{Plot Command to Plot Dendrometer Data}
 \usage{
-plot_command(data_L1, data_L2, diff, ...)
+plot_command(data_L1, data_L2, diff, add)
 }
 \arguments{
-\item{data_L1}{time-aligned dendrometer data as produced by \code{proc_L1}.}
+\item{data_L1}{time-aligned dendrometer data as produced by
+\code{\link{proc_L1}}.}
 
 \item{data_L2}{processed dendrometer data as produced by
-\code{proc_dendro_L2}.}
+\code{\link{proc_dendro_L2}}.}
 
-\item{...}{further parameters.}
+\item{add}{logical, specify whether \code{L1} data should be plotted along
+with \code{L2} data in the second panel of the plot.}
+
+\item{...}{additional parameters.}
 }
 \description{
 \code{plot_command()} contains the code necessary to plot dendormeter data.

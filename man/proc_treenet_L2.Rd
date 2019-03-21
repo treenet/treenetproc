@@ -7,41 +7,42 @@
 proc_treenet_L2(site = NULL, sensor_name = NULL, from = NULL,
   to = NULL, path_cred = NULL, temp_name = NULL, reso = 10,
   year = "asis", val_range = c(0, 20000), diffwin = 2000,
-  diffsum = 1000, tz = "Etc/GMT-1", plot = TRUE, period = "full",
-  add = TRUE)
+  diffsum = 1000, lowtemp = 5, tz = "Etc/GMT-1", plot = TRUE,
+  period = "full", add = TRUE)
 }
 \arguments{
-\item{site}{Character string specifying the site. String is not
+\item{site}{character string specifying the site. String is not
 case sensitive.}
 
-\item{sensor_name}{Character string specifying the name of a single or
-multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}).}
+\item{sensor_name}{character string specifying the name of a single or
+multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}) of the
+same site.}
 
-\item{from}{Optional argument to select data after a specific date
+\item{from}{optional argument to select data after a specific date
 (\code{"YYYY-MM-DD"}).}
 
 \item{to}{Optional argument to select data up to a specific date
 (\code{"YYYY-MM-DD"}).}
 
-\item{path_cred}{Optional argument to specify the full path to the
+\item{path_cred}{optional argument to specify the full path to the
 file \code{config.yml} containing the database login data. File can
-also be copied to the \code{Data} folder of the package for automatic
+also be copied to the main folder of the package for automatic
 recognition.}
 
-\item{temp_name}{Optional argument to specify the series name of a
+\item{temp_name}{optional argument to specify the series name of a
 temperature dataset. Needed if there are no or multiple on-site air
 temperature measurements. If \code{temp_name} is not specified and no
 temperature dataset is found on the server, a sample dataset will be
 used with a warning.}
 
-\item{reso}{time resolution between two timestamps (in minutes). Resolution
+\item{reso}{desired time resolution of output (in minutes). Resolution
 should be chosen to be close to the actual measurement intervals.
 \code{reso} needs to be a multiple of 5.}
 
 \item{year}{if \code{year = "full"} then the output \code{data.frame}
-contains data of complete years, i.e. \code{\%Y-01-01 to \%Y-12-31}; if
-\code{year = "asis"} the output \code{data.frame} contains data over the
-same period as the input data.}
+contains data of complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}; if
+\code{year = "asis"} the output \code{data.frame} covers the same period
+as the input data.}
 
 \item{val_range}{numeric vector specifying the minimum and maximum
 \code{c(min, max)} of credible dendrometer measurement values. Values
@@ -52,16 +53,20 @@ notice.}
 
 \item{diffsum}{maximal hourly difference expected in summer.}
 
+\item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
+in stem diameter due to frost is expected.}
+
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 
-\item{plot}{specify whether a comparison of \code{L1} and \code{L2} data
-should be plotted.}
+\item{plot}{logical, specify whether a comparison of \code{L1} and \code{L2}
+data should be plotted.}
 
 \item{period}{specify whether plots should be displayed over the whole
-period (\code{"full"}) or for each year separately (\code{"yearly"}).}
+period (\code{period = "full"}) or for each year separately
+(\code{period = "yearly"}).}
 
-\item{add}{specify whether \code{L1} data should be plotted along with
-\code{L2} data in the second panel.}
+\item{add}{logical, specify whether \code{L1} data should be plotted along
+with \code{L2} data in the second panel of the plot.}
 }
 \value{
 The function returns:
@@ -85,14 +90,21 @@ The function returns:
    \item{version}{processing version.}
 }
 \description{
-\code{proc_treenet_L2()} processes L0 dendrometer data from the treenet
-  server directly to L2.
+\code{proc_treenet_L2()} processes \code{L0} dendrometer data from the
+  treenet server directly to \code{L2}.
 }
 \examples{
 \dontrun{
 proc_treenet_L2(site = "sagno", year = "full", period = "yearly")
 
-proc_treenet_L2(site = "sagno", year = "obx")
+proc_treenet_L2(site = "lens", add = FALSE)
+
+proc_treenet_L2(sensor_name = c("Alvaneu-2.dendrometer.ch0",
+                "Alvaneu-4.dendrometer.ch0"))
+
+# throws error
+proc_treenet_L2(sensor_name = c("Alvaneu-2.dendrometer.ch0",
+                "Alvaneu-4.dendrometer.ch0", "Bachtel-2.dendrometer.ch0"))
 }
 }
 \seealso{

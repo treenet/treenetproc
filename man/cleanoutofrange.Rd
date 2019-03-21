@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_L2.R
 \name{cleanoutofrange}
 \alias{cleanoutofrange}
-\title{Process Dendrometer Data}
+\title{Remove Outliers}
 \usage{
 cleanoutofrange(df, val_range)
 }

@@ -4,22 +4,24 @@
 \alias{plot_dendro}
 \title{Plot Processed Dendrometer Data}
 \usage{
-plot_dendro(data_L1, data_L2, period = "full", add = TRUE,
-  tz = "Etc/GMT-1")
+plot_dendro(data_L1, data_L2, period = "full", tz = "Etc/GMT-1",
+  add = TRUE)
 }
 \arguments{
-\item{data_L1}{time-aligned dendrometer data as produced by \code{proc_L1}.}
+\item{data_L1}{time-aligned dendrometer data as produced by
+\code{\link{proc_L1}}.}
 
 \item{data_L2}{processed dendrometer data as produced by
-\code{proc_dendro_L2}.}
+\code{\link{proc_dendro_L2}}.}
 
 \item{period}{specify whether plots should be displayed over the whole
-period (\code{"full"}) or for each year separately (\code{"yearly"}).}
+period (\code{period = "full"}) or for each year separately
+(\code{period = "yearly"}).}
 
-\item{add}{specify whether \code{L1} data should be plotted along with
-\code{L2} data in the second panel.}
+\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 
-\item{tz}{time-zone of provided data. Default is \code{"Etc/GMT-1"}.}
+\item{add}{logical, specify whether \code{L1} data should be plotted along
+with \code{L2} data in the second panel of the plot.}
 }
 \value{
 Plots are saved to current working directory as
@@ -36,6 +38,6 @@ Plots are saved to current working directory as
 \examples{
 \dontrun{
 plot_dendro(data_L1 = data_L1_dendro, data_L2 = data_L2_dendro,
-            period = "yearly", add = TRUE)
+            period = "yearly")
 }
 }

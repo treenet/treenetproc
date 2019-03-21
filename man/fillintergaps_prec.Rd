@@ -9,7 +9,7 @@ fillintergaps_prec(df, reso)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{reso}{time resolution between two timestamps (in minutes). Resolution
+\item{reso}{desired time resolution of output (in minutes). Resolution
 should be chosen to be close to the actual measurement intervals.
 \code{reso} needs to be a multiple of 5.}
 }

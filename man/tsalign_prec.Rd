@@ -9,14 +9,14 @@ tsalign_prec(df, reso, year, tz)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{reso}{time resolution between two timestamps (in minutes). Resolution
+\item{reso}{desired time resolution of output (in minutes). Resolution
 should be chosen to be close to the actual measurement intervals.
 \code{reso} needs to be a multiple of 5.}
 
 \item{year}{if \code{year = "full"} then the output \code{data.frame}
-contains data of complete years, i.e. \code{\%Y-01-01 to \%Y-12-31}; if
-\code{year = "asis"} the output \code{data.frame} contains data over the
-same period as the input data.}
+contains data of complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}; if
+\code{year = "asis"} the output \code{data.frame} covers the same period
+as the input data.}
 
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 }

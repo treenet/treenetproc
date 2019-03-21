@@ -4,7 +4,7 @@
 \alias{calcmds}
 \title{Calculate Maximum Daily Shrinkage (MDS)}
 \usage{
-calcmds(df, tz)
+calcmds(df, tz, reso)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
@@ -17,6 +17,10 @@ calcmds(df, tz)
   identified using a moving window. Mds is only calculated if a local
   maximum occurs before a local minimum (i.e. if the stem shrinks during
   the day).
+}
+\details{
+\code{calcmds} is inspired by the function
+  \code{\link[dendrometeR]{phase_def}} in the package \code{dendrometeR}.
 }
 \examples{
 
