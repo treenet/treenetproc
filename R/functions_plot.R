@@ -1,6 +1,6 @@
 #' Plot Command to Plot Dendrometer Data
 #'
-#' \code{plot_command()} contains the code necessary to plot dendormeter data.
+#' \code{plot_proc()} contains the code necessary to plot dendormeter data.
 #'
 #' @param ... additional parameters.
 #' @inheritParams plot_dendro
@@ -9,7 +9,7 @@
 #'
 #' @examples
 #'
-plot_command <- function(data_L1, data_L2, diff, add) {
+plot_proc <- function(data_L1, data_L2, diff, add) {
 
   layout(matrix(c(1, 2, 3, 4), nrow = 4), heights = c(2, 1.6, 1, 2),
          widths = 1)
@@ -29,7 +29,7 @@ plot_command <- function(data_L1, data_L2, diff, add) {
   options(warn = -1)
   plot(data = diff, diff ~ ts, type = "n", xlab = "", log = "y",
        yaxt = "n", xaxt = "n", ylab = "", ylim = c(0.1, 1200), las = 1)
-  abline(h = c(0.1, 1, 10, 100, 1000), col = "grey70", lty = 2)
+  abline(h = c(0.1, 1, 10, 100, 1000), col = "grey70")
   lines(data = diff, diff ~ ts, type = "h", lwd = 2, col = "#b30000")
   axis(2, at = c(0.1, 1, 10, 100, 1000),
        labels = c(0, 1, 10, 100, 1000), las = 1)
@@ -40,4 +40,46 @@ plot_command <- function(data_L1, data_L2, diff, add) {
        ylab = "", las = 1, col = "#7a0177")
   title(ylab = "twd", mgp = c(3.5, 1, 0))
 
+}
+
+
+#' Plot Maxima and Minima of MDS
+#'
+#' \code{plot_mds} plots maxima and minima selected to calculate mds (maximum
+#'   daily shrinkage). Plots are saved as
+#'
+#' @param df input \code{data.frame}.
+#' @param maxmin \code{data.frame} containing maxima and minima used for
+#'   the calculation of mds.
+#'
+#' @return Plots are saved to current working directory as
+#'   \code{mds_plot.pdf}.
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+plot_mds <- function(df, maxmin) {
+  df <- df %>%
+    dplyr::mutate(month = as.numeric(cut(ts, breaks = "month",
+                                         labels = FALSE)))
+
+  series <- unique(df$series)
+  pdf("mds_plot.pdf", width = 8.3, height = 5.8)
+  for (s in 1:length(series)) {
+    df_series <- df %>%
+      dplyr::filter(series == series[s])
+
+    for (m in 1:max(df_series$month)) {
+      df_plot <- df_series %>%
+        dplyr::filter(month == m)
+
+      plot(x = df_plot$ts, y = df_plot$value, type = "l",
+           xlab = substr(df_plot$ts[1], 1, 7), ylab = "value",
+           main = df_plot$series[1])
+      points(x = maxmin$ts, y = maxmin$max1, pch = 1)
+      points(x = maxmin$ts, y = maxmin$min1, pch = 2)
+    }
+  }
+  dev.off()
 }
