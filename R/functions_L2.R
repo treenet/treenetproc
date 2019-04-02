@@ -12,8 +12,8 @@
 #'
 passenv <- new.env(parent = emptyenv())
 passobj <- function(value) {
-  value <- get(x = value, envir = passenv, inherits = FALSE)
-  return(value)
+  val <- get(x = value, envir = passenv, inherits = FALSE)
+  return(val)
 }
 
 
@@ -31,12 +31,12 @@ passobj <- function(value) {
 #'
 cleanoutofrange <- function(df, val_range) {
   df <- df %>%
-    dplyr::mutate(flagrangemin = ifelse(value < val_range[1],
+    dplyr::mutate(flagrangemin = ifelse(!is.na(value) & value < val_range[1],
                                         TRUE, FALSE)) %>%
-    dplyr::mutate(flagrangemax = ifelse(value > val_range[2],
+    dplyr::mutate(flagrangemax = ifelse(!is.na(value) & value > val_range[2],
                                         TRUE, FALSE)) %>%
-    dplyr::mutate(value = ifelse(value < val_range[1], NA, value)) %>%
-    dplyr::mutate(value = ifelse(value > val_range[2], NA, value))
+    dplyr::mutate(value = ifelse(flagrangemin, NA, value)) %>%
+    dplyr::mutate(value = ifelse(flagrangemax, NA, value))
 
   return(df)
 }
@@ -45,23 +45,23 @@ cleanoutofrange <- function(df, val_range) {
 #' Creates Flag for Gaps
 #'
 #' \code{creategapflag} adds a flag to gaps that are longer than
-#'   \code{gaplength}. Used to be called \code{cleanaftergaps}.
+#'   \code{gaple}. Used to be called \code{cleanaftergaps}.
 #'
 #' @param df input \code{data.frame}.
-#' @param gaplength specify minimum length of gap for flagging.
+#' @param gaple specify minimum length of gap for flagging.
 #' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
 #'
 #' @examples
 #'
-creategapflag <- function(df, reso, gaplength = 12 * (60 / reso)) {
+creategapflag <- function(df, reso, gaple = 12 * (60 / reso)) {
   # This function is Copyright
   if ("gapflag" %in% colnames(df)) {
     df <- dplyr::select(df, -gapflag)
   }
 
-  wnd <- gaplength
+  wnd <- gaple
   nc <- ncol(df)
 
   df <- df %>%
@@ -140,7 +140,7 @@ calcdiff <- function(df, reso) {
     dplyr::ungroup() %>%
     dplyr::mutate(gaple_mins = dplyr::lag(gaple_mins, n = 1)) %>%
     dplyr::select(1:nc, gaple_mins) %>%
-    # calculate hourly change in value
+    # calculate hourly change over gaps
     dplyr::mutate(diff_val = c(NA, diff(value)) * (60 / reso)) %>%
     dplyr::mutate(val_gap = fill_na(value)) %>%
     dplyr::mutate(diff_gap = c(NA, diff(val_gap))) %>%
@@ -183,54 +183,164 @@ createfrostflag <- function(df, tem, lowtemp = 5) {
 }
 
 
-#' Removes Outliers Based on Quantile
+#' Creates Flag for Outliers Based on Median Absolute Deviation
 #'
-#' \code{removeoutliers} removes outliers that are above or below a specified
-#'   quantile within a defined window. (used to be implemented in createflags1)
+#' \code{createflagout} creates flag for outliers that are above or below a
+#'   specified distance from the first or third quartile.
 #'
 #' @param df input \code{data.frame}.
-#' @param quan quantile that identifies outliers.
-#' @param span size of window for which quantiles are calculated.
-#' @param by spacing between time windows for quantile calculation.
+#' @param wnd length of time window for which interquartile ranges are
+#'   calculated. A second longer time window (\code{wnd * 5}) is automatically
+#'   added. Unit of \code{wnd} is days.
+#' @param n_mad number of mad (median absolute deviation) distances from the
+#'   first and third quartile that are still trusted. \code{n_mad} is
+#'   increased to \code{n_mad * 10} if there is a probability of frost.
+#' @param tol tolerance added to iqr (interquartile rnage) to avoid too
+#'   stringent error flagging. Unit of \code{tol} is \code{µm}.
 #' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
 #'
 #' @examples
 #'
-removeoutliers <- function(df, quan = 0.001, wnd = 3, reso,
-                           span = 60 / reso * 24 * (wnd / 2),
-                           by = 60 / reso * 24) {
-  # This function is Copyright
-  if (nrow(df) < 2 * span) {
-    message("you don't have enough data for window flag!")
-  }
-  st <- span + 1
-  en <- nrow(df) - span + 1
-  steps <- seq(st, en, by = by)
-  if (length(steps) == 0) {
-    stop("something went terribly wrong with the timestamp")
-  }
+createflagout <- function(df, reso, wnd = 3, n_mad = 5) {
 
-  df$flagqlow <- FALSE
-  df$flagqhigh <- FALSE
-  for (qq in steps) {
-    b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
-    low <- quantile(df$diff_val[ran], quan, na.rm = TRUE)
-    hig <- quantile(df$diff_val[ran], 1 - quan, na.rm = TRUE)
-    if (!is.na(low)) {
-      df$flagqlow[ran][df$diff_val[ran] < low] <- TRUE
+  #df <- L1_removeoutliers[100000:150000, ]
+  #reso <- 10
+  #wnd <- 6
+  #n_mad <- 5
+
+  df <- df %>%
+    dplyr::mutate(diff_val = ifelse(diff_val < 0.001 & diff_val > -0.001,
+                                    NA, diff_val))
+  nc <- ncol(df)
+  wnds <- c(wnd, wnd * 5)
+  for (w in 1:length(wnds)) {
+    span <- 60 / reso * 24 * (wnds[w] / 2)
+
+    if (nrow(df) < 2 * span) {
+      message("you don't have enough data for window flag!")
+      next
     }
-    if (!is.na(hig)) {
-      df$flagqhigh[ran][df$diff_val[ran] > hig] <- TRUE
+    st <- span + 1
+    en <- nrow(df) - span + 1
+    steps <- seq(st, en, by = span)
+
+    if (length(steps) == 0) {
+      stop("something went terribly wrong with the timestamp.")
     }
+
+    flagqlow <- vector(length = nrow(df))
+    flagqhigh <- vector(length = nrow(df))
+    for (qq in steps) {
+      b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
+      q40 <- as.numeric(quantile(df$diff_val[ran], probs = 0.4,
+                                 na.rm = TRUE))
+      q60 <- as.numeric(quantile(df$diff_val[ran], probs = 0.6,
+                                 na.rm = TRUE))
+
+      df$diff_val[ran][df$diff_val[ran] > q40 &
+                         df$diff_val[ran] < q60] <- NA
+      q1 <- as.numeric(quantile(df$diff_val[ran], probs = 0.25,
+                                na.rm = TRUE))
+      q3 <- as.numeric(quantile(df$diff_val[ran], probs = 0.75,
+                                na.rm = TRUE))
+
+      mad <- mad(df$diff_val[ran], na.rm = TRUE)
+      low <- q1 - n_mad * mad
+      low_frost <- q1 - n_mad * 10 * mad
+      high <- q3 + n_mad * mad
+      high_frost <- q3 + n_mad * 10 * mad
+
+      #plot(density(x = df$diff_val[ran], na.rm = T), main = df$ts[ran][1])
+      #abline(v = low, col = "red")
+      #abline(v = high, col = "red")
+
+
+      if (!is.na(low)) {
+          flagqlow[ran][df$diff_val[ran] <
+                          ifelse(df$frost[ran], low_frost, low)] <- TRUE
+      }
+      if (!is.na(high)) {
+        flagqhigh[ran][df$diff_val[ran] >
+                         ifelse(df$frost[ran], high_frost, high)] <- TRUE
+      }
+    }
+
+    flagq_nr <- length(grep("flagqlow", colnames(df)))
+    if (flagq_nr == 0) {
+      flagq_nr <- 1
+    } else {
+      flagq_nr <- flagq_nr + 1
+    }
+
+    df <- df %>%
+      dplyr::mutate(!!paste0("flagqlow", flagq_nr) := flagqlow) %>%
+      dplyr::mutate(!!paste0("flagqhigh", flagq_nr) := flagqhigh)
   }
 
   df <- df %>%
-    dplyr::mutate(value = ifelse(flagqlow, NA, value)) %>%
-    dplyr::mutate(value = ifelse(flagqhigh, NA, value))
+    dplyr::mutate(flagqlow = rowSums(.[grep("flagqlow", names(.))])) %>%
+    dplyr::mutate(flagqhigh = rowSums(.[grep("flagqhigh", names(.))])) %>%
+    dplyr::mutate(
+      flagoutlow = ifelse(flagqlow == flagq_nr, TRUE, FALSE)) %>%
+    dplyr::mutate(
+      flagouthigh = ifelse(flagqhigh == flagq_nr, TRUE, FALSE)) %>%
+    dplyr::select(1:nc, flagoutlow, flagouthigh)
+
+  message("createflagout is in development mode.")
 
   return(df)
+}
+
+
+#' Removes Outliers Defined Based on Median Absolute Deviation
+#'
+#' \code{executeflagout} removes outliers flagged by \code{createflagout}.
+#'
+#' @param df input \{data.frame}.
+#' @param len minimal number of consecutive outliers for removal.
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+executeflagout <- function(df, len) {
+
+  nc <- ncol(df)
+  flagoutlow_pos <-
+    as.numeric(which(names(df) ==
+                       paste0("flagoutlow", passobj("flagout_nr"))))
+  flagouthigh_pos <-
+    as.numeric(which(names(df) ==
+                       paste0("flagouthigh", passobj("flagout_nr"))))
+  df$flagoutlow <- df[, flagoutlow_pos]
+  df$flagouthigh <- df[, flagouthigh_pos]
+
+  df <- df %>%
+    # remove flagoutlow
+    dplyr::mutate(flagoutlow_group = cumsum(flagoutlow)) %>%
+    dplyr::mutate(y = c(0, diff(flagoutlow_group, lag = 1))) %>%
+    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+    dplyr::mutate(flagoutlow_nr = cumsum(z)) %>%
+    dplyr::group_by(flagoutlow_nr) %>%
+    dplyr::mutate(flagoutlow_le = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(
+      value = ifelse(flagoutlow_le >= len & flagoutlow, NA, value)) %>%
+    # remove flagouthigh
+    dplyr::mutate(flagouthigh_group = cumsum(flagouthigh)) %>%
+    dplyr::mutate(y = c(0, diff(flagouthigh_group, lag = 1))) %>%
+    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+    dplyr::mutate(flagouthigh_nr = cumsum(z)) %>%
+    dplyr::group_by(flagouthigh_nr) %>%
+    dplyr::mutate(flagouthigh_le = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(
+      value = ifelse(flagouthigh_le >= len & flagouthigh, NA, value)) %>%
+    dplyr::select(1:nc)
 }
 
 
@@ -257,8 +367,7 @@ createflagdiff <- function(df, reso, diffwin = 1000, diffsum = 150) {
   df <- df %>%
     dplyr::mutate(flagdiff = dplyr::case_when(
       abs(diff_val) > diffsum / (60 / reso) & !frost ~ TRUE,
-      abs(diff_val) > diffwin / (60 / reso) & frost ~ TRUE
-    )) %>%
+      abs(diff_val) > diffwin / (60 / reso) & frost ~ TRUE)) %>%
     dplyr::mutate(flagdiff = ifelse(is.na(flagdiff), FALSE, flagdiff)) %>%
     dplyr::mutate(!!paste0("flagdiff", flagdiff_nr) := flagdiff)
 
@@ -299,9 +408,10 @@ executeflagdiff <- function(df, length = 2) {
 }
 
 
-#' Creates Flag for Outliers and Jumps in Data
+#' Creates Flag for Jumps and Outliers in Data
 #'
-#' \code{createjumpoutflag} creates flag for jumps and ouliers.
+#' \code{createjumpflag} creates flag for jumps and ouliers. Outliers can be
+#'   single points or errors before, after or in between jumps.
 #'
 #' @param df input \code{data.frame}.
 #' @param thr specifies the threshold to discriminate between outliers and
@@ -311,12 +421,19 @@ executeflagdiff <- function(df, length = 2) {
 #'
 #' @examples
 #'
-createjumpoutflag <- function(df, thr = 0.2) {
-  # This function is Copyright
+createjumpflag <- function(df, thr = 0.2) {
+
+  nc <- ncol(df)
+  flagout_nr <- length(grep("^flagout$", colnames(df)))
+  if (flagout_nr > 0) {
+    passenv$flagout_nr <-  passenv$flagout_nr
+  } else {
+    passenv$flagout_nr <- 1
+  }
+
+  ran <- which(df$flagoutlow | df$flagouthigh)
   df$flagout <- FALSE
   df$flagjump <- FALSE
-  ran <- which(df$flagdiff)
-
   if (length(ran) != 0) {
     for (iu in ran) {
       hhj <- sum(df$diff_val[(iu + 1):(iu + 3)], na.rm = TRUE)
@@ -327,13 +444,22 @@ createjumpoutflag <- function(df, thr = 0.2) {
       }
     }
   }
+
+  # flagjump and flagout renaming
+  df <- df %>%
+    dplyr::mutate(!!paste0("flagjump", passobj("flagout_nr")) := flagjump) %>%
+    dplyr::mutate(!!paste0("flagout", passobj("flagout_nr")) := flagout) %>%
+    dplyr::select(1:nc, grep("^(flagout|flagjump)(?!.*low)(?!.*high)",
+                             names(.), perl = TRUE)) %>%
+    as.data.frame()
+
   return(df)
 }
 
 
 #' Remove Jumps and Outliers
 #'
-#' \code{executejumpout} removes jumps that occur after resetting the dendrometer
+#' \code{executejump} removes jumps that occur after resetting the dendrometer
 #'   needle and removes outliers.
 #'
 #' @param df input \code{data.frame}.
@@ -342,7 +468,7 @@ createjumpoutflag <- function(df, thr = 0.2) {
 #'
 #' @examples
 #'
-executejumpout <- function(df) {
+executejump <- function(df) {
   # This function is Copyright
   nc <- ncol(df)
   le <- nrow(df)
@@ -355,7 +481,7 @@ executejumpout <- function(df) {
   df <- dplyr::left_join(df, diff_jump, by = "ts")
 
   if (length(ran) > 0) {
-    for (uu in c(1:length(ran))) {
+    for (uu in 1:length(ran)) {
       zz <- ran[uu]
       dx <- df$gapflag[(zz - 1)]
       dx <- dx + 1
@@ -366,6 +492,8 @@ executejumpout <- function(df) {
   df <- df %>%
     dplyr::mutate(value = ifelse(flagout, NA, value)) %>%
     dplyr::select(1:nc)
+
+  message("executejump is in development mode.")
 
   return(df)
 }
@@ -456,34 +584,62 @@ calctwdgro  <- function(df, tz) {
 #'
 #' @examples
 #'
-calcmds <- function(df, tz, reso) {
+calcmds <- function(df, tz, reso, plot_mds = FALSE) {
+
+  df <- lens_L2 %>%
+    dplyr::filter(series == series[1]) %>%
+    dplyr::slice(1:20000)
+  tz <- "Etc/GMT-1"
+  reso <- 10
+  plot_mds <- TRUE
+
   nc <- ncol(df)
 
   span <- 60 / reso * 6
-  by <- 60 / reso * 6
+  by <- 2 * span
+  en <- nrow(df)
+  steps <- seq(1, en, by = by)
+
+  #df$max1 <- 0
+  #df$min1 <- 0
+  #microbenchmark(
+  #for (s in 1:(length(steps) - 1)) {
+  #  #b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
+  #  ran <- steps[s]:steps[s + 1]
+  #  max_row <- which.max(df$value[ran]) + ran[1] - 1
+  #  if (length(max_row) > 0) {
+  #    df$max1[max_row] <- 1
+  #  }
+  #  min_row <- which.min(df$value[ran]) + ran[1] - 1
+  #  if (length(min_row) > 0) {
+  #    df$min1[min_row] <- 1
+  #  }
+  #}
+  #)
+
+
+  max1 <- vector(length = nrow(df))
+  min1 <- vector(length = nrow(df))
+  microbenchmark(
+    for (s in 1:(length(steps) - 1)) {
+      #b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
+      ran <- steps[s]:steps[s + 1]
+      max_row <- which.max(df$value[ran]) + ran[1] - 1
+      if (length(max_row) > 0) {
+        max1[max_row] <- 1
+      }
+      min_row <- which.min(df$value[ran]) + ran[1] - 1
+      if (length(min_row) > 0) {
+        min1[min_row] <- 1
+      }
+    }
+  )
+
+
+
+
   st <- span + 1
-  en <- nrow(df) - span + 1
-  steps <- seq(st, en, by = by)
 
-  df$max1 <- 0
-  df$min1 <- 0
-  for (qq in steps) {
-    b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
-    max_row <- which.max(df$value[ran]) + ran[1] - 1
-    if (length(max_row) > 0) {
-      df$max1[max_row] <- df$max1[max_row] + 1
-    }
-    min_row <- which.min(df$value[ran]) + ran[1] - 1
-    if (length(min_row) > 0) {
-      df$min1[min_row] <- df$min1[min_row] + 1
-    }
-  }
-
-  #plot(x = df$ts[30000:34000], df$value[30000:34000], type = "l")
-  #points(x = df$ts[df$max1 > 0], df$value[df$max1 > 0], pch = 1)
-  #points(x = df$ts[df$min1 > 0], df$value[df$min1 > 0], pch = 2)
-  #points(x = maxmin$ts, y = maxmin$max1, pch = 1)
-  #points(x = maxmin$ts, y = maxmin$min1, pch = 2)
 
   options(warn = -1)
   maxmin <- df %>%
@@ -519,7 +675,14 @@ calcmds <- function(df, tz, reso) {
     dplyr::filter(!(is.na(max1) & is.na(min1))) %>%
     dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
                                    tz = tz)) %>%
-    dplyr::select(ts, day, max1, min1) %>%
+    dplyr::select(ts, day, max1, min1)
+
+  if (plot_mds) {
+    print("plot mds...")
+    plot_mds(df = df, maxmin = maxmin)
+  }
+
+  maxmin <- maxmin %>%
     dplyr::group_by(day) %>%
     dplyr::mutate(min_lag = dplyr::lead(min1, n = 1)) %>%
     dplyr::mutate(mds = max1 - min_lag) %>%
@@ -537,6 +700,8 @@ calcmds <- function(df, tz, reso) {
     dplyr::full_join(., maxmin, by = "day") %>%
     dplyr::select(1:nc, mds)
 
+  message("calcmds is in development...")
+
   return(df)
 }
 
@@ -552,22 +717,32 @@ calcmds <- function(df, tz, reso) {
 #' @examples
 #'
 summariseflags <- function(df) {
-  df <- df %>%
-    dplyr::mutate(flagrangemax = ifelse(flagrangemax, 2 ^ 0, 0)) %>%
-    dplyr::mutate(flagrangemin = ifelse(flagrangemin, 2 ^ 1, 0)) %>%
-    dplyr::mutate(flagqlow = ifelse(flagqlow, 2 ^ 2, 0)) %>%
-    dplyr::mutate(flagqhigh = ifelse(flagqhigh, 2 ^ 3, 0)) %>%
-    dplyr::mutate(flagdiff1 = ifelse(flagdiff1, 2 ^ 4, 0)) %>%
-    dplyr::mutate(flagdiff2 = ifelse(flagdiff2, 2 ^ 5, 0)) %>%
-    dplyr::mutate(flagout = ifelse(flagout, 2 ^ 6, 0)) %>%
-    dplyr::mutate(flagjump = ifelse(flagjump, 2 ^ 7, 0)) %>%
-    dplyr::mutate(
-      flags = rowSums(dplyr::select(., "flagrangemax", "flagrangemin",
-                                    "flagqlow", "flagqhigh",
-                                    "flagdiff1", "flagdiff2",
-                                    "flagout", "flagjump"))) %>%
-    dplyr::select(-flagrangemax, -flagrangemin, -flagqlow, -flagqhigh,
-                  -flagdiff, -flagdiff1, -flagdiff2, -flagout, -flagjump)
+
+  list_flags <- vector("list", length = 2 + (passenv$flagout_nr * 2))
+
+  list_flags[[1]] <- ifelse(df$flagrangemax, "rmax", NA)
+  list_flags[[2]] <- ifelse(df$flagrangemin, "rmin", NA)
+
+  n_flags <- 3
+  for (out in n_flags:(passenv$flagout_nr + n_flags - 1)) {
+    flagout_nr <- out - n_flags + 1
+    flagout <- df[[paste0("flagout", flagout_nr)]]
+    list_flags[[out]] <- ifelse(flagout, paste0("out", flagout_nr), NA)
+  }
+  n_flags <- n_flags + passenv$flagout_nr
+  for (jump in n_flags:(passenv$flagout_nr + n_flags - 1)) {
+    flagjump_nr <- jump - n_flags + 1
+    flagjump <- df[[paste0("flagjump", flagjump_nr)]]
+    list_flags[[jump]] <- ifelse(flagjump, paste0("jump", flagjump_nr), NA)
+  }
+
+  flags <- do.call("paste", c(list_flags, sep = ", "))
+  flags <- gsub(", NA", "", flags)
+  flags <- gsub("NA, ", "", flags)
+
+  df$flags <- flags
+
+  message("summariseflags is in development mode.")
 
   return(df)
 }
