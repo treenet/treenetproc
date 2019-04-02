@@ -4,12 +4,15 @@
 \alias{calcmds}
 \title{Calculate Maximum Daily Shrinkage (MDS)}
 \usage{
-calcmds(df, tz, reso)
+calcmds(df, tz, reso, plot_mds = FALSE)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
 
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+
+\item{plot_mds}{logical, specify whether maxima and minima used for the
+calculation of mds (maximum daily shrinkage) should be plotted.}
 }
 \description{
 \code{calcmds} calculates the maximum daily shrinkage (mds). Mds is defined
