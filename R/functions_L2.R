@@ -424,30 +424,31 @@ executeflagdiff <- function(df, length = 2) {
 createjumpflag <- function(df, thr = 0.2) {
 
   nc <- ncol(df)
-  flagout_nr <- length(grep("^flagout$", colnames(df)))
+  flagout_nr <- length(grep("^flagout[0-9]", colnames(df)))
   if (flagout_nr > 0) {
-    passenv$flagout_nr <-  passenv$flagout_nr
+    passenv$flagout_nr <-  passenv$flagout_nr + 1
   } else {
     passenv$flagout_nr <- 1
   }
 
   ran <- which(df$flagoutlow | df$flagouthigh)
-  df$flagout <- FALSE
-  df$flagjump <- FALSE
+  outlier <- as.vector(rep(FALSE, nrow(df)), mode = "logical")
+  jump <- as.vector(rep(FALSE, nrow(df)), mode = "logical")
   if (length(ran) != 0) {
     for (iu in ran) {
       hhj <- sum(df$diff_val[(iu + 1):(iu + 3)], na.rm = TRUE)
       if (abs(df$diff_val[iu] + hhj) < df$diff_val[iu] * thr) {
-        df$flagout[iu] <- TRUE
+        outlier[iu] <- TRUE
       } else {
-        df$flagjump[iu] <- TRUE
+        jump[iu] <- TRUE
       }
     }
   }
 
-  # flagjump and flagout renaming
   df <- df %>%
+    dplyr::mutate(flagjump = jump) %>%
     dplyr::mutate(!!paste0("flagjump", passobj("flagout_nr")) := flagjump) %>%
+    dplyr::mutate(flagout = outlier) %>%
     dplyr::mutate(!!paste0("flagout", passobj("flagout_nr")) := flagout) %>%
     dplyr::select(1:nc, grep("^(flagout|flagjump)(?!.*low)(?!.*high)",
                              names(.), perl = TRUE)) %>%
@@ -480,16 +481,18 @@ executejump <- function(df) {
     dplyr::select(ts, diff_jump)
   df <- dplyr::left_join(df, diff_jump, by = "ts")
 
+  val <- as.vector(df$value, mode = "numeric")
   if (length(ran) > 0) {
     for (uu in 1:length(ran)) {
       zz <- ran[uu]
       dx <- df$gapflag[(zz - 1)]
       dx <- dx + 1
-      df$value[zz:le] <- df$value[zz:le] - (df$diff_jump[zz] * dx)
+      val[zz:le] <- val[zz:le] - (df$diff_jump[zz] * dx)
     }
   }
 
   df <- df %>%
+    dplyr::mutate(value = val) %>%
     dplyr::mutate(value = ifelse(flagout, NA, value)) %>%
     dplyr::select(1:nc)
 
@@ -566,6 +569,117 @@ calctwdgro  <- function(df, tz) {
 }
 
 
+#' Find Maximum and Minimum in Time Window
+#'
+#' \code{findmaxmin} identifies maxima and minima in a specified time window.
+#'   It is a helper function of \code{\link{calcmds}}.
+#'
+#' @param df input \code{data.frame}
+#' @param span width of the time window. Relative to \code{reso}.
+#' @param st starting row of the first time window.
+#' @param en ending row of the last time window.
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+findmaxmin <- function(df, reso, st) {
+
+  span <- 60 / reso * 6
+  by <- 2 * span
+  if (st != 1) {
+    st <- span
+  }
+  en <- nrow(df)
+  steps <- seq(from = st, to = en, by = by)
+
+  max1 <- as.vector(rep(0, nrow(df)), mode = "numeric")
+  min1 <- as.vector(rep(0, nrow(df)), mode = "numeric")
+  for (s in 1:(length(steps) - 1)) {
+    ran <- steps[s]:steps[s + 1]
+    max_row <- which.max(df$value[ran]) + ran[1] - 1
+    if (length(max_row) > 0) {
+      max1[max_row] <- 1
+    }
+    min_row <- which.min(df$value[ran]) + ran[1] - 1
+    if (length(min_row) > 0) {
+      min1[min_row] <- 1
+    }
+  }
+
+  return(list(max1, min1))
+}
+
+
+#' Remove Consecutive Values
+#'
+#' \code{removeconsec} removes consecutive maxima or minima and keeps only
+#'   the higher or lower value, respectively. The function makes sure no two
+#'   maxima or minima appear consecutively. It is a helper function of
+#'   \code{\link{calcmds}}.
+#'
+#' @param df input \code{data.frame}.
+#' @param remove numeric, in which consecutive values are removed
+#'   (i.e. maxima or minima).
+#' @param notremove numeric, in which consecutive values are not removed
+#'   (i.e. maxima or minima).
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+removeconsec <- function(df, remove, notremove) {
+
+  options(warn = -1)
+  rem <- df %>%
+    dplyr::mutate(rem = remove) %>%
+    dplyr::mutate(norem = notremove) %>%
+    dplyr::filter(rem == 2 | norem == 2) %>%
+    dplyr::mutate(rem2 = rep(rle(rem)[[1]], times = rle(rem)[[1]])) %>%
+    dplyr::mutate(rem = ifelse(rem == 2, value, NA)) %>%
+    dplyr::mutate(iscons = ifelse(rem2 > 1 & !is.na(rem), TRUE, FALSE)) %>%
+    dplyr::mutate(cons = cumsum(iscons)) %>%
+    dplyr::mutate(y = c(0, diff(cons, lag = 1))) %>%
+    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+    dplyr::mutate(cons_nr = cumsum(z)) %>%
+    dplyr::group_by(cons_nr) %>%
+    dplyr::mutate(rem2 = max(rem, na.rm = T)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(rem = dplyr::case_when(iscons & rem == rem2 ~ rem,
+                                         !iscons ~ rem)) %>%
+    dplyr::group_by(cons_nr) %>%
+    dplyr::mutate(rem_cons = length(unique(rem))) %>%
+    dplyr::ungroup()
+  options(warn = 0)
+
+  rem_noconsec <- rem %>%
+    dplyr::filter(!(iscons == TRUE & rem_cons == 1)) %>%
+    dplyr::select(ts, rem)
+
+  rem_cons <- rem %>%
+    dplyr::filter(iscons == TRUE & rem_cons == 1)
+
+  # select first of consecutive identical values
+  if (nrow(rem_cons) > 0) {
+    rem_cons <- rem_cons %>%
+      dplyr::group_by(cons_nr, rem_cons) %>%
+      dplyr::summarise(ts = ts[1],
+                       rem = rem[1]) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(ts, rem)
+
+    rem_noconsec <-
+      dplyr::full_join(rem_noconsec, rem_cons, by = c("ts", "rem"))
+  }
+
+  rem_noconsec <- rem_noconsec %>%
+    dplyr::filter(!(is.na(rem)))
+
+  return(rem_noconsec)
+}
+
+
 #' Calculate Maximum Daily Shrinkage (MDS)
 #'
 #' \code{calcmds} calculates the maximum daily shrinkage (mds). Mds is defined
@@ -586,96 +700,31 @@ calctwdgro  <- function(df, tz) {
 #'
 calcmds <- function(df, tz, reso, plot_mds = FALSE) {
 
-  df <- lens_L2 %>%
-    dplyr::filter(series == series[1]) %>%
-    dplyr::slice(1:20000)
-  tz <- "Etc/GMT-1"
-  reso <- 10
-  plot_mds <- TRUE
+  #df <- lens_L2 %>%
+  #  dplyr::filter(series == series[1]) %>%
+  #  #dplyr::slice(1:20000) %>%
+  #  dplyr::select(-mds)
+  #tz <- "Etc/GMT-1"
+  #reso <- 10
+  #plot_mds <- TRUE
 
   nc <- ncol(df)
 
-  span <- 60 / reso * 6
-  by <- 2 * span
-  en <- nrow(df)
-  steps <- seq(1, en, by = by)
+  maxmin1 <- findmaxmin(df = df, reso = reso, st = 1)
+  maxmin2 <- findmaxmin(df = df, reso = reso, st = 2)
 
-  #df$max1 <- 0
-  #df$min1 <- 0
-  #microbenchmark(
-  #for (s in 1:(length(steps) - 1)) {
-  #  #b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
-  #  ran <- steps[s]:steps[s + 1]
-  #  max_row <- which.max(df$value[ran]) + ran[1] - 1
-  #  if (length(max_row) > 0) {
-  #    df$max1[max_row] <- 1
-  #  }
-  #  min_row <- which.min(df$value[ran]) + ran[1] - 1
-  #  if (length(min_row) > 0) {
-  #    df$min1[min_row] <- 1
-  #  }
-  #}
-  #)
+  max_wnd <- maxmin1[[1]] + maxmin2[[1]]
+  min_wnd <- maxmin1[[2]] + maxmin2[[2]]
 
+  max1 <- removeconsec(df = df, remove = max_wnd, notremove = min_wnd) %>%
+    dplyr::mutate(max1 = rem) %>%
+    dplyr::select(-rem)
+  min1 <- removeconsec(df = df, remove = min_wnd, notremove = max_wnd) %>%
+    dplyr::mutate(min1 = rem) %>%
+    dplyr::select(-rem)
 
-  max1 <- vector(length = nrow(df))
-  min1 <- vector(length = nrow(df))
-  microbenchmark(
-    for (s in 1:(length(steps) - 1)) {
-      #b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
-      ran <- steps[s]:steps[s + 1]
-      max_row <- which.max(df$value[ran]) + ran[1] - 1
-      if (length(max_row) > 0) {
-        max1[max_row] <- 1
-      }
-      min_row <- which.min(df$value[ran]) + ran[1] - 1
-      if (length(min_row) > 0) {
-        min1[min_row] <- 1
-      }
-    }
-  )
-
-
-
-
-  st <- span + 1
-
-
-  options(warn = -1)
-  maxmin <- df %>%
-    dplyr::filter(max1 == 2 | min1 == 2) %>%
-    dplyr::mutate(max2 = rep(rle(max1)[[1]],
-                             times = rle(max1)[[1]])) %>%
-    dplyr::mutate(max1 = ifelse(max1 == 2, value, NA)) %>%
-    dplyr::mutate(iscons = ifelse(max2 > 1 & !is.na(max1), TRUE, FALSE)) %>%
-    dplyr::mutate(cons = cumsum(iscons)) %>%
-    dplyr::mutate(y = c(0, diff(cons, lag = 1))) %>%
-    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
-    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
-    dplyr::mutate(cons_nr = cumsum(z)) %>%
-    dplyr::group_by(cons_nr) %>%
-    dplyr::mutate(max2 = max(max1, na.rm = T)) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(max1 = dplyr::case_when(iscons & max1 == max2 ~ max1,
-                                          !iscons ~ max1)) %>%
-    dplyr::mutate(min2 = rep(rle(min1)[[1]],
-                             times = rle(min1)[[1]])) %>%
-    dplyr::mutate(min1 = ifelse(min1 == 2, value, NA)) %>%
-    dplyr::mutate(iscons = ifelse(min2 > 1 & !is.na(min1), TRUE, FALSE)) %>%
-    dplyr::mutate(cons = cumsum(iscons)) %>%
-    dplyr::mutate(y = c(0, diff(cons, lag = 1))) %>%
-    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
-    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
-    dplyr::mutate(cons_nr = cumsum(z)) %>%
-    dplyr::group_by(cons_nr) %>%
-    dplyr::mutate(min2 = min(min1, na.rm = T)) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(min1 = dplyr::case_when(iscons & min1 == min2 ~ min1,
-                                          !iscons ~ min1)) %>%
-    dplyr::filter(!(is.na(max1) & is.na(min1))) %>%
-    dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
-                                   tz = tz)) %>%
-    dplyr::select(ts, day, max1, min1)
+  maxmin <- dplyr::full_join(max1, min1, by = "ts") %>%
+    dplyr::arrange(ts)
 
   if (plot_mds) {
     print("plot mds...")
@@ -683,21 +732,24 @@ calcmds <- function(df, tz, reso, plot_mds = FALSE) {
   }
 
   maxmin <- maxmin %>%
-    dplyr::group_by(day) %>%
     dplyr::mutate(min_lag = dplyr::lead(min1, n = 1)) %>%
+    dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
+                                   tz = tz)) %>%
+    dplyr::group_by(day) %>%
     dplyr::mutate(mds = max1 - min_lag) %>%
+    dplyr::filter(!is.na(mds)) %>%
     dplyr::mutate(mds = max(mds, na.rm = T)) %>%
-    dplyr::mutate(mds = ifelse(mds >= 0, mds, NA)) %>%
     dplyr::ungroup() %>%
+    dplyr::mutate(mds = ifelse(mds >= 0, mds, NA)) %>%
     dplyr::group_by(day) %>%
     dplyr::summarise(mds = mds[1]) %>%
     dplyr::ungroup()
-  options(warn = 0)
 
   df <- df %>%
     dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
                                    tz = tz)) %>%
     dplyr::full_join(., maxmin, by = "day") %>%
+    dplyr::arrange(ts) %>%
     dplyr::select(1:nc, mds)
 
   message("calcmds is in development...")
@@ -739,6 +791,7 @@ summariseflags <- function(df) {
   flags <- do.call("paste", c(list_flags, sep = ", "))
   flags <- gsub(", NA", "", flags)
   flags <- gsub("NA, ", "", flags)
+  flags <- ifelse(flags == "NA", "", flags)
 
   df$flags <- flags
 
