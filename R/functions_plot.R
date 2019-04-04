@@ -11,34 +11,36 @@
 #'
 plot_proc <- function(data_L1, data_L2, diff, add) {
 
-  layout(matrix(c(1, 2, 3, 4), nrow = 4), heights = c(2, 1.6, 1, 2),
-         widths = 1)
-  par(mar = c(0, 5, 4.1, 2.1))
-  plot(data = data_L1, value ~ ts, type = "l", xaxt = "n", ylab = "",
-       las = 1, main = passobj("sensor_label"))
-  title(ylab = "L1", mgp = c(3.5, 1, 0))
-  par(mar = c(0, 5, 0, 2.1))
-  plot(data = data_L2, value ~ ts, type = "n", xaxt = "n", ylab = "",
-       las = 1)
+  graphics::layout(matrix(c(1, 2, 3, 4), nrow = 4), heights = c(2, 1.6, 1, 2),
+                   widths = 1)
+  graphics::par(mar = c(0, 5, 4.1, 2.1))
+  graphics::plot(data = data_L1, value ~ ts, type = "l", xaxt = "n", ylab = "",
+                 las = 1, main = passobj("sensor_label"))
+  graphics::title(ylab = "L1", mgp = c(3.5, 1, 0))
+  graphics::par(mar = c(0, 5, 0, 2.1))
+  graphics::plot(data = data_L2, value ~ ts, type = "n", xaxt = "n", ylab = "",
+                 las = 1)
   if (add) {
-    lines(data = data_L1, value ~ ts, col = "grey70")
+    graphics::lines(data = data_L1, value ~ ts, col = "grey70")
   }
-  lines(data = data_L2, value ~ ts, col = "#08519c")
-  title(ylab = "L2", mgp = c(3.5, 1, 0))
-  par(mar = c(0, 5, 0, 2.1))
+  graphics::lines(data = data_L2, value ~ ts, col = "#08519c")
+  graphics::title(ylab = "L2", mgp = c(3.5, 1, 0))
+  graphics::par(mar = c(0, 5, 0, 2.1))
   options(warn = -1)
-  plot(data = diff, diff ~ ts, type = "n", xlab = "", log = "y",
-       yaxt = "n", xaxt = "n", ylab = "", ylim = c(0.1, 1200), las = 1)
-  abline(h = c(0.1, 1, 10, 100, 1000), col = "grey70")
-  lines(data = diff, diff ~ ts, type = "h", lwd = 2, col = "#b30000")
-  axis(2, at = c(0.1, 1, 10, 100, 1000),
-       labels = c(0, 1, 10, 100, 1000), las = 1)
-  title(ylab = "log(diff[L1 - L2])", mgp = c(3.5, 1, 0))
+  graphics::plot(data = diff, diff ~ ts, type = "n", xlab = "", log = "y",
+                 yaxt = "n", xaxt = "n", ylab = "", ylim = c(0.1, 1200),
+                 las = 1)
+  graphics::abline(h = c(0.1, 1, 10, 100, 1000), col = "grey70")
+  graphics::lines(data = diff, diff ~ ts, type = "h", lwd = 2, col = "#b30000")
+  graphics::axis(2, at = c(0.1, 1, 10, 100, 1000),
+                 labels = c(0, 1, 10, 100, 1000), las = 1)
+  graphics::title(ylab = "log(diff[L1 - L2])", mgp = c(3.5, 1, 0))
   options(warn = 0)
-  par(mar = c(4.1, 5, 0, 2.1))
-  plot(data = data_L2, twd ~ ts, type = "l", xlab = passobj("year_label"),
-       ylab = "", las = 1, col = "#7a0177")
-  title(ylab = "twd", mgp = c(3.5, 1, 0))
+  graphics::par(mar = c(4.1, 5, 0, 2.1))
+  graphics::plot(data = data_L2, twd ~ ts, type = "l",
+                 xlab = passobj("year_label"),  ylab = "", las = 1,
+                 col = "#7a0177")
+  graphics::title(ylab = "twd", mgp = c(3.5, 1, 0))
 
 }
 
@@ -65,7 +67,8 @@ plot_mds <- function(df, maxmin) {
                                          labels = FALSE)))
 
   series <- unique(df$series)
-  pdf("mds_plot.pdf", width = 8.3, height = 5.8)
+  grDevices::pdf(paste0("mds_plot_", series, ".pdf"),
+                 width = 8.3, height = 5.8)
   for (s in 1:length(series)) {
     df_series <- df %>%
       dplyr::filter(series == series[s])
@@ -74,12 +77,12 @@ plot_mds <- function(df, maxmin) {
       df_plot <- df_series %>%
         dplyr::filter(month == m)
 
-      plot(x = df_plot$ts, y = df_plot$value, type = "l",
-           xlab = substr(df_plot$ts[1], 1, 7), ylab = "value",
-           main = df_plot$series[1])
-      points(x = maxmin$ts, y = maxmin$max1, pch = 1)
-      points(x = maxmin$ts, y = maxmin$min1, pch = 2)
+      graphics::plot(x = df_plot$ts, y = df_plot$value, type = "l",
+                     xlab = substr(df_plot$ts[1], 1, 7), ylab = "value",
+                     main = df_plot$series[1])
+      graphics::points(x = maxmin$ts, y = maxmin$max1, pch = 1)
+      graphics::points(x = maxmin$ts, y = maxmin$min1, pch = 2)
     }
   }
-  dev.off()
+  grDevices::dev.off()
 }

@@ -14,7 +14,7 @@
 #' @examples
 #'
 tsalign <- function(df, reso, year, tz) {
-  # This function is Copyright
+
   df <- generatets(df, reso, all = TRUE, year, tz)
   df <- fillintergaps(df, reso)
   df <- generatets(df, reso, all = FALSE, year, tz)
@@ -36,7 +36,7 @@ tsalign <- function(df, reso, year, tz) {
 #' @examples
 #'
 tsalign_prec <- function(df, reso, year, tz) {
-  # This function is Copyright
+
   df <- generatets(df, reso, all = TRUE, year, tz)
   df <- fillintergaps_prec(df, reso)
   df <- generatets(df, reso, all = FALSE, year, tz)
@@ -57,7 +57,7 @@ tsalign_prec <- function(df, reso, year, tz) {
 #' @examples
 #'
 generatets <- function(df, reso, all, year, tz) {
-  # This function is Copyright
+
   if (all != TRUE & all != FALSE) {
     stop("provide 'all' with either TRUE or FALSE")
   }
@@ -111,6 +111,7 @@ generatets <- function(df, reso, all, year, tz) {
 #' @examples
 #'
 roundtimetoreso <- function(df, reso, pos, tz) {
+
   if (!(pos %in% c("start", "end"))) {
     stop("provide 'pos' with either 'start' or 'end'")
   }
@@ -150,7 +151,8 @@ roundtimetoreso <- function(df, reso, pos, tz) {
 #'   interpolation).
 #'
 #' @param df input \code{data.frame}.
-#' @param wnd length of time window over which values are interpolated.
+#' @param wnd length of time window over which values are interpolated. Defined
+#'   as \code{2.1 * reso}. Unit of \code{wnd} is minutes.
 #' @param type specify type of interpolation between regular timesteps.
 #' @inheritParams proc_L1
 #'
@@ -159,7 +161,7 @@ roundtimetoreso <- function(df, reso, pos, tz) {
 #' @examples
 #'
 fillintergaps <- function(df, reso, wnd = reso * 2.1, type = "linear") {
-  # This function is Copyright
+
   if (type != "linear" | length(type) == 0) {
     print("no gapfilling...")
   }
@@ -198,7 +200,7 @@ fillintergaps <- function(df, reso, wnd = reso * 2.1, type = "linear") {
       dplyr::mutate(gaple_mins = sum(diff_ts)) %>%
       dplyr::ungroup() %>%
       dplyr::mutate(value = ifelse(isgap & gaple_mins < wnd,
-                                   approx(ts, value, ts)$y, value)) %>%
+                                   stats::approx(ts, value, ts)$y, value)) %>%
       dplyr::select(1:nc)
   }
 

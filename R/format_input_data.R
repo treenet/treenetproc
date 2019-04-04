@@ -14,7 +14,7 @@ check_format <- function(df, input) {
   if (nr_value_col > 1 & input == "long") {
     stop("provided data is not in 'long' format.")
   }
-  if (nr_value_col == 1 & input == "wide") {
+  if (nr_value_col == 1 & !(is.null(df$value)) & input == "wide") {
     stop("provided data is not in 'wide' format.")
   }
 }
@@ -44,8 +44,9 @@ format_input <- function(df, input, tz) {
       dplyr::distinct() %>%
       dplyr::select(ts, col_names) %>%
       dplyr::mutate(id = 1:nr) %>%
-      reshape(., timevar = "series", idvar = "id", varying = c(2:nc),
-              direction = "long", v.names = "value", times = col_names) %>%
+      stats::reshape(., timevar = "series", idvar = "id", varying = c(2:nc),
+                     direction = "long", v.names = "value",
+                     times = col_names) %>%
       dplyr::select(-id) %>%
       transform(value = as.numeric(value)) %>%
       dplyr::distinct() %>%

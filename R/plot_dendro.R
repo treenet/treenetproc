@@ -31,14 +31,6 @@
 plot_dendro <- function(data_L1, data_L2, period = "full", tz = "Etc/GMT-1",
                         add = TRUE) {
 
-  #data_L1 <- lens_L1 %>%
-  #  dplyr::filter(series != "airtemperature")
-  #data_L2 <- lens_L2
-  #period <- "yearly"
-  #tz <- "Etc/GMT-1"
-  #add <- TRUE
-
-
   # Check input variables -----------------------------------------------------
   if (!(period %in% c("full", "yearly", "monthly"))) {
     stop("period needs to be either 'full', 'yearly' or 'monthly'.")
@@ -60,12 +52,6 @@ plot_dendro <- function(data_L1, data_L2, period = "full", tz = "Etc/GMT-1",
 
   # Calculate weekly difference -----------------------------------------------
   sensors <- unique(data_L1$series)
-  #if (period %in% c("full", "yearly")) {
-  #  group_vars <- c("year", "month", "week")
-  #}
-  #if (period == "monthly") {
-    group_vars <- c("year", "month", "day")
-  #}
 
   data_L1 <- data_L1 %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
@@ -93,26 +79,19 @@ plot_dendro <- function(data_L1, data_L2, period = "full", tz = "Etc/GMT-1",
       dplyr::full_join(., data_L2_sensor, by = c("series", "ts")) %>%
       dplyr::select(series, ts, value_L1, value_L2 = value, year,
                     month, day, week) %>%
-      dplyr::group_by_at(group_vars) %>%
+      dplyr::group_by(year, month, day) %>%
       dplyr::mutate(
         value_L1_zero = value_L1 - value_L1[which(!is.na(value_L1))[1]]) %>%
       dplyr::mutate(
         value_L2_zero = value_L2 - value_L2[which(!is.na(value_L2))[1]]) %>%
       dplyr::summarise(
-        diff = abs(dplyr::last(value_L1_zero[which(!is.na(value_L1_zero))]) -
-                     dplyr::last(value_L2_zero[which(!is.na(value_L2_zero))]))) %>%
-      dplyr::ungroup()
+        diff =
+          abs(dplyr::last(value_L1_zero[which(!is.na(value_L1_zero))]) -
+                dplyr::last(value_L2_zero[which(!is.na(value_L2_zero))]))) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(ts = as.POSIXct(paste0(year, "-", month, "-", day),
+                                    format = "%Y-%m-%d", tz = tz))
 
-    #if (period %in% c("full", "yearly")) {
-    #  diff_sensor <- diff_sensor %>%
-    #    dplyr::mutate(ts = as.POSIXct(paste0(year, "-", month, "-01"),
-    #                                  format = "%Y-%m-%d", tz = tz))
-    #}
-    #if (period == "monthly") {
-      diff_sensor <- diff_sensor %>%
-        dplyr::mutate(ts = as.POSIXct(paste0(year, "-", month, "-", day),
-                                      format = "%Y-%m-%d", tz = tz))
-    #}
 
     # Plot L1, L2 and weekly diff ---------------------------------------------
     if (period %in% c("yearly", "monthly")) {
@@ -184,5 +163,5 @@ plot_dendro <- function(data_L1, data_L2, period = "full", tz = "Etc/GMT-1",
       }
     }
   }
-  dev.off()
+  grDevices::dev.off()
 }
