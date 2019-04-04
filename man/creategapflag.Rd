@@ -4,16 +4,16 @@
 \alias{creategapflag}
 \title{Creates Flag for Gaps}
 \usage{
-creategapflag(df, reso, gaplength = 12 * (60/reso))
+creategapflag(df, reso, gaple = 12 * (60/reso))
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{gaplength}{specify minimum length of gap for flagging.}
+\item{gaple}{specify minimum length of gap for flagging.}
 }
 \description{
 \code{creategapflag} adds a flag to gaps that are longer than
-  \code{gaplength}. Used to be called \code{cleanaftergaps}.
+  \code{gaple}. Used to be called \code{cleanaftergaps}.
 }
 \examples{
 

@@ -15,8 +15,8 @@ plot_dendro(data_L1, data_L2, period = "full", tz = "Etc/GMT-1",
 \code{\link{proc_dendro_L2}}.}
 
 \item{period}{specify whether plots should be displayed over the whole
-period (\code{period = "full"}) or for each year separately
-(\code{period = "yearly"}).}
+period (\code{period = "full"}), for each year separately
+(\code{period = "yearly"}) or for each month (\code{period = "monthly"}).}
 
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 

@@ -5,7 +5,8 @@
 \title{Process L1 Dendrometer Data to L2}
 \usage{
 proc_dendro_L2(dendro_data, temp_data = NULL, val_range = c(0, 20000),
-  diffwin = 2000, diffsum = 1000, lowtemp = 5, tz = "Etc/GMT-1")
+  wnd = 6, n_mad = 8, iter_clean = 2, lowtemp = 5,
+  tz = "Etc/GMT-1", plot_mds = FALSE)
 }
 \arguments{
 \item{dendro_data}{\code{data.frame} with time-aligned dendrometer
@@ -19,14 +20,25 @@ Output of function \code{proc_L1} (see Details for further information).}
 lower than \code{min} or higher than \code{max} are deleted without
 notice.}
 
-\item{diffwin}{maximal hourly difference expected in winter.}
+\item{wnd}{length of time window for which \code{mad} is calculated. A
+second longer time window (\code{wnd * 5}) is automatically added. Unit
+of \code{wnd} is days.}
 
-\item{diffsum}{maximal hourly difference expected in summer.}
+\item{n_mad}{number of \code{mad} distances from the
+first and third quartile that are still trusted. \code{n_mad} is
+increased to \code{n_mad * 10} if there is a probability of frost.}
+
+\item{iter_clean}{numeric, specifies the number of times the cleaning
+process should run.}
 
 \item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
-in stem diameter due to frost is expected.}
+in stem diameter due to frost is expected. Default value is set to
+\code{5°C} due to hysteresis shortly before or after frost events.}
 
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+
+\item{plot_mds}{logical, specify whether maxima and minima used for the
+calculation of mds (maximum daily shrinkage) should be plotted.}
 }
 \value{
 The function returns:

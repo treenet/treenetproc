@@ -13,7 +13,8 @@ fillintergaps(df, reso, wnd = reso * 2.1, type = "linear")
 should be chosen to be close to the actual measurement intervals.
 \code{reso} needs to be a multiple of 5.}
 
-\item{wnd}{length of time window over which values are interpolated.}
+\item{wnd}{length of time window over which values are interpolated. Defined
+as \code{2.1 * reso}. Unit of \code{wnd} is minutes.}
 
 \item{type}{specify type of interpolation between regular timesteps.}
 }

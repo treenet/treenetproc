@@ -6,9 +6,9 @@
 \usage{
 proc_treenet_L2(site = NULL, sensor_name = NULL, from = NULL,
   to = NULL, path_cred = NULL, temp_name = NULL, reso = 10,
-  year = "asis", val_range = c(0, 20000), diffwin = 2000,
-  diffsum = 1000, lowtemp = 5, tz = "Etc/GMT-1", plot = TRUE,
-  period = "full", add = TRUE)
+  year = "asis", val_range = c(0, 20000), wnd = 6, n_mad = 8,
+  iter_clean = 2, lowtemp = 5, tz = "Etc/GMT-1", plot = TRUE,
+  period = "full", add = TRUE, plot_mds = FALSE)
 }
 \arguments{
 \item{site}{character string specifying the site. String is not
@@ -49,12 +49,20 @@ as the input data.}
 lower than \code{min} or higher than \code{max} are deleted without
 notice.}
 
-\item{diffwin}{maximal hourly difference expected in winter.}
+\item{wnd}{length of time window for which \code{mad} is calculated. A
+second longer time window (\code{wnd * 5}) is automatically added. Unit
+of \code{wnd} is days.}
 
-\item{diffsum}{maximal hourly difference expected in summer.}
+\item{n_mad}{number of \code{mad} distances from the
+first and third quartile that are still trusted. \code{n_mad} is
+increased to \code{n_mad * 10} if there is a probability of frost.}
+
+\item{iter_clean}{numeric, specifies the number of times the cleaning
+process should run.}
 
 \item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
-in stem diameter due to frost is expected.}
+in stem diameter due to frost is expected. Default value is set to
+\code{5°C} due to hysteresis shortly before or after frost events.}
 
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 
@@ -62,11 +70,14 @@ in stem diameter due to frost is expected.}
 data should be plotted.}
 
 \item{period}{specify whether plots should be displayed over the whole
-period (\code{period = "full"}) or for each year separately
-(\code{period = "yearly"}).}
+period (\code{period = "full"}), for each year separately
+(\code{period = "yearly"}) or for each month (\code{period = "monthly"}).}
 
 \item{add}{logical, specify whether \code{L1} data should be plotted along
 with \code{L2} data in the second panel of the plot.}
+
+\item{plot_mds}{logical, specify whether maxima and minima used for the
+calculation of mds (maximum daily shrinkage) should be plotted.}
 }
 \value{
 The function returns:
@@ -97,7 +108,7 @@ The function returns:
 \dontrun{
 proc_treenet_L2(site = "sagno", year = "full", period = "yearly")
 
-proc_treenet_L2(site = "lens", add = FALSE)
+proc_treenet_L2(site = "lens", period = "monthly")
 
 proc_treenet_L2(sensor_name = c("Alvaneu-2.dendrometer.ch0",
                 "Alvaneu-4.dendrometer.ch0"))
