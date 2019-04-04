@@ -56,7 +56,7 @@ cleanoutofrange <- function(df, val_range) {
 #' @examples
 #'
 creategapflag <- function(df, reso, gaple = 12 * (60 / reso)) {
-  # This function is Copyright
+
   if ("gapflag" %in% colnames(df)) {
     df <- dplyr::select(df, -gapflag)
   }
@@ -203,12 +203,7 @@ createfrostflag <- function(df, tem, lowtemp = 5) {
 #'
 #' @examples
 #'
-createflagmad <- function(df, reso, wnd = 10, n_mad = 5) {
-
-  #df <- L1_removeoutliers[100000:150000, ]
-  #reso <- 10
-  #wnd <- 6
-  #n_mad <- 5
+createflagmad <- function(df, reso, wnd = 6, n_mad = 8) {
 
   df <- df %>%
     dplyr::mutate(diff_val = ifelse(diff_val < 0.001 & diff_val > -0.001,
@@ -234,17 +229,17 @@ createflagmad <- function(df, reso, wnd = 10, n_mad = 5) {
     flagqhigh <- vector(length = nrow(df))
     for (qq in steps) {
       b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
-      q40 <- as.numeric(quantile(df$diff_val[ran], probs = 0.4,
-                                 na.rm = TRUE))
-      q60 <- as.numeric(quantile(df$diff_val[ran], probs = 0.6,
-                                 na.rm = TRUE))
+      q40 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.4,
+                                        na.rm = TRUE))
+      q60 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.6,
+                                        na.rm = TRUE))
 
       df$diff_val[ran][df$diff_val[ran] > q40 &
                          df$diff_val[ran] < q60] <- NA
-      q1 <- as.numeric(quantile(df$diff_val[ran], probs = 0.25,
-                                na.rm = TRUE))
-      q3 <- as.numeric(quantile(df$diff_val[ran], probs = 0.75,
-                                na.rm = TRUE))
+      q1 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.25,
+                                       na.rm = TRUE))
+      q3 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.75,
+                                       na.rm = TRUE))
 
       mad <- mad(df$diff_val[ran], na.rm = TRUE)
       low <- q1 - n_mad * mad
@@ -255,7 +250,6 @@ createflagmad <- function(df, reso, wnd = 10, n_mad = 5) {
       #plot(density(x = df$diff_val[ran], na.rm = T), main = df$ts[ran][1])
       #abline(v = low, col = "red")
       #abline(v = high, col = "red")
-
 
       if (!is.na(low)) {
           flagqlow[ran][df$diff_val[ran] <
@@ -288,8 +282,6 @@ createflagmad <- function(df, reso, wnd = 10, n_mad = 5) {
       flagouthigh = ifelse(flagqhigh == flagq_nr, TRUE, FALSE)) %>%
     dplyr::select(1:nc, flagoutlow, flagouthigh)
 
-  message("createflagmad is in development mode.")
-
   return(df)
 }
 
@@ -310,10 +302,6 @@ createflagmad <- function(df, reso, wnd = 10, n_mad = 5) {
 #' @examples
 #'
 createflagout <- function(df, flag, len) {
-
-  #df <- df_orig
-  #flag <- "flagoutlow"
-  #len <- 2
 
   flagout <- df %>%
     dplyr::select(flag = grep(paste0("^", flag, "$"), colnames(.))) %>%
@@ -338,7 +326,7 @@ createflagout <- function(df, flag, len) {
 #' \code{executeflagout} removes outlier values flagged by
 #'   \code{\link{createflagout}}.
 #'
-#' @param df input \{data.frame}.
+#' @param df input \code{data.frame}.
 #' @inheritParams createflagout
 #'
 #' @keywords internal
@@ -366,70 +354,6 @@ executeflagout <- function(df, len) {
     dplyr::mutate(!!paste0("flagout", passobj("flagout_nr")) := flagout) %>%
     dplyr::mutate(value = ifelse(flagout, NA, value)) %>%
     dplyr::select(1:nc, grep("^flagout[0-9]", colnames(.)))
-
-  return(df)
-}
-
-
-#' Create Flag for Abrubt Changes in Data
-#'
-#' \code{createflagdiff} creates a flag for large differences in value.
-#'
-#' @param df input \code{data.frame}.
-#' @inheritParams proc_dendro_L2
-#'
-#' @keywords internal
-#'
-#' @examples
-#'
-createflagdiff <- function(df, reso, diffwin = 1000, diffsum = 150) {
-  # This function is Copyright
-  flagdiff_nr <- length(grep("flagdiff", colnames(df)))
-  if (flagdiff_nr > 0) {
-    df <- dplyr::select(df, -flagdiff)
-  } else {
-    flagdiff_nr <- 1
-  }
-
-  df <- df %>%
-    dplyr::mutate(flagdiff = dplyr::case_when(
-      abs(diff_val) > diffsum / (60 / reso) & !frost ~ TRUE,
-      abs(diff_val) > diffwin / (60 / reso) & frost ~ TRUE)) %>%
-    dplyr::mutate(flagdiff = ifelse(is.na(flagdiff), FALSE, flagdiff)) %>%
-    dplyr::mutate(!!paste0("flagdiff", flagdiff_nr) := flagdiff)
-
-  return(df)
-}
-
-
-#' Remove Values With Diff Flag
-#'
-#' \code{executeflagdiff} removes consecutive values with large differences.
-#'
-#' @param df input \code{data.frame}.
-#' @param length specifies the minimal number of consecutive flags above which
-#'   values are overwritten with NA.
-#'
-#' @keywords internal
-#'
-#' @examples
-#'
-executeflagdiff <- function(df, length = 2) {
-  # This function is Copyright
-  wnd <- length
-  nc <- ncol(df)
-
-  df <- df %>%
-    dplyr::mutate(flagdiff_group = cumsum(flagdiff)) %>%
-    dplyr::mutate(y = c(0, diff(flagdiff_group, lag = 1))) %>%
-    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
-    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
-    dplyr::mutate(flagdiff_nr = cumsum(z)) %>%
-    dplyr::group_by(flagdiff_nr) %>%
-    dplyr::mutate(flagdiff_le = dplyr::n()) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(value = ifelse(flagdiff_le >= wnd & flagdiff, NA, value)) %>%
-    dplyr::select(1:nc)
 
   return(df)
 }
@@ -476,7 +400,8 @@ createjumpflag <- function(df, thr = 0.2) {
     dplyr::mutate(flagjump = jump) %>%
     dplyr::mutate(!!paste0("flagjump", passobj("flagjump_nr")) := flagjump) %>%
     dplyr::mutate(flagjumpout = outlier) %>%
-    dplyr::mutate(!!paste0("flagjumpout", passobj("flagjump_nr")) := flagjumpout) %>%
+    dplyr::mutate(
+      !!paste0("flagjumpout", passobj("flagjump_nr")) := flagjumpout) %>%
     dplyr::select(1:nc, grep("^(flagjumpout|flagjump)(?!.*low)(?!.*high)",
                              names(.), perl = TRUE)) %>%
     as.data.frame()
@@ -523,8 +448,6 @@ executejump <- function(df) {
     dplyr::mutate(value = ifelse(flagjumpout, NA, value)) %>%
     dplyr::select(1:nc)
 
-  message("executejump is in development mode.")
-
   return(df)
 }
 
@@ -540,7 +463,7 @@ executejump <- function(df) {
 #' @examples
 #'
 calcmax <- function(df) {
-  # This function is Copyright
+
   nc <- ncol(df)
   first_val <- df$value[which(!is.na(df$value))[1]]
 
@@ -580,8 +503,8 @@ calcmax <- function(df) {
 #' @examples
 #'
 calctwdgro  <- function(df, tz) {
-  nc <- ncol(df)
 
+  nc <- ncol(df)
   df <- df %>%
     dplyr::mutate(twd = abs(value - max)) %>%
     dplyr::mutate(gro = c(0, diff(max))) %>%
@@ -727,14 +650,6 @@ removeconsec <- function(df, remove, notremove) {
 #'
 calcmds <- function(df, tz, reso, plot_mds = FALSE) {
 
-  #df <- lens_L2 %>%
-  #  dplyr::filter(series == series[1]) %>%
-  #  #dplyr::slice(1:20000) %>%
-  #  dplyr::select(-mds)
-  #tz <- "Etc/GMT-1"
-  #reso <- 10
-  #plot_mds <- TRUE
-
   nc <- ncol(df)
 
   maxmin1 <- findmaxmin(df = df, reso = reso, st = 1)
@@ -778,8 +693,6 @@ calcmds <- function(df, tz, reso, plot_mds = FALSE) {
     dplyr::full_join(., maxmin, by = "day") %>%
     dplyr::arrange(ts) %>%
     dplyr::select(1:nc, mds)
-
-  message("calcmds is in development...")
 
   return(df)
 }
@@ -828,8 +741,6 @@ summariseflags <- function(df) {
   flags <- ifelse(flags == "NA", "", flags)
 
   df$flags <- flags
-
-  message("summariseflags is in development mode.")
 
   return(df)
 }
