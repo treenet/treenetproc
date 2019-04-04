@@ -9,6 +9,7 @@
 #' @inheritParams proc_L1
 #' @inheritParams proc_dendro_L2
 #' @inheritParams plot_dendro
+#' @inheritParams createflagmad
 #'
 #' @return The function returns:
 #'  a \code{data.frame} with processed dendrometer data containing the
@@ -40,7 +41,7 @@
 #' \dontrun{
 #' proc_treenet_L2(site = "sagno", year = "full", period = "yearly")
 #'
-#' proc_treenet_L2(site = "lens", add = FALSE)
+#' proc_treenet_L2(site = "lens", period = "monthly")
 #'
 #' proc_treenet_L2(sensor_name = c("Alvaneu-2.dendrometer.ch0",
 #'                 "Alvaneu-4.dendrometer.ch0"))
@@ -52,9 +53,10 @@
 proc_treenet_L2 <- function(site = NULL, sensor_name = NULL,
                             from = NULL, to = NULL, path_cred = NULL,
                             temp_name = NULL, reso = 10, year = "asis",
-                            val_range = c(0, 20000), diffwin = 2000,
-                            diffsum = 1000, lowtemp = 5, tz = "Etc/GMT-1",
-                            plot = TRUE, period = "full", add = TRUE) {
+                            val_range = c(0, 20000), wnd = 6, n_mad = 8,
+                            iter_clean = 2, lowtemp = 5, tz = "Etc/GMT-1",
+                            plot = TRUE, period = "full", add = TRUE,
+                            plot_mds = FALSE) {
 
   # Check input variables -----------------------------------------------------
   if (plot != TRUE & plot != FALSE) {
@@ -73,10 +75,11 @@ proc_treenet_L2 <- function(site = NULL, sensor_name = NULL,
 
   print("process data to L2...")
   df_L2 <- proc_dendro_L2(dendro_data = df_L1, val_range = val_range,
-                          diffwin = diffwin, diffsum = diffsum, tz = tz)
+                          wnd = wnd, n_mad = n_mad, iter_clean = iter_clean,
+                          lowtemp = lowtemp, plot_mds = plot_mds, tz = tz)
 
-  print("plot data...")
   if (plot) {
+    print("plot data...")
     plot_dendro(data_L1 = df_L1, data_L2 = df_L2, period = period, tz = tz,
                 add = add)
   }

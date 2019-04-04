@@ -13,11 +13,15 @@
 #'   \code{c(min, max)} of credible dendrometer measurement values. Values
 #'   lower than \code{min} or higher than \code{max} are deleted without
 #'   notice.
-#' @param diffwin maximal hourly difference expected in winter.
-#' @param diffsum maximal hourly difference expected in summer.
+#' @param iter_clean numeric, specifies the number of times the cleaning
+#'   process should run.
 #' @param lowtemp numeric, specifies temperature in °C below which shrinkage
-#'   in stem diameter due to frost is expected.
+#'   in stem diameter due to frost is expected. Default value is set to
+#'   \code{5°C} due to hysteresis shortly before or after frost events.
+#' @param plot_mds logical, specify whether maxima and minima used for the
+#'   calculation of mds (maximum daily shrinkage) should be plotted.
 #' @inheritParams proc_L1
+#' @inheritParams createflagmad
 #'
 #' @details \code{temp_data} is used to define periods in which frost shrinkage
 #'   is probable, i.e. when temperature is <5°C. Without temperature data,
@@ -59,8 +63,9 @@
 #' }
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           val_range = c(0, 20000), diffwin = 2000,
-                           diffsum = 1000, lowtemp = 5, tz = "Etc/GMT-1") {
+                           val_range = c(0, 20000), wnd = 6, n_mad = 8,
+                           iter_clean = 2, lowtemp = 5, tz = "Etc/GMT-1",
+                           plot_mds = FALSE) {
 
   # Check input variables -----------------------------------------------------
   if (!is.numeric(val_range)) {
@@ -149,29 +154,35 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     }
 
     df <- cleanoutofrange(df = df, val_range = val_range)
-    df <- creategapflag(df = df, reso = passobj("reso"),
-                        gaplength = 24 * (60 / passobj("reso")))
-    df <- calcdiff(df = df, reso = passobj("reso"))
     df <- createfrostflag(df = df, tem = tem, lowtemp = 5)
-    df <- removeoutliers(df = df, quan = 0.001, wnd = 3,
-                         reso = passobj("reso"))
+
     df <- calcdiff(df = df, reso = passobj("reso"))
-    df <- createflagdiff(df = df, reso = passobj("reso"), diffwin = diffwin,
-                         diffsum = diffsum)
-    df <- executeflagdiff(df, length = 1)
-    df <- calcdiff(df, reso = passobj("reso"))
-    df <- createflagdiff(df = df, reso = passobj("reso"), diffwin = diffwin,
-                         diffsum = diffsum)
-    df <- creategapflag(df = df, reso = passobj("reso"),
-                        gaplength = 24 * (60 / passobj("reso")))
-    df <- createjumpoutflag(df = df, thr = 0.2)
-    df <- executejumpout(df = df)
+    df <- createflagmad(df = df, reso = passobj("reso"), wnd = 6, n_mad = 8)
+    df <- executeflagout(df = df, len = 2)
+
+    clean_list <- vector("list", length = length(iter_clean))
+    clean_list[[1]] <- df
+    for (i in 1:iter_clean) {
+      df <- clean_list[[i]]
+
+      df <- calcdiff(df = df, reso = passobj("reso"))
+      df <- createflagmad(df = df, reso = passobj("reso"), wnd = 6, n_mad = 8)
+      df <- creategapflag(df = df, reso = passobj("reso"),
+                          gaple = 24 * (60 / passobj("reso")))
+      df <- createjumpflag(df = df, thr = 0.2)
+      df <- executejump(df = df)
+
+      clean_list[[i + 1]] <- df
+    }
+    df <- clean_list[[iter_clean + 1]]
+
     df <- fillintergaps(df = df, reso = passobj("reso"),
                         wnd = 4 * 60 / passobj("reso"),
                         type = "linear")
     df <- calcmax(df = df)
     df <- calctwdgro(df = df, tz = tz)
-    df <- calcmds(df = df, reso = passobj("reso"), tz = tz)
+    df <- calcmds(df = df, reso = passobj("reso"), tz = tz,
+                  plot_mds = plot_mds)
     df <- summariseflags(df = df)
 
     if (lead) {
@@ -193,5 +204,6 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
   }
 
   df <- dplyr::bind_rows(list_L2)
+
   return(df)
 }
