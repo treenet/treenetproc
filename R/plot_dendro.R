@@ -1,9 +1,9 @@
 #' Plot Processed Dendrometer Data
 #'
-#' \code{plot_dendro()} provides plots of time-aligned (\code{L1}) and
+#' \code{plot_proc_L2} provides plots of time-aligned (\code{L1}) and
 #'   processed (\code{L2}) dendrometer data to visually assess the processing.
 #'   The first panel shows the \code{L1} data and the second panel the
-#'   processed \code{L2} data. The third panel shows the weekly difference
+#'   processed \code{L2} data. The third panel shows the daily difference
 #'   between \code{L1} and \code{L2} data. Large differences without an
 #'   apparent jump in the data indicate problems in the processing.
 #'
@@ -14,6 +14,10 @@
 #' @param period specify whether plots should be displayed over the whole
 #'   period (\code{period = "full"}), for each year separately
 #'   (\code{period = "yearly"}) or for each month (\code{period = "monthly"}).
+#' @param show specify whether all periods should be plotted
+#'   (\code{show = "all"}) or only those periods in which \code{L1} and
+#'   \code{L2} dendrometer data differ after processing
+#'   (\code{show = "diff"}).
 #' @param add logical, specify whether \code{L1} data should be plotted along
 #'   with \code{L2} data in the second panel of the plot.
 #' @inheritParams proc_L1
@@ -25,47 +29,38 @@
 #'
 #' @examples
 #' \dontrun{
-#' plot_dendro(data_L1 = data_L1_dendro, data_L2 = data_L2_dendro,
+#' plot_proc_L2(data_L1 = data_L1_dendro, data_L2 = data_L2_dendro,
 #'             period = "yearly")
 #' }
-plot_dendro <- function(data_L1, data_L2, period = "full", tz = "Etc/GMT-1",
-                        add = TRUE) {
+plot_proc_L2 <- function(data_L1, data_L2, period = "full", show = "all",
+                         tz = "Etc/GMT-1", add = TRUE) {
 
   # Check input variables -----------------------------------------------------
   if (!(period %in% c("full", "yearly", "monthly"))) {
     stop("period needs to be either 'full', 'yearly' or 'monthly'.")
   }
-  if (!(add %in% c(TRUE, FALSE))) {
-    stop("add can only be 'TRUE' or 'FALSE'.")
+  if (!(show %in% c("all", "diff"))) {
+    stop("show needs to be either 'all' or 'diff'.")
   }
+  check_logical(var = add, var_name = "add")
+  check_data_L1(data_L1 = data_L1)
+  check_data_L2(data_L2 = data_L2)
 
 
-  # Check input data ----------------------------------------------------------
-  if (sum(colnames(data_L1) %in% c("series", "ts", "value", "version")) != 4) {
-    stop("provide time-aligned dendrometer data generated with 'proc_L1'.")
-  }
-  if (sum(colnames(data_L2) %in% c("series", "ts", "value", "version", "max",
-                                   "twd")) != 6) {
-    stop("provide processed dendrometer data generated with 'proc_dendro_L2'.")
-  }
-
-
-  # Calculate weekly difference -----------------------------------------------
+  # Calculate daily difference ------------------------------------------------
   sensors <- unique(data_L1$series)
 
   data_L1 <- data_L1 %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
-    dplyr::mutate(day = strftime(ts, format = "%d", tz = tz)) %>%
-    dplyr::mutate(week = strftime(ts, format = "%W", tz = tz))
+    dplyr::mutate(day = strftime(ts, format = "%d", tz = tz))
   data_L2 <- data_L2 %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
-    dplyr::mutate(day = strftime(ts, format = "%d", tz = tz)) %>%
-    dplyr::mutate(week = strftime(ts, format = "%W", tz = tz))
+    dplyr::mutate(day = strftime(ts, format = "%d", tz = tz))
   years <- unique(data_L1$year)
 
-  pdf("processing_L2_plot.pdf", width = 8.3, height = 11.7)
+  grDevices::pdf("processing_L2_plot.pdf", width = 8.3, height = 11.7)
   for (s in 1:length(sensors)) {
     sensor_label <- sensors[s]
     passenv$sensor_label <- sensor_label
@@ -78,7 +73,7 @@ plot_dendro <- function(data_L1, data_L2, period = "full", tz = "Etc/GMT-1",
       dplyr::select(series, ts, value_L1 = value) %>%
       dplyr::full_join(., data_L2_sensor, by = c("series", "ts")) %>%
       dplyr::select(series, ts, value_L1, value_L2 = value, year,
-                    month, day, week) %>%
+                    month, day) %>%
       dplyr::group_by(year, month, day) %>%
       dplyr::mutate(
         value_L1_zero = value_L1 - value_L1[which(!is.na(value_L1))[1]]) %>%
@@ -93,7 +88,7 @@ plot_dendro <- function(data_L1, data_L2, period = "full", tz = "Etc/GMT-1",
                                     format = "%Y-%m-%d", tz = tz))
 
 
-    # Plot L1, L2 and weekly diff ---------------------------------------------
+    # Plot L1, L2 and daily diff ----------------------------------------------
     if (period %in% c("yearly", "monthly")) {
 
       for (y in 1:length(years)) {
@@ -113,8 +108,12 @@ plot_dendro <- function(data_L1, data_L2, period = "full", tz = "Etc/GMT-1",
         if (period == "yearly") {
           if (sum(!is.na(data_L1_year$value)) != 0 &
               sum(!is.na(data_L2_year$value)) != 0) {
+            if (show == "diff" &
+                max(abs(diff_year$diff), na.rm = TRUE) < 0.1) {
+              next
+            }
             plot_proc(data_L1 = data_L1_year, data_L2 = data_L2_year,
-                      diff = diff_year, add = add)
+                      diff = diff_year, period = period, add = add, tz = tz)
           } else {
             next
           }
@@ -140,8 +139,12 @@ plot_dendro <- function(data_L1, data_L2, period = "full", tz = "Etc/GMT-1",
 
             if (sum(!is.na(data_L1_month$value)) != 0 &
                 sum(!is.na(data_L2_month$value)) != 0) {
+              if (show == "diff" &
+                  max(abs(diff_month$diff), na.rm = TRUE) < 0.1) {
+                next
+              }
               plot_proc(data_L1 = data_L1_month, data_L2 = data_L2_month,
-                        diff = diff_month, add = add)
+                        diff = diff_month, period = period, add = add, tz = tz)
             } else {
               next
             }
@@ -157,7 +160,7 @@ plot_dendro <- function(data_L1, data_L2, period = "full", tz = "Etc/GMT-1",
       if (sum(!is.na(data_L1_sensor$value)) != 0 &
           sum(!is.na(data_L2_sensor$value)) != 0) {
         plot_proc(data_L1 = data_L1_sensor, data_L2 = data_L2_sensor,
-                  diff = diff_sensor, add = add)
+                  diff = diff_sensor, period = period, add = add, tz = tz)
       } else {
         next
       }
