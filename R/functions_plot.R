@@ -1,16 +1,20 @@
-#' Plot Command to Plot Dendrometer Data
+#' Plot Command to Plot L2 Dendrometer Data
 #'
-#' \code{plot_proc()} contains the code necessary to plot dendormeter data.
+#' \code{plotting_proc_L2} contains the code necessary to plot \code{L2}
+#'   dendrometer data.
 #'
-#' @param ... additional parameters.
-#' @inheritParams plot_dendro
+#' @inheritParams plot_proc_L2
 #'
 #' @keywords internal
 #'
 #' @examples
 #'
-plot_proc <- function(data_L1, data_L2, diff, add) {
+plotting_proc_L2 <- function(data_L1, data_L2, diff, period, add, tz) {
 
+  # define axis labels
+  axis_labs <- axis_labels_period(df = data_L2, period = period, tz = tz)
+
+  # plot
   graphics::layout(matrix(c(1, 2, 3, 4), nrow = 4), heights = c(2, 1.6, 1, 2),
                    widths = 1)
   graphics::par(mar = c(0, 5, 4.1, 2.1))
@@ -37,11 +41,48 @@ plot_proc <- function(data_L1, data_L2, diff, add) {
   graphics::title(ylab = "log(diff[L1 - L2])", mgp = c(3.5, 1, 0))
   options(warn = 0)
   graphics::par(mar = c(4.1, 5, 0, 2.1))
-  graphics::plot(data = data_L2, twd ~ ts, type = "l",
+  graphics::plot(data = data_L2, twd ~ ts, type = "l", xaxt = "n",
                  xlab = passobj("year_label"),  ylab = "", las = 1,
                  col = "#7a0177")
+  graphics::axis(1, at = axis_labs[[1]], labels = axis_labs[[2]])
   graphics::title(ylab = "twd", mgp = c(3.5, 1, 0))
 
+}
+
+
+#' Define Axis Labels Based on Period
+#'
+#' \code{axis_labels_period} defines axis ticks and labels based on the
+#'   period used for plotting.
+#'
+#' @param df input \code{data.frame}
+#' @inheritParams plot_proc_L2
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+axis_labels_period <- function(df, period, tz) {
+
+  if (period == "full") {
+    ticks <- paste0(unique(df$year), "-01-01")
+    ticks <- as.POSIXct(ticks, format = "%Y-%m-%d", tz = tz)
+    labs <- substr(ticks, 1, 4)
+  }
+  if (period == "yearly") {
+    ticks <- paste0(unique(df$year), "-", unique(df$month), "-01")
+    ticks <- as.POSIXct(ticks, format = "%Y-%m-%d", tz = tz)
+    labs <- substr(ticks, 6, 7)
+  }
+  if (period == "monthly") {
+    ticks <- unique(substr(df$ts, 1, 10))
+    ticks <- as.POSIXct(ticks, format = "%Y-%m-%d", tz = tz)
+    labs <- substr(ticks, 9, 10)
+  }
+
+  axis_labs <- list(ticks, labs)
+
+  return(axis_labs)
 }
 
 
@@ -85,4 +126,41 @@ plot_mds <- function(df, maxmin) {
     }
   }
   grDevices::dev.off()
+}
+
+
+#' Plot Command to Plot L1 Data
+#'
+#' \code{plotting_L1} contains the code necessary to plot \code{L1}
+#'   data.
+#'
+#' @param data_L1_orig uncorrected original \code{L1} data. If specified, it
+#'   is plotted behind the corrected \code{L1} data.
+#' @inheritParams plot_proc_L2
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+plotting_L1 <- function(data_L1, data_L1_orig, period, tz) {
+
+  if (length(data_L1_orig) != 0) {
+    add <- TRUE
+  } else {
+    add <- FALSE
+  }
+
+  # define axis labels
+  axis_labs <- axis_labels_period(df = data_L1, period = period, tz = tz)
+
+  # plot
+  graphics::plot(data = data_L1, value ~ ts, type = "n",
+                 xlab = passobj("year_label"),
+                 ylab = "L1", xaxt = "n", las = 1,
+                 main = passobj("sensor_label"))
+  if (add) {
+    graphics::lines(data = data_L1_orig, value ~ ts, col = "grey70")
+  }
+  graphics::lines(data = data_L1, value ~ ts, col = "#08519c")
+  graphics::axis(1, at = axis_labs[[1]], labels = axis_labs[[2]])
 }
