@@ -58,7 +58,8 @@ cleanoutofrange <- function(df, val_range) {
 creategapflag <- function(df, reso, gaple = 12 * (60 / reso)) {
 
   if ("gapflag" %in% colnames(df)) {
-    df <- dplyr::select(df, -gapflag)
+    df <- df %>%
+      dplyr::select(-gapflag)
   }
 
   wnd <- gaple
@@ -121,7 +122,8 @@ fill_na <- function(x) {
 #'
 calcdiff <- function(df, reso) {
   if ("diff_val" %in% colnames(df)) {
-    df <- dplyr::select(df, -diff_val)
+    df <- df %>%
+      dplyr::select(-diff_val)
   }
 
   nc <- ncol(df)
@@ -183,32 +185,36 @@ createfrostflag <- function(df, tem, lowtemp = 5) {
 }
 
 
-#' Creates Flag for Outliers Based on Median Absolute Deviation
+#' Define Outliers Based on Value Distribution
 #'
-#' \code{createflagmad} creates flag for outliers that are above or below a
-#'   threshold distant from the first or third quantile. The threshold is
-#'   specified by the the median absolute deviation
-#'   (\code{\link[stats]{mad}}).
+#' \code{calcflagmad} is a helper function of \code{\link{createflagmad}}.
 #'
 #' @param df input \code{data.frame}.
-#' @param wnd length of time window for which \code{mad} is calculated. A
-#'   second longer time window (\code{wnd * 5}) is automatically added. Unit
-#'   of \code{wnd} is days.
-#' @param n_mad number of \code{mad} distances from the
-#'   first and third quartile that are still trusted. \code{n_mad} is
-#'   increased to \code{n_mad * 10} if there is a probability of frost.
-#' @inheritParams proc_dendro_L2
+#' @param frost logical, defines whether outliers should be calculated for
+#'   frost periods or other periods.
+#' @param plot_density logical, defines whether density plots should be drawn
+#'   in the console. Can be used to check outlier thresholds.
+#' @inheritParams createflagmad
 #'
 #' @keywords internal
 #'
 #' @examples
 #'
-createflagmad <- function(df, reso, wnd = 6, n_mad = 8) {
+calcflagmad <- function(df, reso, wnd = 6, n_mad = 9, frost,
+                        plot_density = FALSE) {
 
-  df <- df %>%
-    dplyr::mutate(diff_val = ifelse(diff_val < 0.001 & diff_val > -0.001,
-                                    NA, diff_val))
-  nc <- ncol(df)
+  if (!(frost %in% c(TRUE, FALSE))) {
+    stop("provide frost with TRUE or FALSE.")
+  }
+  if (frost) {
+    df <- df %>%
+      dplyr::filter(frost == TRUE)
+  }
+  if (!frost) {
+    df <- df %>%
+      dplyr::filter(frost == FALSE | is.na(frost))
+  }
+
   wnds <- c(wnd, wnd * 5)
   for (w in 1:length(wnds)) {
     span <- 60 / reso * 24 * (wnds[w] / 2)
@@ -241,23 +247,27 @@ createflagmad <- function(df, reso, wnd = 6, n_mad = 8) {
       q3 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.75,
                                        na.rm = TRUE))
 
-      mad <- mad(df$diff_val[ran], na.rm = TRUE)
+      mad <- stats::mad(df$diff_val[ran], na.rm = TRUE)
       low <- q1 - n_mad * mad
-      low_frost <- q1 - n_mad * 10 * mad
       high <- q3 + n_mad * mad
-      high_frost <- q3 + n_mad * 10 * mad
 
-      #plot(density(x = df$diff_val[ran], na.rm = T), main = df$ts[ran][1])
-      #abline(v = low, col = "red")
-      #abline(v = high, col = "red")
+      if (frost) {
+        low <- low * 15
+        high <- high * 15
+      }
+
+      if (plot_density) {
+        graphics::plot(stats::density(x = df$diff_val[ran], na.rm = T),
+                       main = df$ts[ran][1])
+        graphics::abline(v = low, col = "red")
+        graphics::abline(v = high, col = "red")
+      }
 
       if (!is.na(low)) {
-          flagqlow[ran][df$diff_val[ran] <
-                          ifelse(df$frost[ran], low_frost, low)] <- TRUE
+        flagqlow[ran][df$diff_val[ran] < low] <- TRUE
       }
       if (!is.na(high)) {
-        flagqhigh[ran][df$diff_val[ran] >
-                         ifelse(df$frost[ran], high_frost, high)] <- TRUE
+        flagqhigh[ran][df$diff_val[ran] > high] <- TRUE
       }
     }
 
@@ -272,6 +282,41 @@ createflagmad <- function(df, reso, wnd = 6, n_mad = 8) {
       dplyr::mutate(!!paste0("flagqlow", flagq_nr) := flagqlow) %>%
       dplyr::mutate(!!paste0("flagqhigh", flagq_nr) := flagqhigh)
   }
+
+  return(df)
+}
+
+
+#' Creates Flag for Outliers Based on Median Absolute Deviation
+#'
+#' \code{createflagmad} creates flag for outliers that are above or below a
+#'   threshold distant from the first or third quantile. The threshold is
+#'   specified by the the median absolute deviation
+#'   (\code{\link[stats]{mad}}).
+#'
+#' @param df input \code{data.frame}.
+#' @inheritParams proc_dendro_L2
+#' @inheritParams calcflagmad
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+createflagmad <- function(df, reso, wnd, n_mad, plot_density) {
+
+  nc <- ncol(df)
+  df <- df %>%
+    dplyr::mutate(diff_val = ifelse(diff_val < 0.001 & diff_val > -0.001,
+                                    NA, diff_val))
+
+  df_frost <- calcflagmad(df = df, reso = reso, wnd = wnd, n_mad = n_mad,
+                          frost = TRUE, plot_density = FALSE)
+  df <- calcflagmad(df = df, reso = reso, wnd = wnd, n_mad = n_mad,
+                    frost = FALSE, plot_density = FALSE) %>%
+    dplyr::bind_rows(., df_frost) %>%
+    dplyr::arrange(ts)
+
+  flagq_nr <- length(grep("flagqlow", colnames(df)))
 
   df <- df %>%
     dplyr::mutate(flagqlow = rowSums(.[grep("flagqlow", names(.))])) %>%
@@ -422,7 +467,7 @@ createjumpflag <- function(df, thr = 0.2) {
 #' @examples
 #'
 executejump <- function(df) {
-  # This function is Copyright
+
   nc <- ncol(df)
   le <- nrow(df)
   ran <- which(df$flagjump)
@@ -464,6 +509,10 @@ executejump <- function(df) {
 #'
 calcmax <- function(df) {
 
+  if ("max" %in% colnames(df)) {
+    df <- df %>%
+      dplyr::select(-max)
+  }
   nc <- ncol(df)
   first_val <- df$value[which(!is.na(df$value))[1]]
 
@@ -490,7 +539,7 @@ calcmax <- function(df) {
 }
 
 
-#' Calculates TWD and GRO
+#' Calculate TWD and GRO
 #'
 #' \code{calctwdgro} calculates the tree water deficit (twd) and the growth
 #'   since the beginning of the year (gro_yr).
@@ -504,6 +553,14 @@ calcmax <- function(df) {
 #'
 calctwdgro  <- function(df, tz) {
 
+  if ("twd" %in% colnames(df)) {
+    df <- df %>%
+      dplyr::select(-twd)
+  }
+  if ("gro_yr" %in% colnames(df)) {
+    df <- df %>%
+      dplyr::select(-gro_yr)
+  }
   nc <- ncol(df)
   df <- df %>%
     dplyr::mutate(twd = abs(value - max)) %>%
@@ -561,7 +618,7 @@ findmaxmin <- function(df, reso, st) {
 }
 
 
-#' Remove Consecutive Values
+#' Remove Consecutive Maxima or Minima
 #'
 #' \code{removeconsec} removes consecutive maxima or minima and keeps only
 #'   the higher or lower value, respectively. The function makes sure no two
@@ -632,11 +689,11 @@ removeconsec <- function(df, remove, notremove) {
 
 #' Calculate Maximum Daily Shrinkage (MDS)
 #'
-#' \code{calcmds} calculates the maximum daily shrinkage (mds). Mds is defined
-#'   as the largest daily shrinkage. First, local maxima and minima are
-#'   identified using a moving window. Mds is only calculated if a local
-#'   maximum occurs before a local minimum (i.e. if the stem shrinks during
-#'   the day).
+#' \code{calcmds} calculates the maximum daily shrinkage (\code{mds}).
+#'   \code{mds} is defined as the largest daily shrinkage. First, local
+#'   maxima and minima are identified using a moving window. \code{mds} is
+#'   only calculated if a local maximum occurs before a local minimum
+#'   (i.e. if the stem shrinks during the day).
 #'
 #' @param df input \code{data.frame}.
 #' @inheritParams proc_dendro_L2
@@ -648,8 +705,12 @@ removeconsec <- function(df, remove, notremove) {
 #'
 #' @examples
 #'
-calcmds <- function(df, tz, reso, plot_mds = FALSE) {
+calcmds <- function(df, reso, tz, plot_mds = FALSE) {
 
+  if ("mds" %in% colnames(df)) {
+    df <- df %>%
+      dplyr::select(-mds)
+  }
   nc <- ncol(df)
 
   maxmin1 <- findmaxmin(df = df, reso = reso, st = 1)
@@ -698,6 +759,47 @@ calcmds <- function(df, tz, reso, plot_mds = FALSE) {
 }
 
 
+#' Calculate Start and End of Yearly Growth
+#'
+#' \code{grostartend} returns the day of the year at which growth starts
+#'   or ends.
+#'
+#' @param df input \code{data.frame}.
+#' @param tol numeric, defines the amount of yearly growth that needs to be
+#'   surpassed for \code{gro_start} to be defined. \code{1 - tol} is the
+#'   amount of yearly growth at which \code{gro_end} is defined.
+#' @inheritParams proc_dendro_L2
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+grostartend <- function(df, tol = 0.05, tz) {
+
+  nc <- ncol(df)
+
+  df <- df %>%
+    dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
+    dplyr::group_by(year) %>%
+    dplyr::mutate(gro_tot = sum(gro_yr, na.rm = T)) %>%
+    dplyr::mutate(gro_start_tol = tol * gro_tot) %>%
+    dplyr::mutate(gro_end_tol = (1 - tol) * gro_tot) %>%
+    dplyr::mutate(gro_sum = cumsum(ifelse(is.na(gro_yr), 0, gro_yr))) %>%
+    dplyr::mutate(
+      gro_start_ind = dplyr::first(which(gro_sum <= gro_start_tol))) %>%
+    dplyr::mutate(
+      gro_start = as.numeric(strftime(ts[gro_start_ind], format = "%j"))) %>%
+    dplyr::mutate(
+      gro_end_ind = dplyr::first(which(gro_sum >= gro_end_tol))) %>%
+    dplyr::mutate(
+      gro_end = as.numeric(strftime(ts[gro_end_ind], format = "%j"))) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(1:nc, gro_start, gro_end)
+
+  return(df)
+}
+
+
 #' Summarise Flags
 #'
 #' \code{summariseflags} summarises all previously created flags in one column.
@@ -726,7 +828,7 @@ summariseflags <- function(df) {
   for (out in n_flags:(passenv$flagjump_nr + n_flags - 1)) {
     flagjump_nr <- out - n_flags + 1
     flagjumpout <- df[[paste0("flagjumpout", flagjump_nr)]]
-    list_flags[[out]] <- ifelse(flagjumpout, paste0("outjump", flagjump_nr), NA)
+    list_flags[[out]] <- ifelse(flagjumpout, paste0("jumpout", flagjump_nr), NA)
   }
   n_flags <- n_flags + passenv$flagjump_nr
   for (jump in n_flags:(passenv$flagjump_nr + n_flags - 1)) {
