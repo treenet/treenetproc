@@ -134,7 +134,8 @@ ts_overlap_check <- function(df, tem) {
 #' \code{create_temp_dummy} creates a dummy temperature dataset if local
 #'   temperature measurements are missing. Temperatures in the months December,
 #'   January and February are 0°C (i.e. frost shrinkage is possible).
-#'   Tempeartures in the other months are 10°C (i.e. no frost shrinkage).
+#'   Tempeartures in the other months are 10°C (i.e. no frost shrinkage
+#'   assumed).
 #'
 #' @param df input \code{data.frame} of dendrometer data.
 #' @inheritParams proc_L1
