@@ -20,10 +20,12 @@
 #'   (\code{show = "diff"}).
 #' @param add logical, specify whether \code{L1} data should be plotted along
 #'   with \code{L2} data in the second panel of the plot.
+#' @param plot_name character, specify name of the PDF in which the plots are
+#'   saved.
 #' @inheritParams proc_L1
 #'
 #' @return Plots are saved to current working directory as
-#'   \code{processing_L2_plot.pdf}.
+#'   \code{proc_L2_plot.pdf} or as specified in \code{plot_name}.
 #'
 #' @export
 #'
@@ -33,7 +35,8 @@
 #'             period = "yearly")
 #' }
 plot_proc_L2 <- function(data_L1, data_L2, period = "full", show = "all",
-                         tz = "Etc/GMT-1", add = TRUE) {
+                         tz = "Etc/GMT-1", add = TRUE,
+                         plot_name = "proc_L2_plot") {
 
   # Check input variables -----------------------------------------------------
   if (!(period %in% c("full", "yearly", "monthly"))) {
@@ -48,8 +51,6 @@ plot_proc_L2 <- function(data_L1, data_L2, period = "full", show = "all",
 
 
   # Calculate daily difference ------------------------------------------------
-  sensors <- unique(data_L1$series)
-
   data_L1 <- data_L1 %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
@@ -58,9 +59,11 @@ plot_proc_L2 <- function(data_L1, data_L2, period = "full", show = "all",
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
     dplyr::mutate(day = strftime(ts, format = "%d", tz = tz))
+
+  sensors <- unique(data_L1$series)
   years <- unique(data_L1$year)
 
-  grDevices::pdf("processing_L2_plot.pdf", width = 8.3, height = 11.7)
+  grDevices::pdf(paste0(plot_name, ".pdf"), width = 8.3, height = 11.7)
   for (s in 1:length(sensors)) {
     sensor_label <- sensors[s]
     passenv$sensor_label <- sensor_label
@@ -112,8 +115,9 @@ plot_proc_L2 <- function(data_L1, data_L2, period = "full", show = "all",
                 max(abs(diff_year$diff), na.rm = TRUE) < 0.1) {
               next
             }
-            plot_proc(data_L1 = data_L1_year, data_L2 = data_L2_year,
-                      diff = diff_year, period = period, add = add, tz = tz)
+            plotting_proc_L2(data_L1 = data_L1_year, data_L2 = data_L2_year,
+                             diff = diff_year, period = period, add = add,
+                             tz = tz)
           } else {
             next
           }
@@ -143,8 +147,10 @@ plot_proc_L2 <- function(data_L1, data_L2, period = "full", show = "all",
                   max(abs(diff_month$diff), na.rm = TRUE) < 0.1) {
                 next
               }
-              plot_proc(data_L1 = data_L1_month, data_L2 = data_L2_month,
-                        diff = diff_month, period = period, add = add, tz = tz)
+              plotting_proc_L2(data_L1 = data_L1_month,
+                               data_L2 = data_L2_month,
+                               diff = diff_month, period = period, add = add,
+                               tz = tz)
             } else {
               next
             }
@@ -159,8 +165,9 @@ plot_proc_L2 <- function(data_L1, data_L2, period = "full", show = "all",
 
       if (sum(!is.na(data_L1_sensor$value)) != 0 &
           sum(!is.na(data_L2_sensor$value)) != 0) {
-        plot_proc(data_L1 = data_L1_sensor, data_L2 = data_L2_sensor,
-                  diff = diff_sensor, period = period, add = add, tz = tz)
+        plotting_proc_L2(data_L1 = data_L1_sensor, data_L2 = data_L2_sensor,
+                         diff = diff_sensor, period = period, add = add,
+                         tz = tz)
       } else {
         next
       }
