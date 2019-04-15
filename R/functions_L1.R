@@ -1,7 +1,8 @@
 #' Time-Alignement of Measurements to Regular Time Intervals
 #'
 #' \code{tsalign} aligns measurements to regular time intervals by
-#'   interpolating between irregular time intervals.
+#'   interpolating between irregular time intervals. If precipitation data
+#'   is supplied the values are summed up.
 #'
 #' @param df input \code{data.frame}.
 #' @inheritParams proc_L1
@@ -15,31 +16,28 @@
 #'
 tsalign <- function(df, reso, year, tz) {
 
-  df <- generatets(df, reso, all = TRUE, year, tz)
-  df <- fillintergaps(df, reso)
-  df <- generatets(df, reso, all = FALSE, year, tz)
+  series <- unique(df$series)
 
-  return(df)
-}
+  out_generatets <- generatets(df, reso, year, tz)
+  df <- out_generatets[[1]]
+  ts_seq <- out_generatets[[2]]
 
+  if (length(grep("prec", series, ignore.case = T)) > 0) {
+    prec_sum_raw <- sum(df$value, na.rm = T)
+    df <- fillintergaps_prec(df = df, reso = reso)
+    prec_sum_proc <- sum(df$value, na.rm = T)
+    if (!(identical(prec_sum_raw, prec_sum_proc))) {
+      stop(paste0("there was an error with the time-alignement in the ",
+                  "precipitation data. Error in ", series, "."))
+    }
+  } else {
+    df <- fillintergaps(df = df, reso = reso)
+  }
 
-#' Time-Alignement of Precipitation Data to Regular Time Intervals
-#'
-#' \code{tsalign_prec} aligns precipitation measurements to regular time
-#'   intervals by summing up values of irregular time intervals.
-#'
-#' @param df input \code{data.frame}.
-#' @inheritParams proc_L1
-#'
-#' @keywords internal
-#'
-#' @examples
-#'
-tsalign_prec <- function(df, reso, year, tz) {
-
-  df <- generatets(df, reso, all = TRUE, year, tz)
-  df <- fillintergaps_prec(df, reso)
-  df <- generatets(df, reso, all = FALSE, year, tz)
+  df <- df %>%
+    dplyr::left_join(ts_seq, ., by = "ts") %>%
+    dplyr::arrange(ts) %>%
+    dplyr::distinct()
 
   return(df)
 }
@@ -47,7 +45,8 @@ tsalign_prec <- function(df, reso, year, tz) {
 
 #' Generate Regular Time Stamps
 #'
-#' \code{generatets} generates regular time stamps over whole period.
+#' \code{generatets} generates regular time stamps over whole period at
+#'   specified resolution (\code{reso}).
 #'
 #' @param df input \code{data.frame}.
 #' @inheritParams proc_L1
@@ -56,11 +55,7 @@ tsalign_prec <- function(df, reso, year, tz) {
 #'
 #' @examples
 #'
-generatets <- function(df, reso, all, year, tz) {
-
-  if (all != TRUE & all != FALSE) {
-    stop("provide 'all' with either TRUE or FALSE")
-  }
+generatets <- function(df, reso, year, tz) {
 
   if (year == "asis") {
     start_posix <- roundtimetoreso(df = df, reso = reso, pos = "start",
@@ -83,18 +78,13 @@ generatets <- function(df, reso, all, year, tz) {
   dd <- as.data.frame(dd) %>%
     dplyr::select("ts" = 1)
 
-  if (all == TRUE) {
-    df <- dplyr::full_join(dd, df, by = "ts") %>%
-      dplyr::arrange(ts) %>%
-      dplyr::distinct()
-    }
-  if (all == FALSE) {
-      df <- dplyr::left_join(dd, df, by = "ts") %>%
-        dplyr::arrange(ts) %>%
-        dplyr::distinct()
-  }
+  df <- dplyr::full_join(dd, df, by = "ts") %>%
+    dplyr::arrange(ts) %>%
+    dplyr::distinct()
 
-  return(df)
+  list_df_dd <- list(df, dd)
+
+  return(list_df_dd)
 }
 
 
@@ -113,7 +103,7 @@ generatets <- function(df, reso, all, year, tz) {
 roundtimetoreso <- function(df, reso, pos, tz) {
 
   if (!(pos %in% c("start", "end"))) {
-    stop("provide 'pos' with either 'start' or 'end'")
+    stop("provide 'pos' with either 'start' or 'end'.")
   }
 
   if (pos == "start") {
