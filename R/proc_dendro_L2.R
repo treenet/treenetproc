@@ -9,17 +9,23 @@
 #'   data. Output of function \code{proc_L1}.
 #' @param temp_data \code{data.frame} with time-aligned temperature data.
 #'   Output of function \code{proc_L1} (see Details for further information).
+#' @param wnd numeric, length of time window in \code{days} that is used to
+#'   identify outliers (see Details for further information).
+#' @param n_mad numeric, defines the thresholds above or below which values
+#'   are classified as outliers (see Details for further information).
 #' @param val_range numeric vector specifying the minimum and maximum
 #'   \code{c(min, max)} of credible dendrometer measurement values. Values
 #'   lower than \code{min} or higher than \code{max} are deleted without
 #'   notice.
 #' @param iter_clean numeric, specifies the number of times the cleaning
-#'   process should run.
+#'   process is repeated. Increase if jumps are not still not corrected after
+#'   processing.
 #' @param lowtemp numeric, specifies temperature in °C below which shrinkage
 #'   in stem diameter due to frost is expected. Default value is set to
 #'   \code{5°C} due to hysteresis shortly before or after frost events.
 #' @param plot_mds logical, specify whether maxima and minima used for the
-#'   calculation of mds (maximum daily shrinkage) should be plotted.
+#'   calculation of the maximum daily shrinkage (\code{mds}) should be
+#'   plotted.
 #' @inheritParams proc_L1
 #' @inheritParams createflagmad
 #'
@@ -34,6 +40,28 @@
 #'   dataset assumes probable frost shringkage in the months December, January
 #'   and February.
 #'
+#'   Outliers are classified based on their distance from the
+#'   \code{\link[stats]{median}} of all dendrometer values in a specified time
+#'   window (\code{wnd}). To reduce false positives, outliers need to exceed a
+#'   threshold (defined in \code{n_mad}, see below) in the user specified time
+#'   window \code{wnd} as well as in an automatically generated larger time
+#'   window \code{wnd * 5}.
+#'
+#'   Threshold values to classify outliers are defined based on the median
+#'   absolute deviation \code{\link[stats]{mad}} of all dendrometer values in
+#'   a time window. \code{n_mad} describes the number of times
+#'   \code{\link[stats]{mad}} can be added to the first or third quartile of
+#'   dendrometer values in a time window to not be classified as an outlier.
+#'   \code{n_mad} is increased to \code{n_mad * 10} in periods with probable
+#'   frost events (i.e. in periods where the air temperature is below
+#'   \code{lowtemp}).
+#'
+#'   The maximum daily shrinkage \code{mds} is calculated similarly as in
+#'   the function \code{\link[dendrometeR]{phase_def}} in the package
+#'   \code{dendrometeR}. First, local maxima and minima are identified
+#'   using a moving window. \code{mds} is only calculated if a local maximum
+#'   occurs before a local minimum (i.e. if the stem shrinks during the day).
+#'
 #' @return The function returns:
 #'  a \code{data.frame} with processed dendrometer data containing the
 #'  following columns
@@ -47,11 +75,17 @@
 #'      a local maximum that occurs before a local minimum during one day. If
 #'      there is no local maximum or minimum or if the minimum occurs prior to
 #'      the maximum, then \code{mds = NA}. This may occur on days with rain or
-#'      in winter.}
-#'    \item{gro_yr}{growth since the beginning of the year. Also calculated if
+#'      in winter (see Details for further information).}
+#'    \item{gro_yr}{growth since the beginning of the year. Also calculated
 #'      for years with missing data.}
-#'    \item{flags}{number specifying whether and which changes occurred during
-#'      the processing.}
+#'    \item{gro_start}{day of year at which growth starts. \code{gro_start} is
+#'      defined as the day of year at which 5% of total yearly growth is
+#'      surpassed.}
+#'    \item{gro_end}{day of year at which growth stops. \code{gro_end} is
+#'      defined as the day of year at which 95% of total yearly growth is
+#'      reached.}
+#'    \item{flags}{character vector specifying whether and which changes
+#'      occurred during the processing.}
 #'    \item{version}{processing version.}
 #'
 #' @export
@@ -63,9 +97,9 @@
 #' }
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           val_range = c(0, 20000), wnd = 6, n_mad = 8,
-                           iter_clean = 2, lowtemp = 5, tz = "Etc/GMT-1",
-                           plot_mds = FALSE) {
+                           val_range = c(0, 20000), wnd = 6, n_mad = 9,
+                           iter_clean = 3, lowtemp = 5, plot_mds = FALSE,
+                           tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
   if (!is.numeric(val_range)) {
@@ -154,10 +188,11 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     }
 
     df <- cleanoutofrange(df = df, val_range = val_range)
-    df <- createfrostflag(df = df, tem = tem, lowtemp = 5)
+    df <- createfrostflag(df = df, tem = tem, lowtemp = lowtemp)
 
     df <- calcdiff(df = df, reso = passobj("reso"))
-    df <- createflagmad(df = df, reso = passobj("reso"), wnd = 6, n_mad = 8)
+    df <- createflagmad(df = df, reso = passobj("reso"), wnd = wnd,
+                        n_mad = n_mad)
     df <- executeflagout(df = df, len = 2)
 
     clean_list <- vector("list", length = length(iter_clean))
@@ -166,7 +201,8 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       df <- clean_list[[i]]
 
       df <- calcdiff(df = df, reso = passobj("reso"))
-      df <- createflagmad(df = df, reso = passobj("reso"), wnd = 6, n_mad = 8)
+      df <- createflagmad(df = df, reso = passobj("reso"), wnd = wnd,
+                          n_mad = n_mad)
       df <- creategapflag(df = df, reso = passobj("reso"),
                           gaple = 24 * (60 / passobj("reso")))
       df <- createjumpflag(df = df, thr = 0.2)
@@ -181,6 +217,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                         type = "linear")
     df <- calcmax(df = df)
     df <- calctwdgro(df = df, tz = tz)
+    df <- grostartend(df = df, tol = 0.05, tz = tz)
     df <- calcmds(df = df, reso = passobj("reso"), tz = tz,
                   plot_mds = plot_mds)
     df <- summariseflags(df = df)
@@ -198,7 +235,8 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       dplyr::mutate(twd = ifelse(is.na(value), NA, twd)) %>%
       dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
       dplyr::mutate(version = 2) %>%
-      dplyr::select(series, ts, value, max, twd, mds, gro_yr, flags, version)
+      dplyr::select(series, ts, value, max, twd, mds, gro_yr, gro_start,
+                    gro_end, flags, version)
 
     list_L2[[s]] <- df
   }
