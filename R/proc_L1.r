@@ -66,17 +66,7 @@ proc_L1 <- function(data, reso = 10, year = "asis", tz = "Etc/GMT-1",
     df <- df_L0 %>%
       dplyr::filter(series == series_vec[s])
 
-    if (length(grep("prec", series_vec[s], ignore.case = T)) > 0) {
-      prec_sum_raw <- sum(df$value, na.rm = T)
-      df <- tsalign_prec(df = df, reso = reso, year = year, tz = tz)
-      prec_sum_proc <- sum(df$value, na.rm = T)
-      if (!(identical(prec_sum_raw, prec_sum_proc))) {
-        stop(paste0("there was an error with the time-alignement in the ",
-             "precipitation data. Error in ", series_vec[s], "."))
-      }
-    } else {
-      df <- tsalign(df = df, reso = reso, year = year, tz = tz)
-    }
+    df <- tsalign(df = df, reso = reso, year = year, tz = tz)
 
     df <- df %>%
       dplyr::mutate(series = series_vec[s]) %>%
@@ -86,5 +76,6 @@ proc_L1 <- function(data, reso = 10, year = "asis", tz = "Etc/GMT-1",
   }
 
   df <- dplyr::bind_rows(list_L1)
+
   return(df)
 }

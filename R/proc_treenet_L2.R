@@ -8,7 +8,7 @@
 #' @inheritParams select_data
 #' @inheritParams proc_L1
 #' @inheritParams proc_dendro_L2
-#' @inheritParams plot_dendro
+#' @inheritParams plot_proc_L2
 #' @inheritParams createflagmad
 #'
 #' @return The function returns:
@@ -34,6 +34,7 @@
 #' @seealso \code{\link{proc_L1}} to process dendrometer or climate data to
 #'   \code{L1} only (i.e. time-aligned data), \code{\link{proc_dendro_L2}}
 #'   to process dendrometer data from \code{L1} to \code{L2}.
+#'   \code{\link{corr_dendro_L3}} to correct errors in processing.
 #'
 #' @export
 #'
@@ -53,15 +54,13 @@
 proc_treenet_L2 <- function(site = NULL, sensor_name = NULL,
                             from = NULL, to = NULL, path_cred = NULL,
                             temp_name = NULL, reso = 10, year = "asis",
-                            val_range = c(0, 20000), wnd = 6, n_mad = 8,
-                            iter_clean = 2, lowtemp = 5, tz = "Etc/GMT-1",
-                            plot = TRUE, period = "full", add = TRUE,
-                            plot_mds = FALSE) {
+                            val_range = c(0, 20000), wnd = 6, n_mad = 9,
+                            iter_clean = 3, lowtemp = 5, tz = "Etc/GMT-1",
+                            plot = TRUE, period = "full", show = "all",
+                            add = TRUE, plot_mds = FALSE) {
 
   # Check input variables -----------------------------------------------------
-  if (plot != TRUE & plot != FALSE) {
-    stop("provide 'plot' with either TRUE or FALSE")
-  }
+  check_logical(var = plot, var_name = "plot")
 
 
   # Process data to L2 --------------------------------------------------------
@@ -80,9 +79,10 @@ proc_treenet_L2 <- function(site = NULL, sensor_name = NULL,
 
   if (plot) {
     print("plot data...")
-    plot_dendro(data_L1 = df_L1, data_L2 = df_L2, period = period, tz = tz,
-                add = add)
+    plot_proc_L2(data_L1 = df_L1, data_L2 = df_L2, period = period,
+                 show = show, tz = tz, add = add)
   }
+
   print("Done!")
   return(df_L2)
 }
