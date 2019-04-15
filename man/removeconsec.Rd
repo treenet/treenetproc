@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_L2.R
 \name{removeconsec}
 \alias{removeconsec}
-\title{Remove Consecutive Values}
+\title{Remove Consecutive Maxima or Minima}
 \usage{
 removeconsec(df, remove, notremove)
 }

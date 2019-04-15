@@ -4,7 +4,7 @@
 \alias{generatets}
 \title{Generate Regular Time Stamps}
 \usage{
-generatets(df, reso, all, year, tz)
+generatets(df, reso, year, tz)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
@@ -21,7 +21,8 @@ as the input data.}
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 }
 \description{
-\code{generatets} generates regular time stamps over whole period.
+\code{generatets} generates regular time stamps over whole period at
+  specified resolution (\code{reso}).
 }
 \examples{
 

@@ -5,8 +5,8 @@
 \title{Process L1 Dendrometer Data to L2}
 \usage{
 proc_dendro_L2(dendro_data, temp_data = NULL, val_range = c(0, 20000),
-  wnd = 6, n_mad = 8, iter_clean = 2, lowtemp = 5,
-  tz = "Etc/GMT-1", plot_mds = FALSE)
+  wnd = 6, n_mad = 9, iter_clean = 3, lowtemp = 5,
+  plot_mds = FALSE, tz = "Etc/GMT-1")
 }
 \arguments{
 \item{dendro_data}{\code{data.frame} with time-aligned dendrometer
@@ -20,25 +20,25 @@ Output of function \code{proc_L1} (see Details for further information).}
 lower than \code{min} or higher than \code{max} are deleted without
 notice.}
 
-\item{wnd}{length of time window for which \code{mad} is calculated. A
-second longer time window (\code{wnd * 5}) is automatically added. Unit
-of \code{wnd} is days.}
+\item{wnd}{numeric, length of time window in \code{days} that is used to
+identify outliers (see Details for further information).}
 
-\item{n_mad}{number of \code{mad} distances from the
-first and third quartile that are still trusted. \code{n_mad} is
-increased to \code{n_mad * 10} if there is a probability of frost.}
+\item{n_mad}{numeric, defines the thresholds above or below which values
+are classified as outliers (see Details for further information).}
 
 \item{iter_clean}{numeric, specifies the number of times the cleaning
-process should run.}
+process is repeated. Increase if jumps are not still not corrected after
+processing.}
 
 \item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
 in stem diameter due to frost is expected. Default value is set to
 \code{5°C} due to hysteresis shortly before or after frost events.}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
-
 \item{plot_mds}{logical, specify whether maxima and minima used for the
-calculation of mds (maximum daily shrinkage) should be plotted.}
+calculation of the maximum daily shrinkage (\code{mds}) should be
+plotted.}
+
+\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 }
 \value{
 The function returns:
@@ -54,11 +54,17 @@ The function returns:
      a local maximum that occurs before a local minimum during one day. If
      there is no local maximum or minimum or if the minimum occurs prior to
      the maximum, then \code{mds = NA}. This may occur on days with rain or
-     in winter.}
-   \item{gro_yr}{growth since the beginning of the year. Also calculated if
+     in winter (see Details for further information).}
+   \item{gro_yr}{growth since the beginning of the year. Also calculated
      for years with missing data.}
-   \item{flags}{number specifying whether and which changes occurred during
-     the processing.}
+   \item{gro_start}{day of year at which growth starts. \code{gro_start} is
+     defined as the day of year at which 5% of total yearly growth is
+     surpassed.}
+   \item{gro_end}{day of year at which growth stops. \code{gro_end} is
+     defined as the day of year at which 95% of total yearly growth is
+     reached.}
+   \item{flags}{character vector specifying whether and which changes
+     occurred during the processing.}
    \item{version}{processing version.}
 }
 \description{
@@ -78,6 +84,28 @@ The function returns:
   temperature dataset will be used with a warning. The sample temperature
   dataset assumes probable frost shringkage in the months December, January
   and February.
+
+  Outliers are classified based on their distance from the
+  \code{\link[stats]{median}} of all dendrometer values in a specified time
+  window (\code{wnd}). To reduce false positives, outliers need to exceed a
+  threshold (defined in \code{n_mad}, see below) in the user specified time
+  window \code{wnd} as well as in an automatically generated larger time
+  window \code{wnd * 5}.
+
+  Threshold values to classify outliers are defined based on the median
+  absolute deviation \code{\link[stats]{mad}} of all dendrometer values in
+  a time window. \code{n_mad} describes the number of times
+  \code{\link[stats]{mad}} can be added to the first or third quartile of
+  dendrometer values in a time window to not be classified as an outlier.
+  \code{n_mad} is increased to \code{n_mad * 10} in periods with probable
+  frost events (i.e. in periods where the air temperature is below
+  \code{lowtemp}).
+
+  The maximum daily shrinkage \code{mds} is calculated similarly as in
+  the function \code{\link[dendrometeR]{phase_def}} in the package
+  \code{dendrometeR}. First, local maxima and minima are identified
+  using a moving window. \code{mds} is only calculated if a local maximum
+  occurs before a local minimum (i.e. if the stem shrinks during the day).
 }
 \examples{
 \dontrun{

@@ -4,7 +4,7 @@
 \alias{calcmds}
 \title{Calculate Maximum Daily Shrinkage (MDS)}
 \usage{
-calcmds(df, tz, reso, plot_mds = FALSE)
+calcmds(df, reso, tz, plot_mds = FALSE)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
@@ -12,14 +12,15 @@ calcmds(df, tz, reso, plot_mds = FALSE)
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 
 \item{plot_mds}{logical, specify whether maxima and minima used for the
-calculation of mds (maximum daily shrinkage) should be plotted.}
+calculation of the maximum daily shrinkage (\code{mds}) should be
+plotted.}
 }
 \description{
-\code{calcmds} calculates the maximum daily shrinkage (mds). Mds is defined
-  as the largest daily shrinkage. First, local maxima and minima are
-  identified using a moving window. Mds is only calculated if a local
-  maximum occurs before a local minimum (i.e. if the stem shrinks during
-  the day).
+\code{calcmds} calculates the maximum daily shrinkage (\code{mds}).
+  \code{mds} is defined as the largest daily shrinkage. First, local
+  maxima and minima are identified using a moving window. \code{mds} is
+  only calculated if a local maximum occurs before a local minimum
+  (i.e. if the stem shrinks during the day).
 }
 \details{
 \code{calcmds} is inspired by the function

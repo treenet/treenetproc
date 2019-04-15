@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_L2.R
 \name{calctwdgro}
 \alias{calctwdgro}
-\title{Calculates TWD and GRO}
+\title{Calculate TWD and GRO}
 \usage{
 calctwdgro(df, tz)
 }

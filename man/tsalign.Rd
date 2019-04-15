@@ -26,7 +26,8 @@ intervals, i.e. to \code{reso}.
 }
 \description{
 \code{tsalign} aligns measurements to regular time intervals by
-  interpolating between irregular time intervals.
+  interpolating between irregular time intervals. If precipitation data
+  is supplied the values are summed up.
 }
 \examples{
 

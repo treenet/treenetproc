@@ -4,18 +4,19 @@
 \alias{createflagmad}
 \title{Creates Flag for Outliers Based on Median Absolute Deviation}
 \usage{
-createflagmad(df, reso, wnd = 6, n_mad = 8)
+createflagmad(df, reso, wnd, n_mad, plot_density)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{wnd}{length of time window for which \code{mad} is calculated. A
-second longer time window (\code{wnd * 5}) is automatically added. Unit
-of \code{wnd} is days.}
+\item{wnd}{numeric, length of time window in \code{days} that is used to
+identify outliers (see Details for further information).}
 
-\item{n_mad}{number of \code{mad} distances from the
-first and third quartile that are still trusted. \code{n_mad} is
-increased to \code{n_mad * 10} if there is a probability of frost.}
+\item{n_mad}{numeric, defines the thresholds above or below which values
+are classified as outliers (see Details for further information).}
+
+\item{plot_density}{logical, defines whether density plots should be drawn
+in the console. Can be used to check outlier thresholds.}
 }
 \description{
 \code{createflagmad} creates flag for outliers that are above or below a
