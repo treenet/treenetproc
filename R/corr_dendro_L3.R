@@ -102,6 +102,7 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
 
   df <- calcmax(df = df)
   df <- calctwdgro(df = df, tz = tz)
+  df <- grostartend(df = df, tol = 0.05, tz = tz)
   passenv$reso <- reso_check(df = df)
   df <- calcmds(df = df, reso = passobj("reso"), tz = tz,
                 plot_mds = FALSE)
@@ -114,8 +115,8 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
     dplyr::mutate(twd = ifelse(is.na(value), NA, twd)) %>%
     dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
     dplyr::mutate(version = 3) %>%
-    dplyr::select(series, ts, value, max, twd, mds, gro_yr, flags,
-                  version)
+    dplyr::select(series, ts, value, max, twd, mds, gro_yr, gro_start,
+                  gro_end, flags, version)
 
   if (plot) {
     if (length(remove) != 0) {
