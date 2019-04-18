@@ -3,16 +3,20 @@
 #' \code{plotting_proc_L2} contains the code necessary to plot \code{L2}
 #'   dendrometer data.
 #'
+#' @param plot_add logical, specify whether \code{L1} data should be plotted
+#'   along with \code{L2} data in the second panel of the plot.
 #' @inheritParams plot_proc_L2
 #'
 #' @keywords internal
 #'
 #' @examples
 #'
-plotting_proc_L2 <- function(data_L1, data_L2, diff, period, add, tz) {
+plotting_proc_L2 <- function(data_L1, data_L2, diff, plot_period,
+                             plot_add = TRUE, tz) {
 
   # define axis labels
-  axis_labs <- axis_labels_period(df = data_L2, period = period, tz = tz)
+  axis_labs <- axis_labels_period(df = data_L2, plot_period = plot_period,
+                                  tz = tz)
 
   # plot
   graphics::layout(matrix(c(1, 2, 3, 4), nrow = 4), heights = c(2, 1.6, 1, 2),
@@ -24,7 +28,7 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, period, add, tz) {
   graphics::par(mar = c(0, 5, 0, 2.1))
   graphics::plot(data = data_L2, value ~ ts, type = "n", xaxt = "n", ylab = "",
                  las = 1)
-  if (add) {
+  if (plot_add) {
     graphics::lines(data = data_L1, value ~ ts, col = "grey70")
   }
   graphics::lines(data = data_L2, value ~ ts, col = "#08519c")
@@ -35,10 +39,17 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, period, add, tz) {
                  yaxt = "n", xaxt = "n", ylab = "", ylim = c(0.1, 1200),
                  las = 1)
   graphics::abline(h = c(0.1, 1, 10, 100, 1000), col = "grey70")
-  graphics::lines(data = diff, diff ~ ts, type = "h", lwd = 2, col = "#b30000")
+  graphics::lines(data = diff, diff_plot_old ~ ts, type = "h", lwd = 2,
+                  col = "grey70")
+  graphics::lines(data = diff, diff_plot ~ ts, type = "h", lwd = 2,
+                  col = "#fc9272")
+  if (plot_period == "monthly") {
+    text(x = diff$ts, y = rep(c(0.3, 1, 3, 10), length.out = nrow(diff)),
+         labels = diff$diff_nr, font = 2)
+  }
   graphics::axis(2, at = c(0.1, 1, 10, 100, 1000),
                  labels = c(0, 1, 10, 100, 1000), las = 1)
-  graphics::title(ylab = "log(diff[L1 - L2])", mgp = c(3.5, 1, 0))
+  graphics::title(ylab = "difference [L1 - L2]", mgp = c(3.5, 1, 0))
   options(warn = 0)
   graphics::par(mar = c(4.1, 5, 0, 2.1))
   graphics::plot(data = data_L2, twd ~ ts, type = "l", xaxt = "n",
@@ -46,7 +57,44 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, period, add, tz) {
                  col = "#7a0177")
   graphics::axis(1, at = axis_labs[[1]], labels = axis_labs[[2]])
   graphics::title(ylab = "twd", mgp = c(3.5, 1, 0))
+}
 
+
+#' Add Shadow to Text
+#'
+#'  \code{shadowtext} adds a border to text in an R-plot.
+#'    Function copied from \url{https://stackoverflow.com/questions/25631216/
+#'    r-plots-is-there-any-way-to-draw-border-shadow-or-buffer-around-text-
+#'    labels}
+#'
+#' @param x x-coordinates.
+#' @param y optional, y-coordinates.
+#' @param labels character vector including the labels.
+#' @param col character, color of text.
+#' @param bg character, color of shadow.
+#' @param theta used to create outlines.
+#' @param r numeric, size of shadow.
+#' @param ... additional plotting parameters.
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+shadowtext <- function(x, y = NULL, labels, col = "white", bg = "black",
+                       theta = seq(0, 2 * pi, length.out = 50), r = 0.2,
+                       ...) {
+
+  xy <- grDevices::xy.coords(x, y)
+  xo <- r * graphics::strwidth("A")
+  yo <- r * graphics::strheight("A")
+
+  # draw background text with small shift in x and y in background colour
+  for (i in theta) {
+    graphics::text(xy$x + cos(i) * xo, xy$y + sin(i) * yo, labels,
+                   col = bg, ...)
+  }
+  # draw actual text in exact xy position in foreground colour
+  graphics::text(xy$x, xy$y, labels, col = col, ... )
 }
 
 
@@ -62,19 +110,19 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, period, add, tz) {
 #'
 #' @examples
 #'
-axis_labels_period <- function(df, period, tz) {
+axis_labels_period <- function(df, plot_period, tz) {
 
-  if (period == "full") {
+  if (plot_period == "full") {
     ticks <- paste0(unique(df$year), "-01-01")
     ticks <- as.POSIXct(ticks, format = "%Y-%m-%d", tz = tz)
     labs <- substr(ticks, 1, 4)
   }
-  if (period == "yearly") {
+  if (plot_period == "yearly") {
     ticks <- paste0(unique(df$year), "-", unique(df$month), "-01")
     ticks <- as.POSIXct(ticks, format = "%Y-%m-%d", tz = tz)
     labs <- substr(ticks, 6, 7)
   }
-  if (period == "monthly") {
+  if (plot_period == "monthly") {
     ticks <- unique(substr(df$ts, 1, 10))
     ticks <- as.POSIXct(ticks, format = "%Y-%m-%d", tz = tz)
     labs <- substr(ticks, 9, 10)
@@ -118,11 +166,15 @@ plot_mds <- function(df, maxmin) {
       df_plot <- df_series %>%
         dplyr::filter(month == m)
 
-      graphics::plot(x = df_plot$ts, y = df_plot$value, type = "l",
-                     xlab = substr(df_plot$ts[1], 1, 7), ylab = "value",
-                     main = df_plot$series[1])
-      graphics::points(x = maxmin$ts, y = maxmin$max1, pch = 1)
-      graphics::points(x = maxmin$ts, y = maxmin$min1, pch = 2)
+      if (sum(!is.na(df_plot$value)) != 0) {
+        graphics::plot(x = df_plot$ts, y = df_plot$value, type = "l",
+                       xlab = substr(df_plot$ts[1], 1, 7), ylab = "value",
+                       main = df_plot$series[1])
+        graphics::points(x = maxmin$ts, y = maxmin$max1, pch = 1)
+        graphics::points(x = maxmin$ts, y = maxmin$min1, pch = 2)
+      } else {
+        next
+      }
     }
   }
   grDevices::dev.off()
@@ -142,23 +194,24 @@ plot_mds <- function(df, maxmin) {
 #'
 #' @examples
 #'
-plotting_L1 <- function(data_L1, data_L1_orig, period, tz) {
+plotting_L1 <- function(data_L1, data_L1_orig, plot_period, tz) {
 
   if (length(data_L1_orig) != 0) {
-    add <- TRUE
+    plot_add <- TRUE
   } else {
-    add <- FALSE
+    plot_add <- FALSE
   }
 
   # define axis labels
-  axis_labs <- axis_labels_period(df = data_L1, period = period, tz = tz)
+  axis_labs <- axis_labels_period(df = data_L1, plot_period = plot_period,
+                                  tz = tz)
 
   # plot
   graphics::plot(data = data_L1, value ~ ts, type = "n",
                  xlab = passobj("year_label"),
                  ylab = "L1", xaxt = "n", las = 1,
                  main = passobj("sensor_label"))
-  if (add) {
+  if (plot_add) {
     graphics::lines(data = data_L1_orig, value ~ ts, col = "grey70")
   }
   graphics::lines(data = data_L1, value ~ ts, col = "#08519c")
