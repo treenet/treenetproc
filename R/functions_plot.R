@@ -42,10 +42,11 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, plot_period,
   graphics::lines(data = diff, diff_plot_old ~ ts, type = "h", lwd = 2,
                   col = "grey70")
   graphics::lines(data = diff, diff_plot ~ ts, type = "h", lwd = 2,
-                  col = "#fc9272")
+                  col = "#ef3b2c")
   if (plot_period == "monthly") {
-    text(x = diff$ts, y = rep(c(0.3, 1, 3, 10), length.out = nrow(diff)),
-         labels = diff$diff_nr, font = 2)
+    graphics::text(x = diff$ts,
+                   y = rep(c(0.3, 1, 3, 10), length.out = nrow(diff)),
+                   labels = diff$diff_nr, font = 2)
   }
   graphics::axis(2, at = c(0.1, 1, 10, 100, 1000),
                  labels = c(0, 1, 10, 100, 1000), las = 1)
@@ -57,44 +58,6 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, plot_period,
                  col = "#7a0177")
   graphics::axis(1, at = axis_labs[[1]], labels = axis_labs[[2]])
   graphics::title(ylab = "twd", mgp = c(3.5, 1, 0))
-}
-
-
-#' Add Shadow to Text
-#'
-#'  \code{shadowtext} adds a border to text in an R-plot.
-#'    Function copied from \url{https://stackoverflow.com/questions/25631216/
-#'    r-plots-is-there-any-way-to-draw-border-shadow-or-buffer-around-text-
-#'    labels}
-#'
-#' @param x x-coordinates.
-#' @param y optional, y-coordinates.
-#' @param labels character vector including the labels.
-#' @param col character, color of text.
-#' @param bg character, color of shadow.
-#' @param theta used to create outlines.
-#' @param r numeric, size of shadow.
-#' @param ... additional plotting parameters.
-#'
-#' @keywords internal
-#'
-#' @examples
-#'
-shadowtext <- function(x, y = NULL, labels, col = "white", bg = "black",
-                       theta = seq(0, 2 * pi, length.out = 50), r = 0.2,
-                       ...) {
-
-  xy <- grDevices::xy.coords(x, y)
-  xo <- r * graphics::strwidth("A")
-  yo <- r * graphics::strheight("A")
-
-  # draw background text with small shift in x and y in background colour
-  for (i in theta) {
-    graphics::text(xy$x + cos(i) * xo, xy$y + sin(i) * yo, labels,
-                   col = bg, ...)
-  }
-  # draw actual text in exact xy position in foreground colour
-  graphics::text(xy$x, xy$y, labels, col = col, ... )
 }
 
 
