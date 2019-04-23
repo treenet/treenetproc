@@ -31,7 +31,7 @@ tsalign <- function(df, reso, year, tz) {
                   "precipitation data. Error in ", series, "."))
     }
   } else {
-    df <- fillintergaps(df = df, reso = reso)
+    df <- fillintergaps(df = df, reso = reso, flag = FALSE)
   }
 
   df <- df %>%
@@ -150,7 +150,8 @@ roundtimetoreso <- function(df, reso, pos, tz) {
 #'
 #' @examples
 #'
-fillintergaps <- function(df, reso, wnd = reso * 2.1, type = "linear") {
+fillintergaps <- function(df, reso, wnd = reso * 2.1, type = "linear",
+                          flag = FALSE) {
 
   if (type != "linear" | length(type) == 0) {
     print("no gapfilling...")
@@ -190,7 +191,16 @@ fillintergaps <- function(df, reso, wnd = reso * 2.1, type = "linear") {
       dplyr::mutate(gaple_mins = sum(diff_ts)) %>%
       dplyr::ungroup() %>%
       dplyr::mutate(value = ifelse(isgap & gaple_mins < wnd,
-                                   stats::approx(ts, value, ts)$y, value)) %>%
+                                   stats::approx(ts, value, ts)$y, value))
+  }
+
+  if (flag) {
+    df <- df %>%
+      dplyr::mutate(flagfill = ifelse(isgap & gaple_mins < wnd,
+                                      TRUE, FALSE)) %>%
+      dplyr::select(1:nc, flagfill)
+  } else {
+    df <- df %>%
       dplyr::select(1:nc)
   }
 
