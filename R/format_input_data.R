@@ -20,6 +20,39 @@ check_format <- function(df, input) {
 }
 
 
+#' Check TS Column
+#'
+#' \code{check_ts} checks whether the 'ts' column is in a standard date
+#'   or datetime format.
+#'
+#' @param df input \code{data.frame}.
+#' @inheritParams proc_L1
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+check_ts <- function(df, date_format, tz) {
+
+  if (!("ts" %in% colnames(df))) {
+    stop("column with time stamps (named 'ts') missing.")
+  }
+
+  ts <- as.character(df$ts)
+  ts <- as.POSIXct(ts, format = date_format, tz = tz)
+
+  if (is.na(unique(ts)[1])) {
+    stop(paste("Date format in 'ts' not recognized. Please provide",
+               "'ts' in a valid format or specify a custom format in",
+               "'date_format'."))
+  }
+
+  df$ts <- ts
+
+  return(df)
+}
+
+
 #' Format Input Data
 #'
 #' \code{format_input} formats input data. Wide format is convertet to long
