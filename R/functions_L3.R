@@ -9,7 +9,7 @@
 #'
 #' @examples
 #'
-removejump <- function(data_L1, data_L2, remove) {
+removejump <- function(data_L1, data_L2, remove, tz) {
 
   L1 <- data_L1 %>%
     dplyr::mutate(diff_L1 = c(NA, diff(value, lag = 1))) %>%
@@ -19,34 +19,41 @@ removejump <- function(data_L1, data_L2, remove) {
   df <- data_L2 %>%
     dplyr::mutate(diff_L2 = c(NA, diff(value, lag = 1))) %>%
     dplyr::left_join(., L1, by = c("series", "ts")) %>%
-    dplyr::mutate(diff_L2_L1 = diff_L1 - diff_L2) %>%
-    dplyr::mutate(
-      diff_L2_L1 = ifelse(abs(diff_L2_L1) <= 0.001, 0, diff_L2_L1))
+    dplyr::mutate(diff = diff_L1 - diff_L2) %>%
+    dplyr::mutate(diff = ifelse(abs(diff) <= 0.001, 0, diff)) %>%
+    dplyr::mutate(diff = ifelse(is.na(diff), 0, diff)) %>%
+    dplyr::mutate(diff_nr = ifelse(diff != 0, 1, 0)) %>%
+    dplyr::mutate(diff_nr = cumsum(diff_nr)) %>%
+    dplyr::mutate(diff_nr = ifelse(diff == 0, NA, diff_nr))
 
   val <- df$value
-  diff <- df$diff_L2_L1; diff <- ifelse(is.na(diff), 0, diff)
+  diff <- df$diff
   ts <- df$ts
+  ts_rem <- df$ts[df$diff_nr %in% remove]
+  ts_rem <- as.POSIXct(paste(substr(as.character(ts_rem), 1, 10), "00:00:00"),
+                       format = "%Y-%m-%d %H:%M:%S", tz = tz)
   flag <- as.vector(rep(FALSE, nrow(df)), mode = "logical")
-  for (r in 1:length(remove)) {
-    rem <- remove[r]
-    pos_rem <- which(ts == rem)
-    pos_diff <- which(diff[pos_rem:length(diff)] != 0) + pos_rem - 1
-    # select all differences that are within 10 timesteps
-    pos_diff_10 <- pos_diff[which(pos_diff <= pos_diff[1] + 10)]
-
-    for (d in 1:length(pos_diff_10)) {
-      pos_diff <- pos_diff_10[d]
-      val_diff <- diff[pos_diff]
-      val[pos_diff:length(val)] <- val[pos_diff:length(val)] + val_diff
-      flag[pos_diff] <- TRUE
-    }
+  remove_row <- which(df$diff_nr %in% remove)
+  for (r in 1:length(remove_row)) {
+    rem <- remove_row[r]
+    val_diff <- diff[rem]
+    val[rem:length(val)] <- val[rem:length(val)] + val_diff
+    flag[rem] <- TRUE
   }
+
+  # removed differences for plotting
+  diff_old <- df %>%
+    dplyr::filter(diff_nr %in% remove) %>%
+    dplyr::mutate(diff_plot_old = abs(diff)) %>%
+    dplyr::select(ts, diff_plot_old)
 
   df <- data_L2 %>%
     dplyr::mutate(value = val) %>%
     dplyr::mutate(flagremovejump = flag)
 
-  return(df)
+  list_return <- list(df, diff_old)
+
+  return(list_return)
 }
 
 
@@ -173,7 +180,7 @@ summariseflagscorr <- function(df, remove = NULL, force = NULL,
   flags <- do.call("paste", c(list_all, sep = ", "))
   flags <- gsub(", NA", "", flags)
   flags <- gsub("NA, ", "", flags)
-  flags <- ifelse(flags == "NA", "", flags)
+  flags <- ifelse(flags == "NA", NA, flags)
 
   df$flags <- flags
 
