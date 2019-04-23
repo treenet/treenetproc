@@ -5,7 +5,7 @@
 \title{Select Dendrometer and Temperature Data from Treenet Server}
 \usage{
 select_data(site = NULL, sensor_name = NULL, from = NULL,
-  to = NULL, path_cred = NULL, temp_name = NULL)
+  to = NULL, path_cred = NULL, temp_name = NULL, tz = "Etc/GMT-1")
 }
 \arguments{
 \item{site}{character string specifying the site. String is not
@@ -31,6 +31,8 @@ temperature dataset. Needed if there are no or multiple on-site air
 temperature measurements. If \code{temp_name} is not specified and no
 temperature dataset is found on the server, a sample dataset will be
 used with a warning.}
+
+\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 }
 \description{
 \code{select_data()} accesses and downloads dendrometer and temperature

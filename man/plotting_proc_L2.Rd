@@ -4,7 +4,8 @@
 \alias{plotting_proc_L2}
 \title{Plot Command to Plot L2 Dendrometer Data}
 \usage{
-plotting_proc_L2(data_L1, data_L2, diff, period, add, tz)
+plotting_proc_L2(data_L1, data_L2, diff, plot_period, plot_add = TRUE,
+  tz)
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by
@@ -13,12 +14,13 @@ plotting_proc_L2(data_L1, data_L2, diff, period, add, tz)
 \item{data_L2}{processed dendrometer data as produced by
 \code{\link{proc_dendro_L2}}.}
 
-\item{period}{specify whether plots should be displayed over the whole
-period (\code{period = "full"}), for each year separately
-(\code{period = "yearly"}) or for each month (\code{period = "monthly"}).}
+\item{plot_period}{specify whether plots should be displayed over the whole
+plot_period (\code{plot_period = "full"}), for each year separately
+(\code{plot_period = "yearly"}) or for each month
+(\code{plot_period = "monthly"}).}
 
-\item{add}{logical, specify whether \code{L1} data should be plotted along
-with \code{L2} data in the second panel of the plot.}
+\item{plot_add}{logical, specify whether \code{L1} data should be plotted
+along with \code{L2} data in the second panel of the plot.}
 
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 }

@@ -4,11 +4,14 @@
 \alias{calcflagmad}
 \title{Define Outliers Based on Value Distribution}
 \usage{
-calcflagmad(df, reso, wnd = 6, n_mad = 9, frost,
+calcflagmad(df, reso, wnd = NULL, n_mad = 9, frost,
   plot_density = FALSE)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
+
+\item{n_mad}{numeric, defines the thresholds above or below which values
+are classified as outliers (see Details for further information).}
 
 \item{frost}{logical, defines whether outliers should be calculated for
 frost periods or other periods.}

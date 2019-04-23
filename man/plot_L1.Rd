@@ -4,16 +4,17 @@
 \alias{plot_L1}
 \title{Plot L1 Data}
 \usage{
-plot_L1(data_L1, period, tz = "Etc/GMT-1", data_L1_orig = NULL,
+plot_L1(data_L1, plot_period, tz = "Etc/GMT-1", data_L1_orig = NULL,
   plot_name = "L1_plot")
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by
 \code{\link{proc_L1}}.}
 
-\item{period}{specify whether plots should be displayed over the whole
-period (\code{period = "full"}), for each year separately
-(\code{period = "yearly"}) or for each month (\code{period = "monthly"}).}
+\item{plot_period}{specify whether plots should be displayed over the whole
+plot_period (\code{plot_period = "full"}), for each year separately
+(\code{plot_period = "yearly"}) or for each month
+(\code{plot_period = "monthly"}).}
 
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 

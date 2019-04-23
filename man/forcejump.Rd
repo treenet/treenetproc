@@ -12,9 +12,9 @@ forcejump(data_L2, force, n_days = 5)
 
 \item{force}{character vector, specify the dates after which jumps
 should occur. The jump with the largest value difference occurring in a
-period of \code{n_days} after the specified dates in \code{force} is
-corrected. Dates can be formatted as \code{"YYYY-MM-DD"} or
-\code{"YYYY-MM-DD HH:MM:SS"}.}
+plot_period of \code{n_days} after the specified dates in \code{force} is
+corrected. Dates need to be in a standard date or
+datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).}
 
 \item{n_days}{numeric, specifies the length of the period (in days) after
 the dates specified in \code{force} in which a missed jump is looked for.}

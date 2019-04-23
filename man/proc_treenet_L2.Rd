@@ -6,9 +6,9 @@
 \usage{
 proc_treenet_L2(site = NULL, sensor_name = NULL, from = NULL,
   to = NULL, path_cred = NULL, temp_name = NULL, reso = 10,
-  year = "asis", val_range = c(0, 20000), wnd = 6, n_mad = 9,
-  iter_clean = 3, lowtemp = 5, tz = "Etc/GMT-1", plot = TRUE,
-  period = "full", show = "all", add = TRUE, plot_mds = FALSE)
+  year = "asis", n_mad = 9, iter_clean = 3, lowtemp = 5,
+  tz = "Etc/GMT-1", plot = TRUE, plot_period = "full",
+  plot_name = "proc_L2_plot", plot_show = "all", plot_mds = FALSE)
 }
 \arguments{
 \item{site}{character string specifying the site. String is not
@@ -44,19 +44,11 @@ contains data of complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}; if
 \code{year = "asis"} the output \code{data.frame} covers the same period
 as the input data.}
 
-\item{val_range}{numeric vector specifying the minimum and maximum
-\code{c(min, max)} of credible dendrometer measurement values. Values
-lower than \code{min} or higher than \code{max} are deleted without
-notice.}
-
-\item{wnd}{numeric, length of time window in \code{days} that is used to
-identify outliers (see Details for further information).}
-
 \item{n_mad}{numeric, defines the thresholds above or below which values
 are classified as outliers (see Details for further information).}
 
 \item{iter_clean}{numeric, specifies the number of times the cleaning
-process is repeated. Increase if jumps are not still not corrected after
+process is repeated. Increase if jumps are not corrected after
 processing.}
 
 \item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
@@ -68,17 +60,18 @@ in stem diameter due to frost is expected. Default value is set to
 \item{plot}{logical, specify whether a comparison of \code{L1} and \code{L2}
 data should be plotted.}
 
-\item{period}{specify whether plots should be displayed over the whole
-period (\code{period = "full"}), for each year separately
-(\code{period = "yearly"}) or for each month (\code{period = "monthly"}).}
+\item{plot_period}{specify whether plots should be displayed over the whole
+plot_period (\code{plot_period = "full"}), for each year separately
+(\code{plot_period = "yearly"}) or for each month
+(\code{plot_period = "monthly"}).}
 
-\item{show}{specify whether all periods should be plotted
-(\code{show = "all"}) or only those periods in which \code{L1} and
+\item{plot_name}{character, specify name of the PDF in which the plots are
+saved.}
+
+\item{plot_show}{specify whether all periods should be plotted
+(\code{plot_show = "all"}) or only those periods in which \code{L1} and
 \code{L2} dendrometer data differ after processing
-(\code{show = "diff"}).}
-
-\item{add}{logical, specify whether \code{L1} data should be plotted along
-with \code{L2} data in the second panel of the plot.}
+(\code{plot_show = "diff"}).}
 
 \item{plot_mds}{logical, specify whether maxima and minima used for the
 calculation of the maximum daily shrinkage (\code{mds}) should be
@@ -111,9 +104,9 @@ The function returns:
 }
 \examples{
 \dontrun{
-proc_treenet_L2(site = "sagno", year = "full", period = "yearly")
+proc_treenet_L2(site = "sagno", year = "full", plot_period = "yearly")
 
-proc_treenet_L2(site = "lens", period = "monthly")
+proc_treenet_L2(site = "lens", plot_period = "monthly")
 
 proc_treenet_L2(sensor_name = c("Alvaneu-2.dendrometer.ch0",
                 "Alvaneu-4.dendrometer.ch0"))

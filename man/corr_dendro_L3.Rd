@@ -5,7 +5,7 @@
 \title{Manually Correct Processed Dendrometer Data}
 \usage{
 corr_dendro_L3(data_L1 = NULL, data_L2, remove = NULL, force = NULL,
-  delete = NULL, series = NULL, plot = TRUE, n_days = 5,
+  delete = NULL, series = NULL, n_days = 5, plot = TRUE,
   tz = "Etc/GMT-1")
 }
 \arguments{
@@ -16,32 +16,31 @@ corr_dendro_L3(data_L1 = NULL, data_L2, remove = NULL, force = NULL,
 \item{data_L2}{processed dendrometer data as produced by
 \code{\link{proc_dendro_L2}}.}
 
-\item{remove}{character vector, specify the dates after which jumps
-should be removed. The first jump that occurs after the date
-specified is removed. If multiple jumps occur within \code{10} timesteps,
-all of these jumps are removed. Dates can be formatted as
-\code{"YYYY-MM-DD"} or \code{"YYYY-MM-DD HH:MM:SS"}.}
+\item{remove}{numeric vector, specify numbers of the changes that should
+be removed. Numbers are displayed in the plots produced by
+\code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers are
+only displayed if \code{plot_period = "monthly"}).}
 
 \item{force}{character vector, specify the dates after which jumps
 should occur. The jump with the largest value difference occurring in a
-period of \code{n_days} after the specified dates in \code{force} is
-corrected. Dates can be formatted as \code{"YYYY-MM-DD"} or
-\code{"YYYY-MM-DD HH:MM:SS"}.}
+plot_period of \code{n_days} after the specified dates in \code{force} is
+corrected. Dates need to be in a standard date or
+datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).}
 
 \item{delete}{character vector, specify pairs of dates between which
 all dendrometer data will be deleted (i.e. 4 dates will result in two
-periods: 1-2 and 3-4 in which data is deleted). Dates can be formatted as
-\code{"YYYY-MM-DD"} or \code{"YYYY-MM-DD HH:MM:SS"}.}
+periods: 1-2 and 3-4 in which data is deleted). Dates need to be in a
+standard date or datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).}
 
 \item{series}{character, specify the name of a single dendrometer series
 for which changes should be made. Data of other series is left unchanged.
 Not needed if only a single series is provided.}
 
-\item{plot}{logical, specify whether changes between \code{L2} and
-\code{L3} should be plotted.}
-
 \item{n_days}{numeric, length of the period (in days) following the dates
 specified in \code{force} in which a jump is looked for.}
+
+\item{plot}{logical, specify whether changes between \code{L2} and
+\code{L3} should be plotted.}
 
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 }

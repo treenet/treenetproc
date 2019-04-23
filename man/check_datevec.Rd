@@ -2,20 +2,20 @@
 % Please edit documentation in R/check_input_variables.R
 \name{check_datevec}
 \alias{check_datevec}
-\title{Check Multiple Dates Input}
+\title{Check Date Vector Input}
 \usage{
-check_datevec(var, var_name, tz)
+check_datevec(datevec, tz)
 }
 \arguments{
+\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+
 \item{var}{character vector, dates to be checked.}
 
 \item{var_name}{character, name of variable to be checked.}
-
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 }
 \description{
-\code{check_datevec} checks whether all dates specified are in the correct
-  format.
+\code{check_datevec} checks whether all dates specified are in a standard
+  date or datetime format. Dates are converted to \code{POSIXct}.
 }
 \examples{
 

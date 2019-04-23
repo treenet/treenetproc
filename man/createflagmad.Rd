@@ -9,9 +9,6 @@ createflagmad(df, reso, wnd, n_mad, plot_density)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{wnd}{numeric, length of time window in \code{days} that is used to
-identify outliers (see Details for further information).}
-
 \item{n_mad}{numeric, defines the thresholds above or below which values
 are classified as outliers (see Details for further information).}
 

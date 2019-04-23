@@ -12,7 +12,7 @@ check_data_L1(data_L1)
 }
 \description{
 \code{check_data_L1} checks the input data given to the variable
-  \code{\link{data_L1}}.
+  \code{data_L1}.
 }
 \examples{
 

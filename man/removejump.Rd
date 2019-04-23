@@ -4,7 +4,7 @@
 \alias{removejump}
 \title{Removes Wrong Jump in Data}
 \usage{
-removejump(data_L1, data_L2, remove)
+removejump(data_L1, data_L2, remove, tz)
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by
@@ -14,11 +14,12 @@ removejump(data_L1, data_L2, remove)
 \item{data_L2}{processed dendrometer data as produced by
 \code{\link{proc_dendro_L2}}.}
 
-\item{remove}{character vector, specify the dates after which jumps
-should be removed. The first jump that occurs after the date
-specified is removed. If multiple jumps occur within \code{10} timesteps,
-all of these jumps are removed. Dates can be formatted as
-\code{"YYYY-MM-DD"} or \code{"YYYY-MM-DD HH:MM:SS"}.}
+\item{remove}{numeric vector, specify numbers of the changes that should
+be removed. Numbers are displayed in the plots produced by
+\code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers are
+only displayed if \code{plot_period = "monthly"}).}
+
+\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 }
 \description{
 \code{removejump} removes wrong corrections in the dendrometer data.

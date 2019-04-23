@@ -4,8 +4,8 @@
 \alias{plot_proc_L2}
 \title{Plot Processed Dendrometer Data}
 \usage{
-plot_proc_L2(data_L1, data_L2, period = "full", show = "all",
-  tz = "Etc/GMT-1", add = TRUE, plot_name = "proc_L2_plot")
+plot_proc_L2(data_L1, data_L2, plot_period = "full", plot_show = "all",
+  tz = "Etc/GMT-1", plot_name = "proc_L2_plot")
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by
@@ -14,19 +14,17 @@ plot_proc_L2(data_L1, data_L2, period = "full", show = "all",
 \item{data_L2}{processed dendrometer data as produced by
 \code{\link{proc_dendro_L2}}.}
 
-\item{period}{specify whether plots should be displayed over the whole
-period (\code{period = "full"}), for each year separately
-(\code{period = "yearly"}) or for each month (\code{period = "monthly"}).}
+\item{plot_period}{specify whether plots should be displayed over the whole
+plot_period (\code{plot_period = "full"}), for each year separately
+(\code{plot_period = "yearly"}) or for each month
+(\code{plot_period = "monthly"}).}
 
-\item{show}{specify whether all periods should be plotted
-(\code{show = "all"}) or only those periods in which \code{L1} and
+\item{plot_show}{specify whether all periods should be plotted
+(\code{plot_show = "all"}) or only those periods in which \code{L1} and
 \code{L2} dendrometer data differ after processing
-(\code{show = "diff"}).}
+(\code{plot_show = "diff"}).}
 
 \item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
-
-\item{add}{logical, specify whether \code{L1} data should be plotted along
-with \code{L2} data in the second panel of the plot.}
 
 \item{plot_name}{character, specify name of the PDF in which the plots are
 saved.}
@@ -34,18 +32,20 @@ saved.}
 \value{
 Plots are saved to current working directory as
   \code{proc_L2_plot.pdf} or as specified in \code{plot_name}.
+
+  The first panel shows the \code{L1} data, the second panel the
+  processed \code{L2} data with the \code{L1} data in the background. The
+  third panel shows the absolute value of the differences between \code{L1}
+  and \code{L2} data. Large differences without an apparent jump in the
+  data indicate problems in the processing.
 }
 \description{
 \code{plot_proc_L2} provides plots of time-aligned (\code{L1}) and
   processed (\code{L2}) dendrometer data to visually assess the processing.
-  The first panel shows the \code{L1} data and the second panel the
-  processed \code{L2} data. The third panel shows the daily difference
-  between \code{L1} and \code{L2} data. Large differences without an
-  apparent jump in the data indicate problems in the processing.
 }
 \examples{
 \dontrun{
 plot_proc_L2(data_L1 = data_L1_dendro, data_L2 = data_L2_dendro,
-            period = "yearly")
+            plot_period = "yearly")
 }
 }

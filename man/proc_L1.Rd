@@ -4,18 +4,20 @@
 \alias{proc_L1}
 \title{Process Raw Dendrometer or Meteorological Data to L1}
 \usage{
-proc_L1(data, reso = 10, year = "asis", tz = "Etc/GMT-1",
-  input = "long")
+proc_L1(data, reso = 10, year = "asis", input = "long",
+  date_format = "\%Y-\%m-\%d \%H:\%M:\%S", tz = "Etc/GMT-1")
 }
 \arguments{
 \item{data}{input \code{data.frame} containing raw dendrometer or
 meteorological data. The input data needs to contain a timestamp column
-(named \code{ts}) formatted as: \code{\%Y-\%m-\%d \%H:\%M:\%S}. Data of
-multiple sensors can either be in \code{long} format \code{input = "long"}
-with a column named \code{series} to differentiate the sensors or in
-\code{wide} format \code{input = "wide"} with sensors in separate columns.
-The name of temperature and precipitation data have to at least contain
-\code{temp} or \code{prec}, respectively.}
+(named \code{ts}). If \code{ts} is not provided in the standard format
+(\code{\%Y-\%m-\%d \%H:\%M:\%S}) the format needs to be specified in
+\code{format_date}. Data of multiple sensors can either be in \code{long}
+format \code{input = "long"} with a column named \code{series} to
+differentiate the sensors or in \code{wide} format \code{input = "wide"}
+with sensors in separate columns. The name of temperature and
+precipitation data have to at least contain \code{temp} or \code{prec},
+respectively.}
 
 \item{reso}{desired time resolution of output (in minutes). Resolution
 should be chosen to be close to the actual measurement intervals.
@@ -26,11 +28,14 @@ contains data of complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}; if
 \code{year = "asis"} the output \code{data.frame} covers the same period
 as the input data.}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
-
 \item{input}{specify the way the input \code{data.frame} is structured. Can
 be either in \code{"long"} format (i.e. sensors below each other with a
 \code{series}) or in \code{"wide"} format (i.e. one sensor per column).}
+
+\item{date_format}{specify a custom date format if it is not
+\code{\%Y-\%m-\%d \%H:\%M:\%S}.}
+
+\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
 }
 \value{
 a \code{data.frame} with measurements aligned to regular time
@@ -44,6 +49,13 @@ a \code{data.frame} with measurements aligned to regular time
 \description{
 \code{proc_L1()} processes raw dendrometer and raw meteorological data to
   time-aligned data.
+}
+\details{
+Data at \emph{irregular} time steps: Data is linearly interpolated
+  between the irregular time steps closest to the regular time step.
+
+  Data at \emph{regular} time steps: Values corresponding to regular time
+  stamps are selected.
 }
 \examples{
 \dontrun{
