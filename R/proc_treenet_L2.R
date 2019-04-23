@@ -3,13 +3,10 @@
 #' \code{proc_treenet_L2()} processes \code{L0} dendrometer data from the
 #'   treenet server directly to \code{L2}.
 #'
-#' @param plot logical, specify whether a comparison of \code{L1} and \code{L2}
-#'   data should be plotted.
 #' @inheritParams select_data
 #' @inheritParams proc_L1
 #' @inheritParams proc_dendro_L2
 #' @inheritParams plot_proc_L2
-#' @inheritParams createflagmad
 #'
 #' @return The function returns:
 #'  a \code{data.frame} with processed dendrometer data containing the
@@ -40,9 +37,9 @@
 #'
 #' @examples
 #' \dontrun{
-#' proc_treenet_L2(site = "sagno", year = "full", period = "yearly")
+#' proc_treenet_L2(site = "sagno", year = "full", plot_period = "yearly")
 #'
-#' proc_treenet_L2(site = "lens", period = "monthly")
+#' proc_treenet_L2(site = "lens", plot_period = "monthly")
 #'
 #' proc_treenet_L2(sensor_name = c("Alvaneu-2.dendrometer.ch0",
 #'                 "Alvaneu-4.dendrometer.ch0"))
@@ -54,10 +51,11 @@
 proc_treenet_L2 <- function(site = NULL, sensor_name = NULL,
                             from = NULL, to = NULL, path_cred = NULL,
                             temp_name = NULL, reso = 10, year = "asis",
-                            val_range = c(0, 20000), wnd = 6, n_mad = 9,
-                            iter_clean = 3, lowtemp = 5, tz = "Etc/GMT-1",
-                            plot = TRUE, period = "full", show = "all",
-                            add = TRUE, plot_mds = FALSE) {
+                            n_mad = 9, iter_clean = 3, lowtemp = 5,
+                            tz = "Etc/GMT-1",
+                            plot = TRUE, plot_period = "full",
+                            plot_name = "proc_L2_plot", plot_show = "all",
+                            plot_mds = FALSE) {
 
   # Check input variables -----------------------------------------------------
   check_logical(var = plot, var_name = "plot")
@@ -73,15 +71,11 @@ proc_treenet_L2 <- function(site = NULL, sensor_name = NULL,
   df_L1 <- proc_L1(data = df_L0, reso = reso, year = year, tz = tz)
 
   print("process data to L2...")
-  df_L2 <- proc_dendro_L2(dendro_data = df_L1, val_range = val_range,
-                          wnd = wnd, n_mad = n_mad, iter_clean = iter_clean,
-                          lowtemp = lowtemp, plot_mds = plot_mds, tz = tz)
-
-  if (plot) {
-    print("plot data...")
-    plot_proc_L2(data_L1 = df_L1, data_L2 = df_L2, period = period,
-                 show = show, tz = tz, add = add)
-  }
+  df_L2 <- proc_dendro_L2(dendro_data = df_L1, n_mad = n_mad,
+                          iter_clean = iter_clean, lowtemp = lowtemp,
+                          plot = plot, plot_period = plot_period,
+                          plot_show = plot_show, plot_name = plot_name,
+                          plot_mds = plot_mds, tz = tz)
 
   print("Done!")
   return(df_L2)
