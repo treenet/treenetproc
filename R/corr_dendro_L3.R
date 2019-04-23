@@ -7,20 +7,19 @@
 #' @param data_L1 time-aligned dendrometer data as produced by
 #'   \code{\link{proc_L1}}. Optional, only needed for \code{remove} and if
 #'   \code{plot = TRUE}.
-#' @param remove character vector, specify the dates after which jumps
-#'   should be removed. The first jump that occurs after the date
-#'   specified is removed. If multiple jumps occur within \code{10} timesteps,
-#'   all of these jumps are removed. Dates can be formatted as
-#'   \code{"YYYY-MM-DD"} or \code{"YYYY-MM-DD HH:MM:SS"}.
+#' @param remove numeric vector, specify numbers of the changes that should
+#'   be removed. Numbers are displayed in the plots produced by
+#'   \code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers are
+#'   only displayed if \code{plot_period = "monthly"}).
 #' @param force character vector, specify the dates after which jumps
 #'   should occur. The jump with the largest value difference occurring in a
-#'   period of \code{n_days} after the specified dates in \code{force} is
-#'   corrected. Dates can be formatted as \code{"YYYY-MM-DD"} or
-#'   \code{"YYYY-MM-DD HH:MM:SS"}.
+#'   plot_period of \code{n_days} after the specified dates in \code{force} is
+#'   corrected. Dates need to be in a standard date or
+#'   datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).
 #' @param delete character vector, specify pairs of dates between which
 #'   all dendrometer data will be deleted (i.e. 4 dates will result in two
-#'   periods: 1-2 and 3-4 in which data is deleted). Dates can be formatted as
-#'   \code{"YYYY-MM-DD"} or \code{"YYYY-MM-DD HH:MM:SS"}.
+#'   periods: 1-2 and 3-4 in which data is deleted). Dates need to be in a
+#'   standard date or datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).
 #' @param series character, specify the name of a single dendrometer series
 #'   for which changes should be made. Data of other series is left unchanged.
 #'   Not needed if only a single series is provided.
@@ -40,17 +39,19 @@
 #'
 corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
                            force = NULL, delete = NULL, series = NULL,
-                           plot = TRUE, n_days = 5, tz = "Etc/GMT-1") {
+                           n_days = 5, plot = TRUE, tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
   if (length(remove) != 0) {
-    remove <- check_datevec(var = remove, var_name = "remove", tz = tz)
+    if (!(is.numeric(remove))) {
+      stop("'remove' needs to be numeric.")
+    }
   }
   if (length(force) != 0) {
-    force <- check_datevec(var = force, var_name = "force", tz = tz)
+    force <- check_datevec(datevec = force, tz = tz)
   }
   if (length(delete) != 0) {
-    delete <- check_datevec(var = delete, var_name = "delete", tz = tz)
+    delete <- check_datevec(datevec = delete, tz = tz)
     check_delete(delete)
   }
   if (length(remove) == 0 & length(force) == 0 & length(delete) == 0) {
@@ -91,7 +92,10 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
   }
 
   if (length(remove) != 0) {
-    df <- removejump(data_L1 = data_L1, data_L2 = df, remove = remove)
+    remove_list <- removejump(data_L1 = data_L1, data_L2 = df,
+                              remove = remove, tz = tz)
+    df <- remove_list[[1]]
+    diff_old <- remove_list[[2]]
   }
   if (length(force) != 0) {
     df <- forcejump(data_L2 = df, force = force, n_days = n_days)
@@ -119,8 +123,10 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
                   gro_end, flags, version)
 
   if (plot) {
+    month_plot <- vector(mode = "character")
     if (length(remove) != 0) {
-      month_plot <- format(remove, format = "%Y-%m", tz = tz)
+      month_plot <- c(month_plot, format(diff_old$ts, format = "%Y-%m",
+                                         tz = tz))
     }
     if (length(force) != 0) {
       month_plot <- c(month_plot, format(force, format = "%Y-%m", tz = tz))
@@ -136,10 +142,12 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
 
     data_L1 <- data_L1 %>%
       dplyr::mutate(month = paste0(substr(ts, 1, 7), "-01")) %>%
-      dplyr::filter(month %in% month_plot)
+      dplyr::filter(month %in% month_plot) %>%
+      # add diff old to plot removed differences
+      dplyr::left_join(., diff_old, by = "ts")
 
-    plot_proc_L2(data_L1 = data_L1, data_L2 = df_plot, period = "monthly",
-                 show = "all", tz = tz, add = TRUE,
+    plot_proc_L2(data_L1 = data_L1, data_L2 = df_plot,
+                 plot_period = "monthly", plot_show = "all", tz = tz,
                  plot_name = "corr_L3_plot")
   }
 
