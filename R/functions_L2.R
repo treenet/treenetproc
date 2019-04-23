@@ -17,31 +17,6 @@ passobj <- function(value) {
 }
 
 
-#' Remove Outliers
-#'
-#' \code{cleanoutofrange} removes implausible data points lower or higher
-#'   than specified values in \code{val_range}.
-#'
-#' @param df input \code{data.frame}.
-#' @inheritParams proc_dendro_L2
-#'
-#' @keywords internal
-#'
-#' @examples
-#'
-cleanoutofrange <- function(df, val_range) {
-  df <- df %>%
-    dplyr::mutate(flagrangemin = ifelse(!is.na(value) & value < val_range[1],
-                                        TRUE, FALSE)) %>%
-    dplyr::mutate(flagrangemax = ifelse(!is.na(value) & value > val_range[2],
-                                        TRUE, FALSE)) %>%
-    dplyr::mutate(value = ifelse(flagrangemin, NA, value)) %>%
-    dplyr::mutate(value = ifelse(flagrangemax, NA, value))
-
-  return(df)
-}
-
-
 #' Creates Flag for Gaps
 #'
 #' \code{creategapflag} adds a flag to gaps that are longer than
@@ -171,15 +146,18 @@ calcdiff <- function(df, reso) {
 createfrostflag <- function(df, tem, lowtemp = 5) {
   df <- tem %>%
     dplyr::mutate(frost = ifelse(value < lowtemp, TRUE, FALSE)) %>%
-    dplyr::select(-value, -series, -version) %>%
+    dplyr::select(ts, frost) %>%
     dplyr::left_join(df, ., by = "ts") %>%
     dplyr::arrange(ts)
 
   na_temp <- sum(is.na(df$frost))
-  if (na_temp > (0.5 * nrow(df))) {
+  if (na_temp > (0.1 * nrow(df))) {
     na_perc <- round(na_temp / nrow(df) * 100, 1)
     message(paste0(na_perc, "% of temperature data is missing!"))
   }
+
+  df <- df %>%
+    dplyr::mutate(frost = ifelse(is.na(frost), FALSE, frost))
 
   return(df)
 }
@@ -200,88 +178,76 @@ createfrostflag <- function(df, tem, lowtemp = 5) {
 #'
 #' @examples
 #'
-calcflagmad <- function(df, reso, wnd = 6, n_mad = 9, frost,
+calcflagmad <- function(df, reso, wnd = NULL, n_mad = 9, frost,
                         plot_density = FALSE) {
 
-  if (!(frost %in% c(TRUE, FALSE))) {
-    stop("provide frost with TRUE or FALSE.")
-  }
+  check_logical(var = frost, var_name = "frost")
   if (frost) {
     df <- df %>%
       dplyr::filter(frost == TRUE)
   }
   if (!frost) {
     df <- df %>%
-      dplyr::filter(frost == FALSE | is.na(frost))
+      dplyr::filter(frost == FALSE)
   }
 
-  wnds <- c(wnd, wnd * 5)
-  for (w in 1:length(wnds)) {
-    span <- 60 / reso * 24 * (wnds[w] / 2)
-
-    if (nrow(df) < 2 * span) {
-      message("you don't have enough data for window flag!")
-      next
-    }
-    st <- span + 1
-    en <- nrow(df) - span + 1
-    steps <- seq(st, en, by = span)
-
-    if (length(steps) == 0) {
-      stop("something went terribly wrong with the timestamp.")
-    }
-
-    flagqlow <- vector(length = nrow(df))
-    flagqhigh <- vector(length = nrow(df))
-    for (qq in steps) {
-      b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
-      q40 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.4,
-                                        na.rm = TRUE))
-      q60 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.6,
-                                        na.rm = TRUE))
-
-      df$diff_val[ran][df$diff_val[ran] > q40 &
-                         df$diff_val[ran] < q60] <- NA
-      q1 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.25,
-                                       na.rm = TRUE))
-      q3 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.75,
-                                       na.rm = TRUE))
-
-      mad <- stats::mad(df$diff_val[ran], na.rm = TRUE)
-      low <- q1 - n_mad * mad
-      high <- q3 + n_mad * mad
-
-      if (frost) {
-        low <- low * 15
-        high <- high * 15
-      }
-
-      if (plot_density) {
-        graphics::plot(stats::density(x = df$diff_val[ran], na.rm = T),
-                       main = df$ts[ran][1])
-        graphics::abline(v = low, col = "red")
-        graphics::abline(v = high, col = "red")
-      }
-
-      if (!is.na(low)) {
-        flagqlow[ran][df$diff_val[ran] < low] <- TRUE
-      }
-      if (!is.na(high)) {
-        flagqhigh[ran][df$diff_val[ran] > high] <- TRUE
-      }
-    }
-
-    flagq_nr <- length(grep("flagqlow", colnames(df)))
-    if (flagq_nr == 0) {
-      flagq_nr <- 1
+  if (length(wnd) == 0) {
+    span <- trunc(nrow(df) / 2)
     } else {
-      flagq_nr <- flagq_nr + 1
+      span <- 60 / reso * 24 * (wnd / 2)
+      if (nrow(df) < 2 * span) {
+        message("you don't have enough data for window flag!
+                Decrease value of 'wnd'.")
+      }
     }
 
-    df <- df %>%
-      dplyr::mutate(!!paste0("flagqlow", flagq_nr) := flagqlow) %>%
-      dplyr::mutate(!!paste0("flagqhigh", flagq_nr) := flagqhigh)
+  st <- span + 1
+  en <- nrow(df) - span + 1
+  steps <- seq(st, en, by = span)
+
+  flagqlow <- vector(length = nrow(df))
+  flagqhigh <- vector(length = nrow(df))
+  for (qq in steps) {
+    b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
+    q40 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.4,
+                                      na.rm = TRUE))
+    q60 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.6,
+                                      na.rm = TRUE))
+
+    df$diff_val[ran][df$diff_val[ran] > q40 &
+                       df$diff_val[ran] < q60] <- NA
+    q1 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.25,
+                                     na.rm = TRUE))
+    q3 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.75,
+                                     na.rm = TRUE))
+
+    mad <- stats::mad(df$diff_val[ran], na.rm = TRUE)
+    low <- q1 - n_mad * mad
+    high <- q3 + n_mad * mad
+
+    if (frost) {
+      low <- low * 15
+      high <- high * 15
+    }
+
+    if (plot_density) {
+      graphics::plot(stats::density(x = df$diff_val[ran], na.rm = T),
+                     main = df$ts[ran][1])
+      graphics::abline(v = low, col = "red")
+      graphics::abline(v = high, col = "red")
+    }
+
+    if (!is.na(low)) {
+      flagqlow[ran][df$diff_val[ran] < low] <- TRUE
+    }
+    if (!is.na(high)) {
+      flagqhigh[ran][df$diff_val[ran] > high] <- TRUE
+    }
   }
+
+  df <- df %>%
+    dplyr::mutate(flagoutlow = flagqlow) %>%
+    dplyr::mutate(flagouthigh = flagqhigh)
 
   return(df)
 }
@@ -314,17 +280,7 @@ createflagmad <- function(df, reso, wnd, n_mad, plot_density) {
   df <- calcflagmad(df = df, reso = reso, wnd = wnd, n_mad = n_mad,
                     frost = FALSE, plot_density = FALSE) %>%
     dplyr::bind_rows(., df_frost) %>%
-    dplyr::arrange(ts)
-
-  flagq_nr <- length(grep("flagqlow", colnames(df)))
-
-  df <- df %>%
-    dplyr::mutate(flagqlow = rowSums(.[grep("flagqlow", names(.))])) %>%
-    dplyr::mutate(flagqhigh = rowSums(.[grep("flagqhigh", names(.))])) %>%
-    dplyr::mutate(
-      flagoutlow = ifelse(flagqlow == flagq_nr, TRUE, FALSE)) %>%
-    dplyr::mutate(
-      flagouthigh = ifelse(flagqhigh == flagq_nr, TRUE, FALSE)) %>%
+    dplyr::arrange(ts) %>%
     dplyr::select(1:nc, flagoutlow, flagouthigh)
 
   return(df)
@@ -812,13 +768,10 @@ grostartend <- function(df, tol = 0.05, tz) {
 #'
 summariseflags <- function(df) {
 
-  list_flags <- vector("list", length = 2 + (passenv$flagjump_nr * 2) +
+  list_flags <- vector("list", length = (passenv$flagjump_nr * 2) +
                          passenv$flagout_nr)
 
-  list_flags[[1]] <- ifelse(df$flagrangemax, "rmax", NA)
-  list_flags[[2]] <- ifelse(df$flagrangemin, "rmin", NA)
-
-  n_flags <- 3
+  n_flags <- 1
   for (out in n_flags:(passenv$flagout_nr + n_flags - 1)) {
     flagout_nr <- out - n_flags + 1
     flagout <- df[[paste0("flagout", flagout_nr)]]
@@ -836,11 +789,15 @@ summariseflags <- function(df) {
     flagjump <- df[[paste0("flagjump", flagjump_nr)]]
     list_flags[[jump]] <- ifelse(flagjump, paste0("jump", flagjump_nr), NA)
   }
+  if ("flagfill" %in% colnames(df)) {
+    n_flags <- n_flags + 1
+    list_flags[[n_flags]] <- ifelse(df$flagfill, "fill", NA)
+  }
 
   flags <- do.call("paste", c(list_flags, sep = ", "))
   flags <- gsub(", NA", "", flags)
   flags <- gsub("NA, ", "", flags)
-  flags <- ifelse(flags == "NA", "", flags)
+  flags <- ifelse(flags == "NA", NA, flags)
 
   df$flags <- flags
 
