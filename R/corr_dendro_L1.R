@@ -20,7 +20,7 @@ corr_dendro_L1 <- function(data_L1, delete, series = NULL, plot = TRUE,
 
   # Check input variables -----------------------------------------------------
   check_data_L1(data_L1 = data_L1)
-  delete <- check_datevec(var = delete, var_name = "delete", tz = tz)
+  delete <- check_datevec(datevec = delete, tz = tz)
   check_delete(delete = delete)
   check_series(df = data_L1, series = series)
   check_logical(var = plot, var_name = "plot")
@@ -61,7 +61,7 @@ corr_dendro_L1 <- function(data_L1, delete, series = NULL, plot = TRUE,
       dplyr::mutate(month = paste0(substr(ts, 1, 7), "-01")) %>%
       dplyr::filter(month %in% month_plot)
 
-    plot_L1(data_L1 = df_plot, period = "monthly", tz = tz,
+    plot_L1(data_L1 = df_plot, plot_period = "monthly", tz = tz,
             data_L1_orig = data_L1_orig, plot_name = "corr_L1_plot")
   }
 
