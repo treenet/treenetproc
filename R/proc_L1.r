@@ -5,12 +5,14 @@
 #'
 #' @param data input \code{data.frame} containing raw dendrometer or
 #'   meteorological data. The input data needs to contain a timestamp column
-#'   (named \code{ts}) formatted as: \code{\%Y-\%m-\%d \%H:\%M:\%S}. Data of
-#'   multiple sensors can either be in \code{long} format \code{input = "long"}
-#'   with a column named \code{series} to differentiate the sensors or in
-#'   \code{wide} format \code{input = "wide"} with sensors in separate columns.
-#'   The name of temperature and precipitation data have to at least contain
-#'   \code{temp} or \code{prec}, respectively.
+#'   (named \code{ts}). If \code{ts} is not provided in the standard format
+#'   (\code{\%Y-\%m-\%d \%H:\%M:\%S}) the format needs to be specified in
+#'   \code{format_date}. Data of multiple sensors can either be in \code{long}
+#'   format \code{input = "long"} with a column named \code{series} to
+#'   differentiate the sensors or in \code{wide} format \code{input = "wide"}
+#'   with sensors in separate columns. The name of temperature and
+#'   precipitation data have to at least contain \code{temp} or \code{prec},
+#'   respectively.
 #' @param reso desired time resolution of output (in minutes). Resolution
 #'   should be chosen to be close to the actual measurement intervals.
 #'   \code{reso} needs to be a multiple of 5.
@@ -18,10 +20,18 @@
 #'   contains data of complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}; if
 #'   \code{year = "asis"} the output \code{data.frame} covers the same period
 #'   as the input data.
-#' @param tz specify the desired time zone. Default is \code{"Etc/GMT-1"}.
 #' @param input specify the way the input \code{data.frame} is structured. Can
 #'   be either in \code{"long"} format (i.e. sensors below each other with a
 #'   \code{series}) or in \code{"wide"} format (i.e. one sensor per column).
+#' @param date_format specify a custom date format if it is not
+#'   \code{\%Y-\%m-\%d \%H:\%M:\%S}.
+#' @param tz specify the desired time zone. Default is \code{"Etc/GMT-1"}.
+#'
+#' @details Data at \emph{irregular} time steps: Data is linearly interpolated
+#'   between the irregular time steps closest to the regular time step.
+#'
+#'   Data at \emph{regular} time steps: Values corresponding to regular time
+#'   stamps are selected.
 #'
 #' @return a \code{data.frame} with measurements aligned to regular time
 #'   intervals (interval specified in \code{reso}) containing the following
@@ -37,8 +47,8 @@
 #' \dontrun{
 #' proc_L1(data = data_L0_long)
 #' }
-proc_L1 <- function(data, reso = 10, year = "asis", tz = "Etc/GMT-1",
-                    input = "long") {
+proc_L1 <- function(data, reso = 10, year = "asis", input = "long",
+                    date_format = "%Y-%m-%d %H:%M:%S", tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
   if (!(year %in% c("asis", "full"))) {
@@ -51,7 +61,8 @@ proc_L1 <- function(data, reso = 10, year = "asis", tz = "Etc/GMT-1",
 
   # Check input data ----------------------------------------------------------
   df <- data
-  check_format(df, input = input)
+  check_format(df = df, input = input)
+  df <- check_ts(df = df, date_format = date_format, tz = tz)
 
 
   # Format input data ---------------------------------------------------------
