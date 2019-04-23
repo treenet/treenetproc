@@ -15,13 +15,13 @@
 #'
 #' @examples
 #'
-plot_L1 <- function(data_L1, period, tz = "Etc/GMT-1", data_L1_orig = NULL,
-                    plot_name = "L1_plot") {
+plot_L1 <- function(data_L1, plot_period, tz = "Etc/GMT-1",
+                    data_L1_orig = NULL, plot_name = "L1_plot") {
 
   # Check input variables -----------------------------------------------------
   check_data_L1(data_L1 = data_L1)
-  if (!(period %in% c("full", "yearly", "monthly"))) {
-    stop("period needs to be either 'full', 'yearly' or 'monthly'.")
+  if (!(plot_period %in% c("full", "yearly", "monthly"))) {
+    stop("plot_period needs to be either 'full', 'yearly' or 'monthly'.")
   }
 
 
@@ -54,7 +54,7 @@ plot_L1 <- function(data_L1, period, tz = "Etc/GMT-1", data_L1_orig = NULL,
       data_L1_orig_sensor <- NULL
     }
 
-    if (period %in% c("yearly", "monthly")) {
+    if (plot_period %in% c("yearly", "monthly")) {
 
       for (y in 1:length(years)) {
         year_label <- years[y]
@@ -69,18 +69,18 @@ plot_L1 <- function(data_L1, period, tz = "Etc/GMT-1", data_L1_orig = NULL,
           data_L1_orig_year <- NULL
         }
 
-        if (period == "yearly") {
+        if (plot_period == "yearly") {
           if (sum(!is.na(data_L1_year$value)) != 0) {
 
             plotting_L1(data_L1 = data_L1_year,
                         data_L1_orig = data_L1_orig_year,
-                        period = period, tz = tz)
+                        plot_period = plot_period, tz = tz)
             } else {
             next
             }
         }
 
-        if (period == "monthly") {
+        if (plot_period == "monthly") {
           months <- unique(data_L1_year$month)
 
           for (m in 1:length(months)) {
@@ -101,7 +101,7 @@ plot_L1 <- function(data_L1, period, tz = "Etc/GMT-1", data_L1_orig = NULL,
 
               plotting_L1(data_L1 = data_L1_month,
                           data_L1_orig = data_L1_orig_month,
-                          period = period, tz = tz)
+                          plot_period = plot_period, tz = tz)
               } else {
               next
               }
@@ -110,7 +110,7 @@ plot_L1 <- function(data_L1, period, tz = "Etc/GMT-1", data_L1_orig = NULL,
       }
     }
 
-    if (period == "full") {
+    if (plot_period == "full") {
       year_label <- paste0(years[1], "-", years[length(years)])
       passenv$year_label <- year_label
 
@@ -118,7 +118,7 @@ plot_L1 <- function(data_L1, period, tz = "Etc/GMT-1", data_L1_orig = NULL,
 
         plotting_L1(data_L1 = data_L1_sensor,
                     data_L1_orig = data_L1_orig_sensor,
-                    period = period, tz = tz)
+                    plot_period = plot_period, tz = tz)
         } else {
         next
         }
