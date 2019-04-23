@@ -34,7 +34,7 @@
 #'
 select_data <- function(site = NULL, sensor_name = NULL,
                         from = NULL, to = NULL, path_cred = NULL,
-                        temp_name = NULL) {
+                        temp_name = NULL, tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
   if (length(site) == 0 & length(sensor_name) == 0) {
@@ -171,7 +171,7 @@ select_data <- function(site = NULL, sensor_name = NULL,
     } else {
       meta_airtemp <- vector()
       meta_sub <- meta %>%
-        dplyr::filter(grepl(temp_name, Sensor_query, ignore.case = TRUE))
+        dplyr::filter(grepl(temp_name, Seriesname, ignore.case = TRUE))
 
       if (nrow(meta_sub) == 1) {
         meta_airtemp <- meta_sub$Seriesname
@@ -231,6 +231,17 @@ select_data <- function(site = NULL, sensor_name = NULL,
       dplyr::distinct() %>%
       dplyr::filter(ts <= Sys.time()) %>%
       transform(value = as.numeric(value))
+
+    if (length(from) != 0) {
+      from <- as.POSIXct(from, format = "%Y-%m-%d", tz = tz)
+      df <- df %>%
+        dplyr::filter(ts >= from)
+    }
+    if (length(to) != 0) {
+      to <- as.POSIXct(to, format = "%Y-%m-%d", tz = tz)
+      df <- df %>%
+        dplyr::filter(ts <= to)
+    }
 
     treenet_data[[i]] <- df
   }
