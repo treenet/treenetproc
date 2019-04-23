@@ -16,10 +16,50 @@ check_logical <- function(var, var_name) {
 }
 
 
-#' Check Multiple Dates Input
+#' Check Date Format
 #'
-#' \code{check_datevec} checks whether all dates specified are in the correct
-#'   format.
+#' \code{isdate} checks whether values in a vector are in a standard
+#'   date or datetime format and converts them to \code{POSIXct}.
+#'
+#' @param datevec character vector in a standard date or datetime format.
+#' @param date_formats character vector, date or datetime formats that are
+#'   checked
+#' @inheritParams proc_L1
+#'
+#' @keywords internal
+#'
+#' @examples
+#'
+isdate <- function(datevec, var_name, date_formats, tz) {
+
+  datevec <- as.character(datevec)
+  date_check <-
+    tryCatch(
+      !is.na(as.POSIXct(datevec, tz = tz,
+                        tryFormats = date_formats)),
+      error = function(err) {FALSE})
+
+  if (length(unique(date_check)) > 1) {
+    stop(paste("Date format of some dates in '", var_name, "' not recognized.",
+               " Provide dates in a valid format, e.g. %Y-%m-%d %H:%M:%S"))
+  }
+  if (!(unique(date_check))) {
+    stop(paste0("Date format of dates in '", var_name, "' not recognized.",
+               " Provide dates in a valid format, e.g. %Y-%m-%d %H:%M:%S"))
+  }
+  if (unique(date_check)) {
+    datevec <- as.POSIXct(datevec, tz = tz,
+                          tryFormats = date_formats)
+  }
+
+  return(datevec)
+}
+
+
+#' Check Date Vector Input
+#'
+#' \code{check_datevec} checks whether all dates specified are in a standard
+#'   date or datetime format. Dates are converted to \code{POSIXct}.
 #'
 #' @param var character vector, dates to be checked.
 #' @param var_name character, name of variable to be checked.
@@ -29,44 +69,34 @@ check_logical <- function(var, var_name) {
 #'
 #' @examples
 #'
-check_datevec <- function(var, var_name, tz) {
-  var_posix <- .POSIXct(rep(NA, length(var)), tz = tz)
-  for (i in 1:length(var)) {
-    stop <- 0
-    if (nchar(var[i]) == 10 &
-        is.na(as.POSIXct(var[i], format = "%Y-%m-%d"))) {
-      stop <- 1
-    }
-    if (nchar(var[i]) == 19 &
-        is.na(as.POSIXct(var[i], format = "%Y-%m-%d %H:%M:%S"))) {
-      stop <- 1
-    }
-    if (!(nchar(var[i]) %in% c(10, 19))) {
-      stop <- 1
-    }
+check_datevec <- function(datevec, tz) {
 
-    if (stop == 1) {
-      stop(paste(var[i], "of", var_name, "is not in the required date format.",
-                 "Format needs to be either 'YYYY-MM-DD' or",
-                 "'YYYY-MM-DD HH:MM:SS'."))
-    } else {
-      if (nchar(var[i]) == 10) {
-        var_posix[i] <- as.POSIXct(var[i], format = "%Y-%m-%d", tz = tz)
-      }
-      if (nchar(var[i]) == 19) {
-        var_posix[i] <-
-          as.POSIXct(var[i], format = "%Y-%m-%d %H:%M:%S", tz = tz)
-      }
-    }
-  }
-  return(var_posix)
+  date_formats <- c("%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S",
+                    "%Y.%m.%d %H:%M:%S",
+                    "%d-%m-%Y %H:%M:%S", "%d/%m/%Y %H:%M:%S",
+                    "%d.%m.%Y %H:%M:%S",
+                    "%m-%d-%Y %H:%M:%S", "%m/%d/%Y %H:%M:%S",
+                    "%m.%d.%Y %H:%M:%S",
+                    "%Y-%m-%d %H:%M", "%Y/%m/%d %H:%M", "%Y.%m.%d %H:%M",
+                    "%d-%m-%Y %H:%M", "%d/%m/%Y %H:%M", "%d.%m.%Y %H:%M",
+                    "%m-%d-%Y %H:%M", "%m/%d/%Y %H:%M", "%m.%d.%Y %H:%M",
+                    "%Y-%m-%d %H", "%Y/%m/%d %H", "%Y.%m.%d %H",
+                    "%d-%m-%Y %H", "%d/%m/%Y %H", "%d.%m.%Y %H",
+                    "%m-%d-%Y %H", "%m/%d/%Y %H", "%m.%d.%Y %H",
+                    "%Y-%m-%d", "%Y/%m/%d", "%Y.%m.%d",
+                    "%d-%m-%Y", "%d/%m/%Y", "%d.%m.%Y",
+                    "%m-%d-%Y", "%m/%d/%Y", "%m.%d.%Y")
+
+  dates <- isdate(datevec = datevec, date_formats = date_formats, tz = tz)
+
+  return(dates)
 }
 
 
 #' Check data_L1 Input
 #'
 #' \code{check_data_L1} checks the input data given to the variable
-#'   \code{\link{data_L1}}.
+#'   \code{data_L1}.
 #'
 #' @param data_L1 time-aligned dendrometer data as produced by
 #'   \code{\link{proc_L1}}.
@@ -85,7 +115,7 @@ check_data_L1 <- function(data_L1) {
 #' Check data_L2 Input
 #'
 #' \code{check_data_L2} checks the input data given to the variable
-#'   \code{\link{data_L1}}.
+#'   \code{data_L1}.
 #'
 #' @param data_L2 processed dendrometer data as produced by
 #'   \code{\link{proc_dendro_L2}}.
