@@ -8,8 +8,6 @@
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 passenv <- new.env(parent = emptyenv())
 passobj <- function(value) {
   val <- get(x = value, envir = passenv, inherits = FALSE)
@@ -27,8 +25,6 @@ passobj <- function(value) {
 #' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 creategapflag <- function(df, reso, gaple = 12 * (60 / reso)) {
 
@@ -63,20 +59,38 @@ creategapflag <- function(df, reso, gaple = 12 * (60 / reso)) {
 
 #' Fills NA's With Last Non-NA Value
 #'
-#' \code{fillna} fills rows with NA with previous non-NA value (function
-#'   adapted from \code{na.locf} of the \code{zoo} package).
+#' \code{fillna} fills NA's with previous non-NA value (function
+#'   adapted from \code{\link[zoo]{na.locf}} of the \code{zoo} package).
 #'
 #' @param x input \code{vector}.
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 fill_na <- function(x) {
   nonaid <- !is.na(x)
   val_nona <- c(NA, x[nonaid])
   fillid <- cumsum(nonaid) + 1
   x <- val_nona[fillid]
+
+  return(x)
+}
+
+
+#' Fills Trailing NA's With First Non-NA Value
+#'
+#' \code{fill_na_lead} fills leading NA's with first non-NA value.
+#'
+#' @param x input \code{vector}.
+#'
+#' @keywords internal
+#'
+fill_na_lead <- function(x) {
+  if (is.na(x[1])) {
+    nonaid <- which(!is.na(x))[1]
+    val_nona <- x[nonaid]
+    fillid <- 1:(nonaid - 1)
+    x[fillid] <- rep(val_nona)
+  }
 
   return(x)
 }
@@ -92,8 +106,6 @@ fill_na <- function(x) {
 #' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 calcdiff <- function(df, reso) {
   if ("diff_val" %in% colnames(df)) {
@@ -134,14 +146,13 @@ calcdiff <- function(df, reso) {
 
 #' Creates Flag for Potential Frost
 #'
-#' \code{createfrostflag} adds a flag for potential frost.
+#' \code{createfrostflag} adds a flag for potential frost. Gaps of temperature
+#'   data are filled with previous non-NA value.
 #'
 #' @param df input \code{data.frame}.
 #' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 createfrostflag <- function(df, tem, lowtemp = 5) {
   df <- tem %>%
@@ -151,13 +162,13 @@ createfrostflag <- function(df, tem, lowtemp = 5) {
     dplyr::arrange(ts)
 
   na_temp <- sum(is.na(df$frost))
-  if (na_temp > (0.1 * nrow(df))) {
-    na_perc <- round(na_temp / nrow(df) * 100, 1)
+  na_perc <- round(na_temp / nrow(df) * 100, 1)
+  if (na_perc > 0.9) {
     message(paste0(na_perc, "% of temperature data is missing!"))
   }
 
   df <- df %>%
-    dplyr::mutate(frost = ifelse(is.na(frost), FALSE, frost))
+    dplyr::mutate(frost = fill_na(frost))
 
   return(df)
 }
@@ -172,16 +183,17 @@ createfrostflag <- function(df, tem, lowtemp = 5) {
 #'   frost periods or other periods.
 #' @param plot_density logical, defines whether density plots should be drawn
 #'   in the console. Can be used to check outlier thresholds.
+#' @param print_thresh logical, specifies whether the applied thresholds are
+#'   printed to the console or not.
 #' @inheritParams createflagmad
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
-calcflagmad <- function(df, reso, wnd = NULL, n_mad = 9, frost,
-                        plot_density = FALSE) {
+calcflagmad <- function(df, reso, wnd = NULL, tol = 9, frost,
+                        plot_density = FALSE, print_thresh = FALSE) {
 
   check_logical(var = frost, var_name = "frost")
+  check_logical(var = print_thresh, var_name = "print_thresh")
   if (frost) {
     df <- df %>%
       dplyr::filter(frost == TRUE)
@@ -191,13 +203,18 @@ calcflagmad <- function(df, reso, wnd = NULL, n_mad = 9, frost,
       dplyr::filter(frost == FALSE)
   }
 
+  if (nrow(df) == 0) {
+    return(df)
+  }
+
   if (length(wnd) == 0) {
     span <- trunc(nrow(df) / 2)
     } else {
       span <- 60 / reso * 24 * (wnd / 2)
       if (nrow(df) < 2 * span) {
-        message("you don't have enough data for window flag!
-                Decrease value of 'wnd'.")
+        message("you don't have enough data for regular outlier detection! ",
+                "Outlier detection may not work properly.")
+        span <- trunc(nrow(df) / 2)
       }
     }
 
@@ -207,23 +224,25 @@ calcflagmad <- function(df, reso, wnd = NULL, n_mad = 9, frost,
 
   flagqlow <- vector(length = nrow(df))
   flagqhigh <- vector(length = nrow(df))
+  thresh_min <- -100000
+  thresh_max <- 100000
   for (qq in steps) {
     b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
     q40 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.4,
                                       na.rm = TRUE))
     q60 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.6,
                                       na.rm = TRUE))
-
     df$diff_val[ran][df$diff_val[ran] > q40 &
                        df$diff_val[ran] < q60] <- NA
+
     q1 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.25,
                                      na.rm = TRUE))
     q3 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.75,
                                      na.rm = TRUE))
 
     mad <- stats::mad(df$diff_val[ran], na.rm = TRUE)
-    low <- q1 - n_mad * mad
-    high <- q3 + n_mad * mad
+    low <- q1 - tol * mad
+    high <- q3 + tol * mad
 
     if (frost) {
       low <- low * 15
@@ -237,6 +256,19 @@ calcflagmad <- function(df, reso, wnd = NULL, n_mad = 9, frost,
       graphics::abline(v = high, col = "red")
     }
 
+    if (print_thresh) {
+      if (!is.na(low) && low != 0) {
+        if (low > thresh_min){
+          thresh_min <- round(low, 2)
+        }
+      }
+      if (!is.na(high) && high != 0) {
+        if (high < thresh_max) {
+          thresh_max <- round(high, 2)
+        }
+      }
+    }
+
     if (!is.na(low)) {
       flagqlow[ran][df$diff_val[ran] < low] <- TRUE
     }
@@ -248,6 +280,11 @@ calcflagmad <- function(df, reso, wnd = NULL, n_mad = 9, frost,
   df <- df %>%
     dplyr::mutate(flagoutlow = flagqlow) %>%
     dplyr::mutate(flagouthigh = flagqhigh)
+
+  if (print_thresh) {
+    message(paste0(df$series[1], " threshold low: ", thresh_min,
+                   "; high: ", thresh_max))
+  }
 
   return(df)
 }
@@ -266,20 +303,24 @@ calcflagmad <- function(df, reso, wnd = NULL, n_mad = 9, frost,
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
-createflagmad <- function(df, reso, wnd, n_mad, plot_density) {
+createflagmad <- function(df, reso, wnd, tol, plot_density, print_thresh) {
 
   nc <- ncol(df)
   df <- df %>%
     dplyr::mutate(diff_val = ifelse(diff_val < 0.001 & diff_val > -0.001,
                                     NA, diff_val))
 
-  df_frost <- calcflagmad(df = df, reso = reso, wnd = wnd, n_mad = n_mad,
+  df_frost <- calcflagmad(df = df, reso = reso, wnd = wnd, tol = tol,
                           frost = TRUE, plot_density = FALSE)
-  df <- calcflagmad(df = df, reso = reso, wnd = wnd, n_mad = n_mad,
-                    frost = FALSE, plot_density = FALSE) %>%
-    dplyr::bind_rows(., df_frost) %>%
+  df <- calcflagmad(df = df, reso = reso, wnd = wnd, tol = tol,
+                    frost = FALSE, plot_density = FALSE,
+                    print_thresh = print_thresh)
+
+  if (nrow(df_frost) > 0) {
+    df <- dplyr::bind_rows(df, df_frost)
+  }
+
+  df <- df %>%
     dplyr::arrange(ts) %>%
     dplyr::select(1:nc, flagoutlow, flagouthigh)
 
@@ -299,8 +340,6 @@ createflagmad <- function(df, reso, wnd, n_mad, plot_density) {
 #'   difference threshold has to be exceeded for flagging.
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 createflagout <- function(df, flag, len) {
 
@@ -331,8 +370,6 @@ createflagout <- function(df, flag, len) {
 #' @inheritParams createflagout
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 executeflagout <- function(df, len) {
 
@@ -370,8 +407,6 @@ executeflagout <- function(df, len) {
 #'     jumps due to adjustments of the dendrometer needle.
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 createjumpflag <- function(df, thr = 0.2) {
 
@@ -420,8 +455,6 @@ createjumpflag <- function(df, thr = 0.2) {
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 executejump <- function(df) {
 
   nc <- ncol(df)
@@ -461,8 +494,6 @@ executejump <- function(df) {
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 calcmax <- function(df) {
 
   if ("max" %in% colnames(df)) {
@@ -473,9 +504,11 @@ calcmax <- function(df) {
   first_val <- df$value[which(!is.na(df$value))[1]]
 
   df <- df %>%
-    dplyr::mutate(val_nona = fill_na(value)) %>%
+    dplyr::mutate(val_nona = fill_na_lead(value)) %>%
+    dplyr::mutate(val_nona = fill_na(val_nona)) %>%
     dplyr::mutate(diff_nona = c(0, diff(val_nona, lag = 1))) %>%
-    dplyr::mutate(diff_sum = cumsum(diff_nona))
+    dplyr::mutate(diff_sum = cumsum(diff_nona)) %>%
+    dplyr::mutate(diff_sum = fill_na(diff_sum))
 
   max_sum <- df$diff_sum
   for (i in 2:nrow(df)) {
@@ -504,8 +537,6 @@ calcmax <- function(df) {
 #' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 calctwdgro  <- function(df, tz) {
 
@@ -543,8 +574,6 @@ calctwdgro  <- function(df, tz) {
 #' @param en ending row of the last time window.
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 findmaxmin <- function(df, reso, st) {
 
@@ -588,8 +617,6 @@ findmaxmin <- function(df, reso, st) {
 #'   (i.e. maxima or minima).
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 removeconsec <- function(df, remove, notremove) {
 
@@ -659,8 +686,6 @@ removeconsec <- function(df, remove, notremove) {
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 calcmds <- function(df, reso, tz, plot_mds = FALSE) {
 
   if ("mds" %in% colnames(df)) {
@@ -728,8 +753,6 @@ calcmds <- function(df, reso, tz, plot_mds = FALSE) {
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 grostartend <- function(df, tol = 0.05, tz) {
 
   nc <- ncol(df)
@@ -763,8 +786,6 @@ grostartend <- function(df, tol = 0.05, tz) {
 #' @param df input \code{data.frame}.
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 summariseflags <- function(df) {
 
