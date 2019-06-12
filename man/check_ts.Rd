@@ -12,13 +12,10 @@ check_ts(df, date_format, tz)
 \item{date_format}{specify a custom date format if it is not
 \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{check_ts} checks whether the 'ts' column is in a standard date
   or datetime format.
-}
-\examples{
-
 }
 \keyword{internal}

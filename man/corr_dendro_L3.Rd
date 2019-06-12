@@ -6,7 +6,7 @@
 \usage{
 corr_dendro_L3(data_L1 = NULL, data_L2, remove = NULL, force = NULL,
   delete = NULL, series = NULL, n_days = 5, plot = TRUE,
-  tz = "Etc/GMT-1")
+  plot_export = TRUE, tz = "UTC")
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by
@@ -18,12 +18,12 @@ corr_dendro_L3(data_L1 = NULL, data_L2, remove = NULL, force = NULL,
 
 \item{remove}{numeric vector, specify numbers of the changes that should
 be removed. Numbers are displayed in the plots produced by
-\code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers are
-only displayed if \code{plot_period = "monthly"}).}
+\code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers
+are only displayed if \code{plot_period = "monthly"}).}
 
 \item{force}{character vector, specify the dates after which jumps
-should occur. The jump with the largest value difference occurring in a
-plot_period of \code{n_days} after the specified dates in \code{force} is
+should occur. The largest value difference occurring in a
+period of \code{n_days} after the specified dates in \code{force} is
 corrected. Dates need to be in a standard date or
 datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).}
 
@@ -37,16 +37,21 @@ for which changes should be made. Data of other series is left unchanged.
 Not needed if only a single series is provided.}
 
 \item{n_days}{numeric, length of the period (in days) following the dates
-specified in \code{force} in which a jump is looked for.}
+specified in \code{force} in which a jump is looked for. Increase if
+the gap in data is longer than the default (\code{n_days = 5}).}
 
 \item{plot}{logical, specify whether changes between \code{L2} and
 \code{L3} should be plotted.}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{plot_export}{logical, specifies whether the plots are exported as a
+\code{PDF} file to the working directory or are plotted in the console.}
+
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \value{
 The function returns a \code{data.frame} with corrected \code{L2}
-  dendrometer data.
+  dendrometer data. The corrections are added to \code{flags} and the
+  version of the corrected \code{series} is changed to \code{version = 3}.
 }
 \description{
 \code{corr_dendro_L3} corrects errors in processed \code{L2} dendrometer
@@ -54,5 +59,12 @@ The function returns a \code{data.frame} with corrected \code{L2}
   in \code{\link{proc_dendro_L2}}.
 }
 \examples{
+corr_dendro_L3(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
+               remove = c(84, 86:88), force = "2016-08-12",
+               delete = c("2016-08-01", "2016-08-05"),
+               series = "site-1_dendro-3", plot_export = FALSE)
 
+}
+\seealso{
+\code{\link{corr_dendro_L1}} to correct \code{L1} data.
 }

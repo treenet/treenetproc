@@ -16,7 +16,4 @@ create_temp_dummy(df)
   Tempeartures in the other months are 10°C (i.e. no frost shrinkage
   assumed).
 }
-\examples{
-
-}
 \keyword{internal}

@@ -5,7 +5,7 @@
 \title{Manually Correct Time-Aligned Dendrometer Data}
 \usage{
 corr_dendro_L1(data_L1, delete, series = NULL, plot = TRUE,
-  tz = "Etc/GMT-1")
+  plot_export = TRUE, tz = "UTC")
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by
@@ -21,12 +21,16 @@ for which changes should be made. Data of other series is left unchanged.
 Not needed if only a single series is provided.}
 
 \item{plot}{logical, plots the corrected dataset with the original data
-in the back.}
+in the background in grey.}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{plot_export}{logical, specifies whether the plots are exported as a
+\code{PDF} file to the working directory or are plotted in the console.}
+
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \value{
-
+The function returns a \code{data.frame} with corrected \code{L1}
+  dendrometer data.
 }
 \description{
 \code{corr_dendro_L1} deletes values in periods with erroneous data of
@@ -34,5 +38,11 @@ in the back.}
   overwritten with \code{NA} without further notice.
 }
 \examples{
+corr_dendro_L1(data_L1 = dendro_data_L1,
+               delete = c("2016-08-01", "2016-08-05"),
+               series = "site-1_dendro-3", plot_export = FALSE)
 
+}
+\seealso{
+\code{\link{corr_dendro_L3}} to correct \code{L2} data.
 }

@@ -16,7 +16,4 @@ Not needed if only a single series is provided.}
 \description{
 \code{check_series} checks the input of the variabel series.
 }
-\examples{
-
-}
 \keyword{internal}
