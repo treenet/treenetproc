@@ -3,6 +3,7 @@
 export("%>%")
 export(corr_dendro_L1)
 export(corr_dendro_L3)
+export(download_treenet)
 export(plot_L1)
 export(plot_proc_L2)
 export(proc_L1)
