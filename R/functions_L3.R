@@ -7,8 +7,6 @@
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 removejump <- function(data_L1, data_L2, remove, tz) {
 
   L1 <- data_L1 %>%
@@ -44,8 +42,9 @@ removejump <- function(data_L1, data_L2, remove, tz) {
   # removed differences for plotting
   diff_old <- df %>%
     dplyr::filter(diff_nr %in% remove) %>%
-    dplyr::mutate(diff_plot_old = abs(diff)) %>%
-    dplyr::select(ts, diff_plot_old)
+    dplyr::mutate(diff_nr_old = diff_nr) %>%
+    dplyr::mutate(diff_old = abs(diff)) %>%
+    dplyr::select(ts, diff_old, diff_nr_old)
 
   df <- data_L2 %>%
     dplyr::mutate(value = val) %>%
@@ -68,8 +67,6 @@ removejump <- function(data_L1, data_L2, remove, tz) {
 #' @inheritParams corr_dendro_L3
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 forcejump <- function(data_L2, force, n_days = 5) {
 
@@ -113,11 +110,9 @@ forcejump <- function(data_L2, force, n_days = 5) {
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 deleteperiod <- function(df, delete) {
 
-  if ((length(delete) %% 2) != 0) {
+  if ( (length(delete) %% 2) != 0) {
     stop("provide an even number of dates in 'delete'.")
   }
 
@@ -128,8 +123,8 @@ deleteperiod <- function(df, delete) {
   for (d in seq(1, length(delete), by = 2)) {
     d_start <- delete[d]
     d_end <- delete[d + 1]
-    pos_start <- which(ts == d_start)
-    pos_end <- which(ts == d_end)
+    pos_start <- min(which(ts >= d_start))
+    pos_end <- max(which(ts <= d_end))
 
     val[pos_start:pos_end] <- NA
     flag[pos_start:pos_end] <- TRUE
@@ -151,8 +146,6 @@ deleteperiod <- function(df, delete) {
 #' @param df input \code{data.frame}.
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 summariseflagscorr <- function(df, remove = NULL, force = NULL,
                                delete = NULL) {
