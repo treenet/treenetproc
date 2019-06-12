@@ -14,15 +14,19 @@
 #' @export
 #'
 #' @examples
+#' plot_L1(data_L1 = dendro_data_L1, plot_period = "monthly",
+#'         plot_export = FALSE)
 #'
-plot_L1 <- function(data_L1, plot_period, tz = "Etc/GMT-1",
-                    data_L1_orig = NULL, plot_name = "L1_plot") {
+plot_L1 <- function(data_L1, data_L1_orig = NULL, plot_period = "full",
+                    plot_export = TRUE, plot_name = "L1_plot",
+                    tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
   check_data_L1(data_L1 = data_L1)
   if (!(plot_period %in% c("full", "yearly", "monthly"))) {
     stop("plot_period needs to be either 'full', 'yearly' or 'monthly'.")
   }
+  check_logical(var = plot_export, var_name = "plot_export")
 
 
   # Plot L1 data --------------------------------------------------------------
@@ -40,7 +44,9 @@ plot_L1 <- function(data_L1, plot_period, tz = "Etc/GMT-1",
   sensors <- unique(data_L1$series)
   years <- unique(data_L1$year)
 
-  grDevices::pdf(paste0(plot_name, ".pdf"), width = 11.7, height = 8.3)
+  if (plot_export) {
+    grDevices::pdf(paste0(plot_name, ".pdf"), width = 11.7, height = 8.3)
+  }
   for (s in 1:length(sensors)) {
     sensor_label <- sensors[s]
     passenv$sensor_label <- sensor_label
@@ -124,5 +130,7 @@ plot_L1 <- function(data_L1, plot_period, tz = "Etc/GMT-1",
         }
     }
   }
-  grDevices::dev.off()
+  if (plot_export) {
+    grDevices::dev.off()
+  }
 }
