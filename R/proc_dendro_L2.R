@@ -1,19 +1,22 @@
 #' Process L1 Dendrometer Data to L2
 #'
-#' \code{proc_dendro_L2()} processes time-aligned (\code{L1}) dendrometer data
+#' \code{proc_dendro_L2} processes time-aligned (\code{L1}) dendrometer data
 #'   to processed (\code{L2}) dendrometer data. It removes jumps, corrects
 #'   small gaps and calculates growth, tree water deficit and maximum daily
 #'   shrinkage.
 #'
 #' @param dendro_data \code{data.frame} with time-aligned dendrometer
-#'   data. Output of function \code{proc_L1}.
+#'   data. Output of function \code{proc_L1()}.
 #' @param temp_data \code{data.frame} with time-aligned temperature data.
-#'   Output of function \code{proc_L1} (see Details for further information).
-#' @param n_mad numeric, defines the thresholds above or below which values
-#'   are classified as outliers (see Details for further information).
+#'   Output of function \code{proc_L1()} (see Details for further information).
+#' @param tol numeric, defines the tolerance of the threshold values above or
+#'   below which dendrometer measurements are classified as outliers (see
+#'   Details for further information).
 #' @param iter_clean numeric, specifies the number of times the cleaning
 #'   process is repeated. Increase if jumps are not corrected after
 #'   processing.
+#' @param interpol numeric, length of gaps (in minutes) in which values are
+#'   linearly interpolated.
 #' @param lowtemp numeric, specifies temperature in °C below which shrinkage
 #'   in stem diameter due to frost is expected. Default value is set to
 #'   \code{5°C} due to hysteresis shortly before or after frost events.
@@ -41,15 +44,15 @@
 #'   outlier if it deviates more than a threshold value from the first
 #'   or third quartile of all \code{diff} in a specific time window.
 #'   Thresholds are calculated as:\cr
-#'   \code{threshold_low = quantile(diff, probs = 0.25) + n_mad *
+#'   \code{threshold_low = quantile(diff, probs = 0.25) + tol *
 #'   \link[stats]{mad}(diff)}\cr
-#'   \code{threshold_high = quantile(diff, probs = 0.75) + n_mad *
+#'   \code{threshold_high = quantile(diff, probs = 0.75) + tol *
 #'   \link[stats]{mad}(diff)}
 #'
-#'   Thus, \code{n_mad} describes the number of times \code{\link[stats]{mad}}
+#'   Thus, \code{tol} describes the number of times \code{\link[stats]{mad}}
 #'   is added to the first or third quartile of \code{diff} in a specific time
-#'   window until \code{diff} is classified as an outlier. \code{n_mad} is
-#'   increased to \code{n_mad * 15} in periods of probable frost (i.e. in
+#'   window until \code{diff} is classified as an outlier. \code{tol} is
+#'   increased to \code{tol * 15} in periods of probable frost (i.e. in
 #'   periods where the air temperature is below \code{lowtemp}).
 #'
 #'   The maximum daily shrinkage \code{mds} is calculated similarly as in
@@ -58,9 +61,8 @@
 #'   using a moving window. \code{mds} is only calculated if a local maximum
 #'   occurs before a local minimum (i.e. if the stem shrinks during the day).
 #'
-#' @return The function returns:
-#'  a \code{data.frame} with processed dendrometer data containing the
-#'  following columns
+#' @return The function returns a \code{data.frame} with processed dendrometer
+#'  data containing the following columns:
 #'    \item{series}{name of the series.}
 #'    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
 #'    \item{value}{dendrometer value.}
@@ -75,31 +77,32 @@
 #'    \item{gro_yr}{growth since the beginning of the year. Also calculated
 #'      for years with missing data.}
 #'    \item{gro_start}{day of year at which growth starts. \code{gro_start} is
-#'      defined as the day of year at which 5% of total yearly growth is
+#'      defined as the day of year at which 5\% of total yearly growth is
 #'      surpassed.}
 #'    \item{gro_end}{day of year at which growth stops. \code{gro_end} is
-#'      defined as the day of year at which 95% of total yearly growth is
+#'      defined as the day of year at which 95\% of total yearly growth is
 #'      reached.}
 #'    \item{flags}{character vector specifying whether and which changes
-#'      occurred during the processing.}
+#'      occurred during the processing. For more details see the following
+#'      vignette: \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
 #'    \item{version}{processing version.}
 #'
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' proc_dendro_L2(dendro_data = data_L1_dendro, temp_data = data_L1_temp)
-#' }
+#' proc_dendro_L2(dendro_data = dendro_data_L1, plot_period = "monthly",
+#'                plot_export = FALSE)
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           n_mad = 9, iter_clean = 3,
-                           lowtemp = 5, plot = TRUE,
+                           tol = 9, iter_clean = 3,
+                           lowtemp = 5, interpol = 120, plot = TRUE,
                            plot_period = "full", plot_show = "all",
-                           plot_name = "proc_L2_plot",
-                           plot_mds = FALSE, tz = "Etc/GMT-1") {
+                           plot_export = TRUE, plot_name = "proc_L2_plot",
+                           plot_mds = FALSE, tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
   check_logical(var = plot, var_name = "plot")
+  check_logical(var = plot_export, var_name = "plot_export")
 
   if (!(plot_period %in% c("full", "yearly", "monthly"))) {
     stop("plot_period needs to be either 'full', 'yearly' or 'monthly'.")
@@ -108,7 +111,6 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
 
   # Check input data ----------------------------------------------------------
   df <- dendro_data
-
   check_data_L1(data_L1 = df)
 
   if (length(temp_data) != 0) {
@@ -134,7 +136,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     }
     if (length(grep("temp", df_series, ignore.case = T)) == 0) {
       tem <- create_temp_dummy(df = df)
-      message("sample temperature dataset will be used.")
+      message("sample temperature dataset is used.")
     }
     if (length(grep("temp", df_series, ignore.case = T)) == 1) {
       temp_series <- df_series[grep("temp", df_series, ignore.case = T)]
@@ -166,27 +168,21 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     df <- df_L1 %>%
       dplyr::filter(series == series_vec[s])
 
-    # save and remove leading and trailing NA's
-    lead <- FALSE
-    if (is.na(df$value[1])) {
-      nrow_na <- which(!is.na(df$value))[1] - 1
-      leading_na <- df[c(1:nrow_na), ]
-      df <- df[-c(1:nrow_na), ]
-      lead <- TRUE
+    if (all(is.na(df$value))) {
+      message(paste0("There is no data available for ", series_vec[s],
+                     ". This series is skipped."))
+      next
     }
-    le <- nrow(df)
-    trail <- FALSE
-    if (is.na(df$value[le])) {
-      nrow_na <- max(which(!is.na(df$value))) + 1
-      trailing_na <- df[c(nrow_na:le), ]
-      df <- df[-c(nrow_na:le), ]
-      trail <- TRUE
-    }
+
+    # remove leading and trailing NA's
+    na_list <- remove_lead_trail_na(df = df)
+    df <- na_list[[1]]
+    lead_trail_na <- na_list[[2]]
 
     df <- createfrostflag(df = df, tem = tem, lowtemp = lowtemp)
     df <- calcdiff(df = df, reso = passobj("reso"))
     df <- createflagmad(df = df, reso = passobj("reso"), wnd = 30,
-                        n_mad = 1.5 * n_mad)
+                        tol = 3 * tol, print_thresh = TRUE)
     df <- executeflagout(df = df, len = 2)
 
     clean_list <- vector("list", length = iter_clean + 1)
@@ -196,7 +192,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
 
       df <- calcdiff(df = df, reso = passobj("reso"))
       df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
-                          n_mad = n_mad)
+                          tol = tol, print_thresh = TRUE)
       df <- creategapflag(df = df, reso = passobj("reso"),
                           gaple = 24 * (60 / passobj("reso")))
       df <- createjumpflag(df = df, thr = 0.2)
@@ -207,7 +203,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     df <- clean_list[[iter_clean + 1]]
 
     df <- fillintergaps(df = df, reso = passobj("reso"),
-                        wnd = 120, type = "linear", flag = TRUE)
+                        interpol = interpol, type = "linear", flag = TRUE)
     df <- calcmax(df = df)
     df <- calctwdgro(df = df, tz = tz)
     df <- grostartend(df = df, tol = 0.05, tz = tz)
@@ -215,12 +211,8 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                   plot_mds = plot_mds)
     df <- summariseflags(df = df)
 
-    if (lead) {
-      df <- dplyr::bind_rows(leading_na, df)
-    }
-    if (trail) {
-      df <- dplyr::bind_rows(df, trailing_na)
-    }
+    # append leading and trailing NA's
+    df <- append_lead_trail_na(df = df, na = lead_trail_na)
 
     df <- df %>%
       dplyr::mutate(gro_yr = ifelse(is.na(value), NA, gro_yr)) %>%
@@ -240,7 +232,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     print("plot data...")
     plot_proc_L2(data_L1 = dendro_data, data_L2 = df,
                  plot_period = plot_period, plot_show = plot_show,
-                 plot_name = plot_name, tz = tz)
+                 plot_export = plot_export, plot_name = plot_name, tz = tz)
   }
 
   return(df)
