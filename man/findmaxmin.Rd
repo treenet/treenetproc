@@ -19,7 +19,4 @@ findmaxmin(df, reso, st)
 \code{findmaxmin} identifies maxima and minima in a specified time window.
   It is a helper function of \code{\link{calcmds}}.
 }
-\examples{
-
-}
 \keyword{internal}

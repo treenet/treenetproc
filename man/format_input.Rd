@@ -9,13 +9,10 @@ format_input(df, input, tz)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{format_input} formats input data. Wide format is convertet to long
   and correct column classes are assigned.
-}
-\examples{
-
 }
 \keyword{internal}

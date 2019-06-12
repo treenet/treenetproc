@@ -11,8 +11,8 @@ forcejump(data_L2, force, n_days = 5)
 \code{\link{proc_dendro_L2}}.}
 
 \item{force}{character vector, specify the dates after which jumps
-should occur. The jump with the largest value difference occurring in a
-plot_period of \code{n_days} after the specified dates in \code{force} is
+should occur. The largest value difference occurring in a
+period of \code{n_days} after the specified dates in \code{force} is
 corrected. Dates need to be in a standard date or
 datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).}
 
@@ -22,8 +22,5 @@ the dates specified in \code{force} in which a missed jump is looked for.}
 \description{
 \code{forejump} forces a jump (positive or negative) in the dendrometer
   data that was not corrected during the processing.
-}
-\examples{
-
 }
 \keyword{internal}

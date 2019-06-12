@@ -4,18 +4,17 @@
 \alias{fillintergaps}
 \title{Interpolate Between Irregular and Regular Timesteps}
 \usage{
-fillintergaps(df, reso, wnd = reso * 2.1, type = "linear",
+fillintergaps(df, reso, interpol = reso * 2.1, type = "linear",
   flag = FALSE)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{reso}{desired time resolution of output (in minutes). Resolution
-should be chosen to be close to the actual measurement intervals.
-\code{reso} needs to be a multiple of 5.}
+\item{reso}{desired time resolution of output (in minutes). See
+\code{Details} for more information on data aggregation.}
 
-\item{wnd}{length of time window over which values are interpolated. Defined
-as \code{2.1 * reso}. Unit of \code{wnd} is minutes.}
+\item{interpol}{numeric, length of gaps (in minutes) in which values are
+linearly interpolated.}
 
 \item{type}{specify type of interpolation between regular timesteps.}
 }
@@ -23,8 +22,5 @@ as \code{2.1 * reso}. Unit of \code{wnd} is minutes.}
 \code{fillintergaps} interpolates gaps between irregular and regular
   timesteps, i.e. only over very small gaps (more an alignement than an
   interpolation).
-}
-\examples{
-
 }
 \keyword{internal}

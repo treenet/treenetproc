@@ -9,16 +9,12 @@ fillintergaps_prec(df, reso)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{reso}{desired time resolution of output (in minutes). Resolution
-should be chosen to be close to the actual measurement intervals.
-\code{reso} needs to be a multiple of 5.}
+\item{reso}{desired time resolution of output (in minutes). See
+\code{Details} for more information on data aggregation.}
 }
 \description{
 \code{fillintergaps_prec} interpolates gaps between irregular and regular
   timesteps for precipitation data. In contrast to \code{fillintergaps}
   the values are summed up and not lineraly interpolated.
-}
-\examples{
-
 }
 \keyword{internal}
