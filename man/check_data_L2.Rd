@@ -14,7 +14,4 @@ check_data_L2(data_L2)
 \code{check_data_L2} checks the input data given to the variable
   \code{data_L1}.
 }
-\examples{
-
-}
 \keyword{internal}

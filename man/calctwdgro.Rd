@@ -9,13 +9,10 @@ calctwdgro(df, tz)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{calctwdgro} calculates the tree water deficit (twd) and the growth
   since the beginning of the year (gro_yr).
-}
-\examples{
-
 }
 \keyword{internal}

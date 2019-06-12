@@ -9,7 +9,7 @@ calcmds(df, reso, tz, plot_mds = FALSE)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 
 \item{plot_mds}{logical, specify whether maxima and minima used for the
 calculation of the maximum daily shrinkage (\code{mds}) should be
@@ -25,8 +25,5 @@ plotted.}
 \details{
 \code{calcmds} is inspired by the function
   \code{\link[dendrometeR]{phase_def}} in the package \code{dendrometeR}.
-}
-\examples{
-
 }
 \keyword{internal}

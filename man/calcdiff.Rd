@@ -14,7 +14,4 @@ calcdiff(df, reso)
   are gaps, the difference is also calculated at an hourly rate respective
   to the length of the preceding gap.
 }
-\examples{
-
-}
 \keyword{internal}

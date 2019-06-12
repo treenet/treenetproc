@@ -12,7 +12,4 @@ calcmax(df)
 \description{
 \code{calcmax} calculates the maximum of measured values.
 }
-\examples{
-
-}
 \keyword{internal}
