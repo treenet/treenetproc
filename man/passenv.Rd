@@ -16,7 +16,4 @@ passenv
   separate environment accessible for all functions. Environment is
   saved outside function call to be accessible for all functions.
 }
-\examples{
-
-}
 \keyword{internal}

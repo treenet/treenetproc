@@ -20,7 +20,4 @@ Plots are saved to current working directory as
 \code{plot_mds} plots maxima and minima selected to calculate mds (maximum
   daily shrinkage). Plots are saved as
 }
-\examples{
-
-}
 \keyword{internal}

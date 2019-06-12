@@ -5,7 +5,7 @@
 \title{Plot Processed Dendrometer Data}
 \usage{
 plot_proc_L2(data_L1, data_L2, plot_period = "full", plot_show = "all",
-  tz = "Etc/GMT-1", plot_name = "proc_L2_plot")
+  plot_export = TRUE, plot_name = "proc_L2_plot", tz = "UTC")
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by
@@ -24,13 +24,16 @@ plot_period (\code{plot_period = "full"}), for each year separately
 \code{L2} dendrometer data differ after processing
 (\code{plot_show = "diff"}).}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{plot_export}{logical, specifies whether the plots are exported as a
+\code{PDF} file to the working directory or are plotted in the console.}
 
 \item{plot_name}{character, specify name of the PDF in which the plots are
 saved.}
+
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \value{
-Plots are saved to current working directory as
+Plots are saved in a PDF to current working directory as
   \code{proc_L2_plot.pdf} or as specified in \code{plot_name}.
 
   The first panel shows the \code{L1} data, the second panel the
@@ -44,8 +47,7 @@ Plots are saved to current working directory as
   processed (\code{L2}) dendrometer data to visually assess the processing.
 }
 \examples{
-\dontrun{
-plot_proc_L2(data_L1 = data_L1_dendro, data_L2 = data_L2_dendro,
-            plot_period = "yearly")
-}
+plot_proc_L2(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
+            plot_period = "yearly", plot_export = FALSE)
+
 }

@@ -4,20 +4,21 @@
 \alias{proc_dendro_L2}
 \title{Process L1 Dendrometer Data to L2}
 \usage{
-proc_dendro_L2(dendro_data, temp_data = NULL, n_mad = 9,
-  iter_clean = 3, lowtemp = 5, plot = TRUE, plot_period = "full",
-  plot_show = "all", plot_name = "proc_L2_plot", plot_mds = FALSE,
-  tz = "Etc/GMT-1")
+proc_dendro_L2(dendro_data, temp_data = NULL, tol = 9,
+  iter_clean = 3, lowtemp = 5, interpol = 120, plot = TRUE,
+  plot_period = "full", plot_show = "all", plot_export = TRUE,
+  plot_name = "proc_L2_plot", plot_mds = FALSE, tz = "UTC")
 }
 \arguments{
 \item{dendro_data}{\code{data.frame} with time-aligned dendrometer
-data. Output of function \code{proc_L1}.}
+data. Output of function \code{proc_L1()}.}
 
 \item{temp_data}{\code{data.frame} with time-aligned temperature data.
-Output of function \code{proc_L1} (see Details for further information).}
+Output of function \code{proc_L1()} (see Details for further information).}
 
-\item{n_mad}{numeric, defines the thresholds above or below which values
-are classified as outliers (see Details for further information).}
+\item{tol}{numeric, defines the tolerance of the threshold values above or
+below which dendrometer measurements are classified as outliers (see
+Details for further information).}
 
 \item{iter_clean}{numeric, specifies the number of times the cleaning
 process is repeated. Increase if jumps are not corrected after
@@ -26,6 +27,9 @@ processing.}
 \item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
 in stem diameter due to frost is expected. Default value is set to
 \code{5°C} due to hysteresis shortly before or after frost events.}
+
+\item{interpol}{numeric, length of gaps (in minutes) in which values are
+linearly interpolated.}
 
 \item{plot}{logical, specify whether a comparison of \code{L1} and \code{L2}
 data should be plotted.}
@@ -40,6 +44,9 @@ plot_period (\code{plot_period = "full"}), for each year separately
 \code{L2} dendrometer data differ after processing
 (\code{plot_show = "diff"}).}
 
+\item{plot_export}{logical, specifies whether the plots are exported as a
+\code{PDF} file to the working directory or are plotted in the console.}
+
 \item{plot_name}{character, specify name of the PDF in which the plots are
 saved.}
 
@@ -47,12 +54,11 @@ saved.}
 calculation of the maximum daily shrinkage (\code{mds}) should be
 plotted.}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \value{
-The function returns:
- a \code{data.frame} with processed dendrometer data containing the
- following columns
+The function returns a \code{data.frame} with processed dendrometer
+ data containing the following columns:
    \item{series}{name of the series.}
    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
    \item{value}{dendrometer value.}
@@ -67,17 +73,18 @@ The function returns:
    \item{gro_yr}{growth since the beginning of the year. Also calculated
      for years with missing data.}
    \item{gro_start}{day of year at which growth starts. \code{gro_start} is
-     defined as the day of year at which 5% of total yearly growth is
+     defined as the day of year at which 5\% of total yearly growth is
      surpassed.}
    \item{gro_end}{day of year at which growth stops. \code{gro_end} is
-     defined as the day of year at which 95% of total yearly growth is
+     defined as the day of year at which 95\% of total yearly growth is
      reached.}
    \item{flags}{character vector specifying whether and which changes
-     occurred during the processing.}
+     occurred during the processing. For more details see the following
+     vignette: \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
    \item{version}{processing version.}
 }
 \description{
-\code{proc_dendro_L2()} processes time-aligned (\code{L1}) dendrometer data
+\code{proc_dendro_L2} processes time-aligned (\code{L1}) dendrometer data
   to processed (\code{L2}) dendrometer data. It removes jumps, corrects
   small gaps and calculates growth, tree water deficit and maximum daily
   shrinkage.
@@ -99,15 +106,15 @@ The function returns:
   outlier if it deviates more than a threshold value from the first
   or third quartile of all \code{diff} in a specific time window.
   Thresholds are calculated as:\cr
-  \code{threshold_low = quantile(diff, probs = 0.25) + n_mad *
+  \code{threshold_low = quantile(diff, probs = 0.25) + tol *
   \link[stats]{mad}(diff)}\cr
-  \code{threshold_high = quantile(diff, probs = 0.75) + n_mad *
+  \code{threshold_high = quantile(diff, probs = 0.75) + tol *
   \link[stats]{mad}(diff)}
 
-  Thus, \code{n_mad} describes the number of times \code{\link[stats]{mad}}
+  Thus, \code{tol} describes the number of times \code{\link[stats]{mad}}
   is added to the first or third quartile of \code{diff} in a specific time
-  window until \code{diff} is classified as an outlier. \code{n_mad} is
-  increased to \code{n_mad * 15} in periods of probable frost (i.e. in
+  window until \code{diff} is classified as an outlier. \code{tol} is
+  increased to \code{tol * 15} in periods of probable frost (i.e. in
   periods where the air temperature is below \code{lowtemp}).
 
   The maximum daily shrinkage \code{mds} is calculated similarly as in
@@ -117,8 +124,7 @@ The function returns:
   occurs before a local minimum (i.e. if the stem shrinks during the day).
 }
 \examples{
-\dontrun{
-proc_dendro_L2(dendro_data = data_L1_dendro, temp_data = data_L1_temp)
-}
+proc_dendro_L2(dendro_data = dendro_data_L1, plot_period = "monthly",
+               plot_export = FALSE)
 
 }

@@ -18,13 +18,10 @@ plot_period (\code{plot_period = "full"}), for each year separately
 (\code{plot_period = "yearly"}) or for each month
 (\code{plot_period = "monthly"}).}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{plotting_L1} contains the code necessary to plot \code{L1}
   data.
-}
-\examples{
-
 }
 \keyword{internal}
