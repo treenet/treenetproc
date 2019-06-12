@@ -12,8 +12,6 @@
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 tsalign <- function(df, reso, year, tz) {
 
   series <- unique(df$series)
@@ -52,8 +50,6 @@ tsalign <- function(df, reso, year, tz) {
 #' @inheritParams proc_L1
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 generatets <- function(df, reso, year, tz) {
 
@@ -98,8 +94,6 @@ generatets <- function(df, reso, year, tz) {
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 roundtimetoreso <- function(df, reso, pos, tz) {
 
   if (!(pos %in% c("start", "end"))) {
@@ -141,40 +135,20 @@ roundtimetoreso <- function(df, reso, pos, tz) {
 #'   interpolation).
 #'
 #' @param df input \code{data.frame}.
-#' @param wnd length of time window over which values are interpolated. Defined
-#'   as \code{2.1 * reso}. Unit of \code{wnd} is minutes.
 #' @param type specify type of interpolation between regular timesteps.
 #' @inheritParams proc_L1
+#' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
-fillintergaps <- function(df, reso, wnd = reso * 2.1, type = "linear",
+fillintergaps <- function(df, reso, interpol = reso * 2.1, type = "linear",
                           flag = FALSE) {
 
   if (type != "linear" | length(type) == 0) {
     print("no gapfilling...")
   }
 
-  # save leading and trailing NA's
-  lead <- FALSE
-  if (is.na(df$value[1])) {
-    nrow_na <- which(!is.na(df$value))[1] - 1
-    leading_na <- df[c(1:nrow_na), ]
-    df <- df[-c(1:nrow_na), ]
-    lead <- TRUE
-  }
-  le <- nrow(df)
-  trail <- FALSE
-  if (is.na(df$value[le])) {
-    nrow_na <- max(which(!is.na(df$value))) + 1
-    trailing_na <- df[c(nrow_na:le), ]
-    df <- df[-c(nrow_na:le), ]
-    trail <- TRUE
-  }
   nc <- ncol(df)
-
   if (type == "linear") {
     df <- df %>%
       dplyr::arrange(ts) %>%
@@ -190,25 +164,18 @@ fillintergaps <- function(df, reso, wnd = reso * 2.1, type = "linear",
       dplyr::group_by(gapnr) %>%
       dplyr::mutate(gaple_mins = sum(diff_ts)) %>%
       dplyr::ungroup() %>%
-      dplyr::mutate(value = ifelse(isgap & gaple_mins < wnd,
+      dplyr::mutate(value = ifelse(isgap & gaple_mins < interpol,
                                    stats::approx(ts, value, ts)$y, value))
   }
 
   if (flag) {
     df <- df %>%
-      dplyr::mutate(flagfill = ifelse(isgap & gaple_mins < wnd,
+      dplyr::mutate(flagfill = ifelse(isgap & gaple_mins < interpol,
                                       TRUE, FALSE)) %>%
       dplyr::select(1:nc, flagfill)
   } else {
     df <- df %>%
       dplyr::select(1:nc)
-  }
-
-  if (lead) {
-    df <- dplyr::bind_rows(leading_na, df)
-  }
-  if (trail) {
-    df <- dplyr::bind_rows(df, trailing_na)
   }
 
   return(df)
@@ -225,8 +192,6 @@ fillintergaps <- function(df, reso, wnd = reso * 2.1, type = "linear",
 #' @inheritParams proc_L1
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 fillintergaps_prec <- function(df, reso) {
   nc <- ncol(df)
