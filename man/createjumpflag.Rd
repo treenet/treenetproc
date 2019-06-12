@@ -16,7 +16,4 @@ jumps due to adjustments of the dendrometer needle.}
 \code{createjumpflag} creates flag for jumps and ouliers. Outliers can be
   single points or errors before, after or in between jumps.
 }
-\examples{
-
-}
 \keyword{internal}

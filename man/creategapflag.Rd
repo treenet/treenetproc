@@ -15,7 +15,4 @@ creategapflag(df, reso, gaple = 12 * (60/reso))
 \code{creategapflag} adds a flag to gaps that are longer than
   \code{gaple}. Used to be called \code{cleanaftergaps}.
 }
-\examples{
-
-}
 \keyword{internal}

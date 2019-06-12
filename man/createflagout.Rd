@@ -19,7 +19,4 @@ difference threshold has to be exceeded for flagging.}
 \description{
 \code{createflagout} creates flags for outlier values.
 }
-\examples{
-
-}
 \keyword{internal}

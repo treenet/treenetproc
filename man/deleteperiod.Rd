@@ -17,7 +17,4 @@ standard date or datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).}
 \description{
 \code{deleteperiod} deletes dendrometer data in specified period.
 }
-\examples{
-
-}
 \keyword{internal}

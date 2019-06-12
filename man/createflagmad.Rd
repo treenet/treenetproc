@@ -4,24 +4,25 @@
 \alias{createflagmad}
 \title{Creates Flag for Outliers Based on Median Absolute Deviation}
 \usage{
-createflagmad(df, reso, wnd, n_mad, plot_density)
+createflagmad(df, reso, wnd, tol, plot_density, print_thresh)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{n_mad}{numeric, defines the thresholds above or below which values
-are classified as outliers (see Details for further information).}
+\item{tol}{numeric, defines the tolerance of the threshold values above or
+below which dendrometer measurements are classified as outliers (see
+Details for further information).}
 
 \item{plot_density}{logical, defines whether density plots should be drawn
 in the console. Can be used to check outlier thresholds.}
+
+\item{print_thresh}{logical, specifies whether the applied thresholds are
+printed to the console or not.}
 }
 \description{
 \code{createflagmad} creates flag for outliers that are above or below a
   threshold distant from the first or third quantile. The threshold is
   specified by the the median absolute deviation
   (\code{\link[stats]{mad}}).
-}
-\examples{
-
 }
 \keyword{internal}

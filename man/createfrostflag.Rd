@@ -14,9 +14,7 @@ in stem diameter due to frost is expected. Default value is set to
 \code{5°C} due to hysteresis shortly before or after frost events.}
 }
 \description{
-\code{createfrostflag} adds a flag for potential frost.
-}
-\examples{
-
+\code{createfrostflag} adds a flag for potential frost. Gaps of temperature
+  data are filled with previous non-NA value.
 }
 \keyword{internal}
