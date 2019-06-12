@@ -10,10 +10,7 @@ fill_na(x)
 \item{x}{input \code{vector}.}
 }
 \description{
-\code{fillna} fills rows with NA with previous non-NA value (function
-  adapted from \code{na.locf} of the \code{zoo} package).
-}
-\examples{
-
+\code{fillna} fills NA's with previous non-NA value (function
+  adapted from \code{\link[zoo]{na.locf}} of the \code{zoo} package).
 }
 \keyword{internal}

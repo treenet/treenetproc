@@ -13,7 +13,4 @@ executejump(df)
 \code{executejump} removes jumps that occur after resetting the dendrometer
   needle and removes outliers.
 }
-\examples{
-
-}
 \keyword{internal}

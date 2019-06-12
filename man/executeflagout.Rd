@@ -16,7 +16,4 @@ difference threshold has to be exceeded for flagging.}
 \code{executeflagout} removes outlier values flagged by
   \code{\link{createflagout}}.
 }
-\examples{
-
-}
 \keyword{internal}
