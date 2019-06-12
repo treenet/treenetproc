@@ -6,16 +6,26 @@
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 check_format <- function(df, input) {
+  if (input == "long") {
+    if (!("series" %in% colnames(df))) {
+      stop("you need to provide a 'series' column for data in 'long' format.")
+    }
+  }
+  if (input == "wide") {
+    if ("series" %in% colnames(df)) {
+      stop("data in 'wide' format does not need a 'series' column.")
+    }
+  }
+
   nr_value_col <- length(which(sapply(df, class) == "numeric" &
                                  sapply(sapply(df, unique), length) > 1))
+  if (nr_value_col == 0) {
+    stop(paste("provide at least one numeric column with raw dendrometer or",
+               "raw meteorological measurements."))
+  }
   if (nr_value_col > 1 & input == "long") {
     stop("provided data is not in 'long' format.")
-  }
-  if (nr_value_col == 1 & !(is.null(df$value)) & input == "wide") {
-    stop("provided data is not in 'wide' format.")
   }
 }
 
@@ -29,8 +39,6 @@ check_format <- function(df, input) {
 #' @inheritParams proc_L1
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 check_ts <- function(df, date_format, tz) {
 
@@ -63,25 +71,29 @@ check_ts <- function(df, date_format, tz) {
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 format_input <- function(df, input, tz) {
   if (input == "wide") {
     nc <- ncol(df)
-    nr <- nrow(df)
     col_names <- colnames(df)
     col_names <- col_names[!col_names == "ts"]
     df <- df %>%
-      transform(ts = as.POSIXct(as.character(ts),
-                                format = "%Y-%m-%d %H:%M:%S", tz = tz)) %>%
       dplyr::distinct() %>%
       dplyr::select(ts, col_names) %>%
-      dplyr::mutate(id = 1:nr) %>%
+      dplyr::mutate(id = 1:nrow(.)) %>%
       stats::reshape(., timevar = "series", idvar = "id", varying = c(2:nc),
                      direction = "long", v.names = "value",
                      times = col_names) %>%
-      dplyr::select(-id) %>%
-      transform(value = as.numeric(value)) %>%
+      dplyr::select(-id)
+
+    if (is.factor(df$value)) {
+      df <- df %>%
+        transform(value = as.numeric(levels(value)[value]))
+    } else {
+      df <- df %>%
+        transform(value = as.numeric(value))
+    }
+
+    df <- df %>%
       dplyr::distinct() %>%
       dplyr::filter(!is.na(ts)) %>%
       dplyr::arrange(series, ts)
@@ -91,13 +103,42 @@ format_input <- function(df, input, tz) {
     col_names <- colnames(df)
     col_names <- col_names[!col_names == "ts"]
     df <- df %>%
-      transform(ts = as.POSIXct(as.character(ts),
-                                format = "%Y-%m-%d %H:%M:%S", tz = tz)) %>%
       dplyr::distinct() %>%
       dplyr::select(ts, col_names) %>%
       transform(value = as.numeric(value)) %>%
       dplyr::filter(!is.na(ts)) %>%
       dplyr::arrange(series, ts)
+  }
+
+  return(df)
+}
+
+
+#' Check for Sensors with Missing Data
+#'
+#' \code{check_missing} removes series without any data or with the same
+#'   value over the whole period.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @keywords internal
+#'
+check_missing <- function(df) {
+  series_missing <- df %>%
+    dplyr::group_by(series) %>%
+    dplyr::mutate(unique_value = ifelse(length(unique(value)) == 1, 1, 0)) %>%
+    dplyr::filter(unique_value == 1) %>%
+    dplyr::select(series) %>%
+    unlist(use.names = FALSE) %>%
+    unique()
+
+  if (length(series_missing) > 0) {
+    df <- df %>%
+      dplyr::filter(!(series %in% series_missing))
+
+    message(paste0("the following series were excluded due to missing data",
+                   "over the entire period: ",
+                   paste0(series_missing, collapse = ", "), "."))
   }
 
   return(df)
@@ -111,8 +152,6 @@ format_input <- function(df, input, tz) {
 #' @param df input \code{data.frame}.
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 reso_check <- function(df) {
   reso_check <- df %>%
@@ -145,8 +184,6 @@ reso_check <- function(df) {
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 ts_overlap_check <- function(df, tem) {
   df_start <- df$ts[1]
   df_end <- df$ts[nrow(df)]
@@ -175,11 +212,9 @@ ts_overlap_check <- function(df, tem) {
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 create_temp_dummy <- function(df) {
-  start_posix <- df$ts[1]
-  end_posix <- df$ts[length(df$ts)]
+  start_posix <- min(df$ts, na.rm = TRUE)
+  end_posix <- max(df$ts, na.rm = TRUE)
   reso <- as.numeric(difftime(df$ts[2], df$ts[1], units = "mins"))
   dd <- seq(start_posix, end_posix, by = paste0(reso, " min"))
 
@@ -194,27 +229,67 @@ create_temp_dummy <- function(df) {
 }
 
 
-#' Create Dummy Temperature Dataset for Treenet Data
+#' Remove Leading and Trailing NA's
 #'
-#' \code{create_temp_dummy} creates a dummy temperature dataset if local
-#'   temperature measurements are missing. Temperatures in the months December,
-#'   January and February are 0°C (i.e. frost shrinkage is possible).
-#'   Tempeartures in the other months are 10°C (i.e. no frost shrinkage).
+#' \code{lead_trail_na} removes and saves leading and trailing \code{NA} to a
+#'   \code{list}.
 #'
-#' @param df input \code{data.frame} of dendrometer data.
+#' @param df input \code{data.frame}
+#'
+#' @return list, first element is \code{df} and the second element are the
+#'   leading and trailing \code{NA}.
 #'
 #' @keywords internal
 #'
-#' @examples
+remove_lead_trail_na <- function(df) {
+
+  lead <- FALSE
+  if (is.na(df$value[1])) {
+    nrow_na <- which(!is.na(df$value))[1] - 1
+    leading_na <- df[c(1:nrow_na), ]
+    na_rows <- leading_na
+    df <- df[-c(1:nrow_na), ]
+    lead <- TRUE
+  }
+  le <- nrow(df)
+  trail <- FALSE
+  if (is.na(df$value[le])) {
+    nrow_na <- max(which(!is.na(df$value))) + 1
+    trailing_na <- df[c(nrow_na:le), ]
+    na_rows <- trailing_na
+    if (lead) {
+      na_rows <- dplyr::bind_rows(leading_na, trailing_na)
+    }
+    df <- df[-c(nrow_na:le), ]
+    trail <- TRUE
+  }
+
+  if (sum(lead, trail) == 0) {
+    na_rows <- NULL
+  }
+  list_na <- list(df, na_rows)
+
+  return(list_na)
+}
+
+
+#' Append Leading and Trailing NA's
 #'
-create_temp_dummy_treenet <- function(df) {
-  df <- df %>%
-    dplyr::distinct(ts) %>%
-    dplyr::mutate(month = as.numeric(substr(ts, 6, 7))) %>%
-    dplyr::mutate(value = ifelse(month %in% c(1, 2, 12), 0, 10)) %>%
-    dplyr::mutate(series = "airtemperature") %>%
-    dplyr::mutate(version = 0) %>%
-    dplyr::select(series, ts, value, version)
+#' \code{append_lead_trail_na} appends leading and trailing \code{NA} back
+#'   to the \code{data.frame}.
+#'
+#' @param df input \code{data.frame}.
+#' @param na \code{data.frame} containing rows with leading and/or trailing
+#'   \code{NA}.
+#'
+#' @keywords internal
+#'
+append_lead_trail_na <- function(df, na) {
+
+  if (length(na) != 0) {
+    df <- dplyr::bind_rows(df, na) %>%
+      dplyr::arrange(ts)
+  }
 
   return(df)
 }
