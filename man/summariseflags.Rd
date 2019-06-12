@@ -12,7 +12,4 @@ summariseflags(df)
 \description{
 \code{summariseflags} summarises all previously created flags in one column.
 }
-\examples{
-
-}
 \keyword{internal}

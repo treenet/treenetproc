@@ -16,15 +16,12 @@ removejump(data_L1, data_L2, remove, tz)
 
 \item{remove}{numeric vector, specify numbers of the changes that should
 be removed. Numbers are displayed in the plots produced by
-\code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers are
-only displayed if \code{plot_period = "monthly"}).}
+\code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers
+are only displayed if \code{plot_period = "monthly"}).}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{removejump} removes wrong corrections in the dendrometer data.
-}
-\examples{
-
 }
 \keyword{internal}

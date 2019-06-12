@@ -13,7 +13,4 @@ summariseflagscorr(df, remove = NULL, force = NULL, delete = NULL)
 \code{summariseflagscorr} appends the flags of the corrections to the
   existing flags.
 }
-\examples{
-
-}
 \keyword{internal}

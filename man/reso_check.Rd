@@ -12,7 +12,4 @@ reso_check(df)
 \description{
 \code{reso_check} checks time resolution of input \code{data.frame}.
 }
-\examples{
-
-}
 \keyword{internal}

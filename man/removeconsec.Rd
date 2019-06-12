@@ -21,7 +21,4 @@ removeconsec(df, remove, notremove)
   maxima or minima appear consecutively. It is a helper function of
   \code{\link{calcmds}}.
 }
-\examples{
-
-}
 \keyword{internal}

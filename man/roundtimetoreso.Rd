@@ -9,17 +9,13 @@ roundtimetoreso(df, reso, pos, tz)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{reso}{desired time resolution of output (in minutes). Resolution
-should be chosen to be close to the actual measurement intervals.
-\code{reso} needs to be a multiple of 5.}
+\item{reso}{desired time resolution of output (in minutes). See
+\code{Details} for more information on data aggregation.}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{roundtimetoreso} rounds first and last irregular timestep to
   next or previous regular timestep.
-}
-\examples{
-
 }
 \keyword{internal}
