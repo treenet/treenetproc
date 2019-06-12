@@ -9,11 +9,11 @@
 #'   \code{plot = TRUE}.
 #' @param remove numeric vector, specify numbers of the changes that should
 #'   be removed. Numbers are displayed in the plots produced by
-#'   \code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers are
-#'   only displayed if \code{plot_period = "monthly"}).
+#'   \code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers
+#'   are only displayed if \code{plot_period = "monthly"}).
 #' @param force character vector, specify the dates after which jumps
-#'   should occur. The jump with the largest value difference occurring in a
-#'   plot_period of \code{n_days} after the specified dates in \code{force} is
+#'   should occur. The largest value difference occurring in a
+#'   period of \code{n_days} after the specified dates in \code{force} is
 #'   corrected. Dates need to be in a standard date or
 #'   datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).
 #' @param delete character vector, specify pairs of dates between which
@@ -26,57 +26,37 @@
 #' @param plot logical, specify whether changes between \code{L2} and
 #'   \code{L3} should be plotted.
 #' @param n_days numeric, length of the period (in days) following the dates
-#'   specified in \code{force} in which a jump is looked for.
+#'   specified in \code{force} in which a jump is looked for. Increase if
+#'   the gap in data is longer than the default (\code{n_days = 5}).
 #' @inheritParams proc_dendro_L2
 #' @inheritParams plot_proc_L2
 #'
 #' @return The function returns a \code{data.frame} with corrected \code{L2}
-#'   dendrometer data.
+#'   dendrometer data. The corrections are added to \code{flags} and the
+#'   version of the corrected \code{series} is changed to \code{version = 3}.
+#'
+#' @seealso \code{\link{corr_dendro_L1}} to correct \code{L1} data.
 #'
 #' @export
 #'
 #' @examples
+#' corr_dendro_L3(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
+#'                remove = c(84, 86:88), force = "2016-08-12",
+#'                delete = c("2016-08-01", "2016-08-05"),
+#'                series = "site-1_dendro-3", plot_export = FALSE)
 #'
 corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
                            force = NULL, delete = NULL, series = NULL,
-                           n_days = 5, plot = TRUE, tz = "Etc/GMT-1") {
+                           n_days = 5, plot = TRUE, plot_export = TRUE,
+                           tz = "UTC") {
 
-  # Check input variables -----------------------------------------------------
-  if (length(remove) != 0) {
-    if (!(is.numeric(remove))) {
-      stop("'remove' needs to be numeric.")
-    }
-  }
-  if (length(force) != 0) {
-    force <- check_datevec(datevec = force, tz = tz)
-  }
-  if (length(delete) != 0) {
-    delete <- check_datevec(datevec = delete, tz = tz)
-    check_delete(delete)
-  }
-  if (length(remove) == 0 & length(force) == 0 & length(delete) == 0) {
-    stop("provide at least 'remove', 'force' or 'delete'.")
-  }
-  if (length(data_L1) != 0) {
-    check_data_L1(data_L1 = data_L1)
-  }
-  if (length(data_L1) == 0 & length(remove) != 0) {
-    stop("you need to provide 'data_L1' along with 'remove'.")
-  }
-  check_data_L2(data_L2 = data_L2)
+  # Subset data to selected series --------------------------------------------
   check_series(df = data_L2, series = series)
-  check_logical(var = plot, var_name = "plot")
-  if (plot & length(data_L1) == 0) {
-    stop("data_L1 needed for plotting. Set 'plot = FALSE' or provide ",
-         "'data_L1'.")
-  }
 
-
-  # Remove errors in processing -----------------------------------------------
   series_select <- series
   n_series <- length(unique(data_L2$series))
 
-  if (length(data_L1) != 0 & length(series_select) != 0) {
+  if (length(data_L1) != 0 && length(series_select) != 0) {
     data_L1 <- data_L1 %>%
       dplyr::filter(series == series_select)
   }
@@ -90,6 +70,45 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
     data_L2_append <- data_L2 %>%
       dplyr::filter(series != series_select)
   }
+
+
+  # Check input variables -----------------------------------------------------
+  if (length(remove) != 0) {
+    if (!(is.numeric(remove))) {
+      stop("'remove' needs to be numeric.")
+    }
+  }
+  if (length(force) != 0) {
+    force <- check_datevec(datevec = force, tz = tz)
+    check_date_period(datevec = force, datevec_name = "force", df = df)
+  }
+  if (length(delete) != 0) {
+    delete <- check_datevec(datevec = delete, tz = tz)
+    check_date_period(datevec = delete, datevec_name = "delete", df = df)
+    check_delete(delete)
+  }
+  if (length(remove) == 0 & length(force) == 0 & length(delete) == 0) {
+    stop("provide at least 'remove', 'force' or 'delete'.")
+  }
+  if (length(data_L1) != 0) {
+    check_data_L1(data_L1 = data_L1)
+  }
+  if (length(data_L1) == 0 && length(remove) != 0) {
+    stop("you need to provide 'data_L1' along with 'remove'.")
+  }
+  check_data_L2(data_L2 = data_L2)
+  check_logical(var = plot, var_name = "plot")
+  if (plot & length(data_L1) == 0) {
+    stop("'data_L1' needed for plotting. Set 'plot = FALSE' or provide ",
+         "'data_L1'.")
+  }
+
+
+  # Remove errors in processing -----------------------------------------------
+  # remove leading and trailing NA's
+  na_list <- remove_lead_trail_na(df = df)
+  df <- na_list[[1]]
+  lead_trail_na <- na_list[[2]]
 
   if (length(remove) != 0) {
     remove_list <- removejump(data_L1 = data_L1, data_L2 = df,
@@ -122,33 +141,43 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
     dplyr::select(series, ts, value, max, twd, mds, gro_yr, gro_start,
                   gro_end, flags, version)
 
+  # append leading and trailing NA's
+  df <- append_lead_trail_na(df = df, na = lead_trail_na)
+
   if (plot) {
-    month_plot <- vector(mode = "character")
-    if (length(remove) != 0) {
-      month_plot <- c(month_plot, format(diff_old$ts, format = "%Y-%m",
-                                         tz = tz))
+    data_L1 <- data_L1 %>%
+      # add diff old to plot removed differences
+      dplyr::left_join(., diff_old, by = "ts") %>%
+      dplyr::mutate(month_plot = 0) %>%
+      dplyr::mutate(month = paste0(substr(ts, 1, 7), "-01"))
+
+    # add months in which delete and force were applied
+    if (length(delete) != 0) {
+      month_delete <- format(delete, format = "%Y-%m", tz = tz)
+      month_delete <- paste0(unique(month_delete), "-01")
+      data_L1 <- data_L1 %>%
+        dplyr::mutate(month_del = ifelse(month %in% month_delete, 1, 0)) %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(month_plot = sum(month_plot, month_del)) %>%
+        dplyr::ungroup() %>%
+        dplyr::select(-month_del)
     }
     if (length(force) != 0) {
-      month_plot <- c(month_plot, format(force, format = "%Y-%m", tz = tz))
+      month_force <- format(force, format = "%Y-%m", tz = tz)
+      month_force <- paste0(unique(month_force), "-01")
+      data_L1 <- data_L1 %>%
+        dplyr::mutate(month_forc = ifelse(month %in% month_force, 1, 0)) %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(month_plot = sum(month_plot, month_forc)) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(month_plot = ifelse(month_plot >= 1, 1, 0)) %>%
+        dplyr::select(-month_forc)
     }
-    if (length(delete) != 0) {
-      month_plot <- c(month_plot, format(delete, format = "%Y-%m", tz = tz))
-    }
-    month_plot <- paste0(unique(month_plot), "-01")
 
-    df_plot <- df %>%
-      dplyr::mutate(month = paste0(substr(ts, 1, 7), "-01")) %>%
-      dplyr::filter(month %in% month_plot)
-
-    data_L1 <- data_L1 %>%
-      dplyr::mutate(month = paste0(substr(ts, 1, 7), "-01")) %>%
-      dplyr::filter(month %in% month_plot) %>%
-      # add diff old to plot removed differences
-      dplyr::left_join(., diff_old, by = "ts")
-
-    plot_proc_L2(data_L1 = data_L1, data_L2 = df_plot,
-                 plot_period = "monthly", plot_show = "all", tz = tz,
-                 plot_name = "corr_L3_plot")
+    plot_proc_L2(data_L1 = data_L1, data_L2 = df,
+                 plot_period = "monthly", plot_show = "diff_corr",
+                 plot_export = plot_export,
+                 plot_name = "corr_L3_plot", tz = tz)
   }
 
   if (n_series > 1) {
