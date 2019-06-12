@@ -9,16 +9,15 @@ tsalign(df, reso, year, tz)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{reso}{desired time resolution of output (in minutes). Resolution
-should be chosen to be close to the actual measurement intervals.
-\code{reso} needs to be a multiple of 5.}
+\item{reso}{desired time resolution of output (in minutes). See
+\code{Details} for more information on data aggregation.}
 
 \item{year}{if \code{year = "full"} then the output \code{data.frame}
 contains data of complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}; if
 \code{year = "asis"} the output \code{data.frame} covers the same period
 as the input data.}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \value{
 \code{data.frame} with measurements aligned to regular time
@@ -28,8 +27,5 @@ intervals, i.e. to \code{reso}.
 \code{tsalign} aligns measurements to regular time intervals by
   interpolating between irregular time intervals. If precipitation data
   is supplied the values are summed up.
-}
-\examples{
-
 }
 \keyword{internal}

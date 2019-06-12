@@ -15,7 +15,4 @@ ts_overlap_check(df, tem)
 \code{ts_overlap_check} checks whether measurement periods of dendrometer
   data and temperature data overlap.
 }
-\examples{
-
-}
 \keyword{internal}

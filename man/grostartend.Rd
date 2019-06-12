@@ -13,13 +13,10 @@ grostartend(df, tol = 0.05, tz)
 surpassed for \code{gro_start} to be defined. \code{1 - tol} is the
 amount of yearly growth at which \code{gro_end} is defined.}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{grostartend} returns the day of the year at which growth starts
   or ends.
-}
-\examples{
-
 }
 \keyword{internal}

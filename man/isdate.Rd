@@ -12,13 +12,10 @@ isdate(datevec, var_name, date_formats, tz)
 \item{date_formats}{character vector, date or datetime formats that are
 checked}
 
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{isdate} checks whether values in a vector are in a standard
   date or datetime format and converts them to \code{POSIXct}.
-}
-\examples{
-
 }
 \keyword{internal}
