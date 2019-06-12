@@ -9,8 +9,6 @@
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 plotting_proc_L2 <- function(data_L1, data_L2, diff, plot_period,
                              plot_add = TRUE, tz) {
 
@@ -35,15 +33,18 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, plot_period,
   graphics::title(ylab = "L2", mgp = c(3.5, 1, 0))
   graphics::par(mar = c(0, 5, 0, 2.1))
   options(warn = -1)
-  graphics::plot(data = diff, diff ~ ts, type = "n", xlab = "", log = "y",
+  graphics::plot(data = data_L2, value ~ ts, type = "n", xlab = "", log = "y",
                  yaxt = "n", xaxt = "n", ylab = "", ylim = c(0.1, 1200),
                  las = 1)
   graphics::abline(h = c(0.1, 1, 10, 100, 1000), col = "grey70")
-  graphics::lines(data = diff, diff_plot_old ~ ts, type = "h", lwd = 2,
+  graphics::lines(data = diff, diff_old ~ ts, type = "h", lwd = 2,
                   col = "grey70")
   graphics::lines(data = diff, diff_plot ~ ts, type = "h", lwd = 2,
                   col = "#ef3b2c")
   if (plot_period == "monthly") {
+    graphics::text(x = diff$ts,
+                   y = rep(c(10, 3, 1, 0.3), length.out = nrow(diff)),
+                   labels = diff$diff_nr_old, font = 2, col = "grey40")
     graphics::text(x = diff$ts,
                    y = rep(c(0.3, 1, 3, 10), length.out = nrow(diff)),
                    labels = diff$diff_nr, font = 2)
@@ -70,8 +71,6 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, plot_period,
 #' @inheritParams plot_proc_L2
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 axis_labels_period <- function(df, plot_period, tz) {
 
@@ -110,8 +109,6 @@ axis_labels_period <- function(df, plot_period, tz) {
 #'   \code{mds_plot.pdf}.
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 plot_mds <- function(df, maxmin) {
   df <- df %>%
@@ -154,8 +151,6 @@ plot_mds <- function(df, maxmin) {
 #' @inheritParams plot_proc_L2
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 plotting_L1 <- function(data_L1, data_L1_orig, plot_period, tz) {
 
