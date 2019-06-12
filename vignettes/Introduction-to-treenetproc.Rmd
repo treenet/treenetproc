@@ -1,0 +1,327 @@
+---
+title: "Introduction to treenetproc"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to treenetproc}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+# This is necessary to direct knitr to find the 
+# 'data' directory, thanks to 
+# https://stackoverflow.com/a/24585750/1036500
+knitr::opts_knit$set(root.dir = normalizePath('../'))
+```
+
+```{r Figure 1, fig.width = 6, fig.height = 2, fig.retina = 2, echo = FALSE}
+library(treenetproc)
+data("dendro_data_L1")
+data("dendro_data_L2")
+example_L1 <- dendro_data_L1 %>% 
+  dplyr::filter(series == "site-1_dendro-1")
+example_L2 <- dendro_data_L2 %>% 
+  dplyr::filter(series == "site-1_dendro-1")
+layout(matrix(c(1, 2), nrow = 2), heights = c(1, 1),
+       widths = 1)
+par(mar = c(0, 2.1, 0, 1))
+plot(data = example_L1, value ~ ts, type = "l", xaxt = "n", 
+     yaxt = "n", ylab = "", las = 1, col = "grey70")
+title(ylab = "raw", mgp = c(0.8, 1, 0))
+par(mar = c(0, 2.1, 0, 1))
+plot(data = example_L2, value ~ ts, type = "n", xaxt = "n", 
+     yaxt = "n", ylab = "", xlab = "")
+title(ylab = "processed", mgp = c(0.8, 1, 0))
+lines(data = example_L2, value ~ ts, col = "#08519c")
+```
+
+```{r setup}
+library(treenetproc)
+```
+
+The package `treenetproc` cleans dendrometer data by removing outliers and 
+jumps in the data. The data is first aligned to regular time intervals (`L1`)
+and then cleaned (`L2`).
+
+## Format raw dendrometer and climate data
+The raw dendrometer or climate data has to contain a timestamp column named
+`ts`. The timestamp can be in any standard date format (default is 
+`date_format = "%Y-%m-%d %H:%M:%S"`).
+
+Raw dendrometer or climate data can either be provided in `long` format with 
+dendrometer names specified in a column named `series` (Table 1).
+Alternatively the data can be provided in `wide` format with data series
+in different columns (Table 2).
+
+```{r head of dendro_data_L0, echo = FALSE, results = "asis"}
+data("dendro_data_L0")
+knitr::kable(dendro_data_L0[1:5, ], caption = "Table 1: Raw dendrometer data
+             in 'long' format.")
+```
+
+```{r head of dendro_data_L0_wide, echo = FALSE, results = "asis"}
+data("dendro_data_L0_wide")
+knitr::kable(dendro_data_L0_wide[1:5, ], caption = "Table 2: Raw dendrometer and
+             temperature data in 'wide' format.")
+```
+
+
+## Process data to L1 (time alignement)
+After converting the data to the correct format it has to be time-aligned to
+regular time intervals with the function `proc_L1`. The desired time 
+resolution of the data can be specified with `reso` (in minutes). How the
+time alignement works is documented in 
+([Functionality of treenetproc](Functionality-of-treenetproc.html), this 
+vignette is under development and not yet available).
+
+```{r prepare data for proc_L1, echo = FALSE}
+# reduce size of dendro_data_L0 to make computing of proc_L1 faster
+data("dendro_data_L0")
+dendro_data_L0 <- dendro_data_L0[1:100, ]
+```
+
+```{r examples of proc_L1, results = "hide"}
+# Data in 'long' format
+proc_L1(data = dendro_data_L0, reso = 10, input = "long")
+
+# Data in 'wide' format
+proc_L1(data = dendro_data_L0_wide, reso = 10, input = "wide")
+```
+
+
+## Process data to L2 (dendrometer data cleaning)
+Time-aligned dendromter data can be cleaned with the function 
+`proc_dendro_L2`. The function returns a `data.frame` containing the 
+cleaned dendrometer data as well as growth, maximum daily shrinkage (mds), 
+tree water deficit (twd) and additional variables (Table 3).
+
+```{r prepare for proc_dendro_L2, echo = FALSE}
+# reduce size of dendro_data_L1 to make computing of proc_dendro_L2 faster
+data("dendro_data_L1")
+dendro_data_L1 <- dendro_data_L1 %>% 
+  dplyr::filter(series == "site-1_dendro-1")
+```
+
+```{r process to L2, results = "hide", message = FALSE, warning = FALSE}
+# Clean time-aligned (L1) dendrometer data
+proc_dendro_L2(dendro_data = dendro_data_L1, plot = FALSE)
+```
+
+```{r Table 3, echo = FALSE}
+data("dendro_data_L2")
+knitr::kable(dendro_data_L2[1:5, ], caption = "Table 3: Processed dendrometer
+             data.")
+```
+
+The column `flags` in the output contains all the changes that occurred during
+the processing. The numbers after the name of the flag specify in which
+iteration of the cleaning process (number of iterations specified in 
+`iter_clean`) the change occurred:
+
+* **out**: removed outlier point
+* **jumpout**: removed outlier point related to a jump in measured values
+* **jump**: corrected a jump in the measured values
+* **fill**: value is linearly interpolation between the two closest available 
+  measured values (length of gaps that are linearly interpolated is specified 
+  in `interpol`).
+
+By default all changes are plotted (`plot = TRUE`) and saved to a PDF file
+in the current working directory (`plot_export = TRUE`). 
+The plot contains...
+
+* the original `L1` data in the first panel, 
+* the processed `L2` data (with `L1` in the background) in the second 
+  panel, 
+* the changes between `L1` and `L2` in the third panel, 
+* and the tree water deficit (twd) in the last panel.
+
+```{r processs to L2, results = "hide", fig.show = "hide", message = FALSE, warning = FALSE}
+# Clean time-aligned (L1) dendrometer data and plot changes
+proc_dendro_L2(dendro_data = dendro_data_L1, plot_period = "monthly",
+               plot_export = FALSE)
+```
+
+```{r plot L2 data, echo = FALSE, fig.height=7, fig.retina=2, fig.width=6}
+# prepare dendro_data_L2 for plotting (subset to single dendrometer)
+dendro_data_L2 <- dendro_data_L2 %>% 
+  dplyr::filter(series == "site-1_dendro-1")
+
+plot_proc_L2(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
+             plot_period = "monthly", plot_export = FALSE)
+```
+
+When plotted monthly (`plot_period = "monthly"`), the changes that occurred 
+during the processing are numbered. Alternatively the plots can be drawn for 
+the full period of data (`plot_period = "full"`) or for each year 
+separately (`plot_period = "yearly"`). In these cases, the changes are not 
+numbered.
+
+
+### Rigidity of data cleaning
+The rigidity of the data cleaning can be adjusted with the variable `tol`. An 
+increase in the variable leads to an increase in the thresholds used for the
+outlier classification. This makes sense if the raw dendrometer series is 
+flattened during processing (see example below).
+
+The applied threshold values are printed during the data processing as:  
+`series_name threshold low: -30.52; high: 30.64`.  
+The thresholds are printed for a first rough cleaning of the data as well 
+as for each iteration in the  data cleaning process (number of iterations
+is specified in `iter_clean`).
+
+
+#### Data cleaning with default 'tol'
+```{r shrinking example code, results="hide", fig.show="hide", message = FALSE, warning = FALSE}
+# load data
+data("dendro_data_L1")
+# subset data for example
+data_L1 <- dendro_data_L1 %>% 
+  dplyr::filter(series == "site-1_dendro-2")
+
+# clean dendrometer data (tol = 9, default)
+proc_dendro_L2(dendro_data = data_L1, tol = 9, plot_export = FALSE)
+```
+
+```{r shrinking example plot, echo=FALSE, fig.width=5, fig.height=3, fig.retina = 2}
+data("dendro_data_L2")
+data_L2 <- dendro_data_L2 %>% 
+  dplyr::filter(series == "site-1_dendro-2")
+
+par(mar = c(2.1, 4, 1, 2))
+plot(data = data_L2, value ~ ts, type = "n", ylab = "L2", 
+     las = 1)
+lines(data = data_L1, value ~ ts, col = "grey70")
+lines(data = data_L2, value ~ ts, col = "#08519c")
+```
+
+
+#### Data cleaning with increased value of 'tol'
+```{r shrinking example higher tol code, results="hide", fig.show="hide", message = FALSE, warning = FALSE}
+# clean dendrometer data (increased value of tol)
+proc_dendro_L2(dendro_data = data_L1, tol = 22, plot_export = FALSE)
+```
+
+```{r shrinking example higher tol code #2, echo=FALSE, results = "hide", fig.show="hide", message = FALSE, warning = FALSE}
+data_L2 <- proc_dendro_L2(dendro_data = data_L1, tol = 22, 
+                          plot_export = FALSE)
+```
+
+```{r shrinking example higher tol plot, echo=FALSE, fig.width=5, fig.height=3, fig.retina=2}
+par(mar = c(2.1, 4, 1, 2))
+plot(data = data_L2, value ~ ts, type = "n", ylab = "L2", 
+     las = 1)
+lines(data = data_L1, value ~ ts, col = "grey70")
+lines(data = data_L2, value ~ ts, col = "#08519c")
+```
+
+### Temperature data
+Including temperature data measured on site ensures that frost events are 
+not treated as outliers during data cleaning. Frost is assumed as soon as
+temperatures drop below the value specified in `lowtemp`. Temperature data 
+can either be provided along with the dendrometer data (series name has to 
+contain `temp`), or it can be provided separately to `temp_data`.
+
+If no tempearture data is provided, a sample temperature dataset is used.
+The sample temperature dataset assumes frost in the months December,
+January and February; i.e. the temperature is set to 0°C. In the other 
+months the temperature is set to 10°C.
+
+
+#### Data cleaning without temperature data
+```{r frost no temp data_1, fig.show="hide", message=FALSE, warning=FALSE, results="hide"}
+# load data
+data("dendro_data_L1")
+# subset data for example
+data_L1 <- dendro_data_L1 %>% 
+  dplyr::filter(series == "site-1_dendro-4")
+
+# clean dendrometer data (without temperature data)
+proc_dendro_L2(dendro_data = data_L1, plot_export = FALSE)
+```
+
+```{r frost no temp data_2, echo=FALSE, results="hide", fig.width=5, fig.height=3, fig.retina = 2, warning=FALSE, message=FALSE}
+# load data
+data("dendro_data_L2")
+# subset data for example
+data_L2 <- dendro_data_L2 %>% 
+  dplyr::filter(series == "site-1_dendro-4")
+
+par(mar = c(2.1, 4, 1, 2))
+plot(data = data_L2, value ~ ts, type = "n", ylab = "L2", 
+     las = 1)
+lines(data = data_L1, value ~ ts, col = "grey70")
+lines(data = data_L2, value ~ ts, col = "#08519c")
+```
+
+
+#### Data cleaning with temperature data
+```{r frost with temp data_1, fig.show="hide", message=FALSE, warning=FALSE, results="hide"}
+# load temperature data
+data("temp_data_L0")
+# time-align temperature data
+temp_L1 <- proc_L1(data = temp_data_L0)
+
+# clean dendrometer data (with temperature data)
+proc_dendro_L2(dendro_data = data_L1, temp_data = temp_L1, 
+               plot_export = FALSE)
+```
+
+```{r frost with temp data_2, echo=FALSE, results="hide", fig.width=5, fig.height=3, fig.retina = 2, warning=FALSE, message=FALSE}
+# load data
+data("temp_data_L1")
+data_L2 <- proc_dendro_L2(dendro_data = data_L1, temp_data = temp_data_L1, 
+                          plot = FALSE)
+
+par(mar = c(2.1, 4, 1, 2))
+plot(data = data_L2, value ~ ts, type = "n", ylab = "L2", 
+     las = 1)
+lines(data = data_L1, value ~ ts, col = "grey70")
+lines(data = data_L2, value ~ ts, col = "#08519c")
+```
+
+
+## Process data to L3 (correct mistakes in data cleaning)
+If increasing the value of `tol` does not remove all errors in data cleaning
+or introduces new errors, they can be removed using the function
+`corr_dendro_L3`. There are three possibilities to revert wrong changes:
+
+* **remove**: specify the numbers of the changes that should be reverted.
+* **force**: force a jump in the data that was not corrected for by 
+  specifying a point in time prior (but close to) where the jump should occur.
+* **delete**: delete an entire region of erroneous data by specifying a
+  date range. This can also be done for `L1` data with the function 
+  `corr_dendro_L1`.
+
+
+#### Data cleaning to L2
+```{r corr_dendro_L3 example_1, results="hide", fig.width=6, fig.height=7, fig.retina=2, message=FALSE, warning=FALSE}
+# load data
+data("dendro_data_L1")
+# subset data for example
+data_L1 <- dendro_data_L1 %>% 
+  dplyr::filter(series == "site-1_dendro-3")
+
+# clean dendrometer data
+proc_dendro_L2(dendro_data = data_L1, plot_period = "monthly", 
+               plot_export = FALSE)
+```
+
+
+#### Correct errors in data cleaning
+```{r corr_dendro_L3 example_2, echo=FALSE, results="hide"}
+# load data
+data("dendro_data_L2")
+```
+
+```{r corr_dendro_L3 example_3, results="hide", fig.width=6, fig.height=7, fig.retina=2, message=FALSE, warning=FALSE}
+# correct errors in dendrometer data cleaning
+corr_dendro_L3(data_L1 = data_L1, data_L2 = dendro_data_L2, 
+               remove = c(84, 86:88), force = "2016-08-12", 
+               delete = c("2016-08-01", "2016-08-05"),
+               series = "site-1_dendro-3", plot_export = FALSE)
+```
+

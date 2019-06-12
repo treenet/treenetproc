@@ -1,0 +1,42 @@
+---
+title: "Functionality of treenetproc"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Functionality of treenetproc}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(treenetproc)
+```
+
+This vignette is under development. More content follows...
+
+## Time alignement
+For the time-alignement a linear interpolation between the two closest
+measurement points is perfomed (blue points in Figure 1). If the measurements 
+were already taken at regular time intervals, the measurements corresponding 
+to the time interval specified in `reso` are selected.
+
+```{r Figure 2, fig.width = 5, fig.height = 3, fig.retina = 2, echo = FALSE}
+data("dendro_data_L0")
+data("dendro_data_L1")
+data_L0 <- dendro_data_L0 %>% 
+  dplyr::filter(ts >= "2014-05-01 10:14:00") %>% 
+  dplyr::filter(ts <= "2014-05-01 12:07:00")
+
+graphics::par(mar = c(2.1, 5, 1, 2.1))
+plot(data = data_L0, value ~ ts, type = "p", las = 1, col = "grey60", 
+     xlab = "")
+lines(data = data_L0, value ~ ts, col = "grey60")
+abline(v = dendro_data_L1$ts[56:66], lty = "dashed", col = "grey60")
+points(data = dendro_data_L1[56:66, ], value ~ ts, col = "blue", pch = 16)
+```

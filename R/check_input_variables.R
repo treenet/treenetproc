@@ -7,8 +7,6 @@
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 check_logical <- function(var, var_name) {
   if (!(var %in% c(TRUE, FALSE))) {
     stop(paste(var_name, "has to be either 'TRUE' or 'FALSE'."))
@@ -28,8 +26,6 @@ check_logical <- function(var, var_name) {
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 isdate <- function(datevec, var_name, date_formats, tz) {
 
   datevec <- as.character(datevec)
@@ -37,7 +33,9 @@ isdate <- function(datevec, var_name, date_formats, tz) {
     tryCatch(
       !is.na(as.POSIXct(datevec, tz = tz,
                         tryFormats = date_formats)),
-      error = function(err) {FALSE})
+      error = function(err) {
+        FALSE
+        })
 
   if (length(unique(date_check)) > 1) {
     stop(paste("Date format of some dates in '", var_name, "' not recognized.",
@@ -61,13 +59,10 @@ isdate <- function(datevec, var_name, date_formats, tz) {
 #' \code{check_datevec} checks whether all dates specified are in a standard
 #'   date or datetime format. Dates are converted to \code{POSIXct}.
 #'
-#' @param var character vector, dates to be checked.
-#' @param var_name character, name of variable to be checked.
+#' @inheritParams isdate
 #' @inheritParams corr_dendro_L3
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 check_datevec <- function(datevec, tz) {
 
@@ -93,6 +88,31 @@ check_datevec <- function(datevec, tz) {
 }
 
 
+#' Check Date Input for Period
+#'
+#' \code{check_date_period} checks whether the provided dates overlap with
+#'   the period of the data.
+#'
+#' @param df input \code{data.frame}.
+#' @inheritParams isdate
+#' @inheritParams corr_dendro_L3
+#'
+#' @keywords internal
+#'
+check_date_period <- function(datevec, datevec_name, df) {
+
+  start <- df$ts[1]
+  end <- df$ts[nrow(df)]
+
+  for (i in 1:length(datevec)) {
+    if (datevec[i] < start | datevec[i] > end) {
+      stop(paste0(datevec[i], " in '", datevec_name, "' is not part of the ",
+                  "measurement period."))
+    }
+  }
+}
+
+
 #' Check data_L1 Input
 #'
 #' \code{check_data_L1} checks the input data given to the variable
@@ -102,8 +122,6 @@ check_datevec <- function(datevec, tz) {
 #'   \code{\link{proc_L1}}.
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 check_data_L1 <- function(data_L1) {
   if (sum(colnames(data_L1) %in% c("series", "ts", "value", "version")) != 4) {
@@ -122,8 +140,6 @@ check_data_L1 <- function(data_L1) {
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 check_data_L2 <- function(data_L2) {
   if (sum(colnames(data_L2) %in% c("series", "ts", "value", "version", "max",
                                    "twd")) != 6) {
@@ -140,8 +156,6 @@ check_data_L2 <- function(data_L2) {
 #' @inheritParams corr_dendro_L3
 #'
 #' @keywords internal
-#'
-#' @examples
 #'
 check_series <- function(df, series) {
   if (length(series) == 0 & length(unique(df$series)) > 1) {
@@ -167,14 +181,12 @@ check_series <- function(df, series) {
 #'
 #' @keywords internal
 #'
-#' @examples
-#'
 check_delete <- function(delete) {
   for (d in seq(1, length(delete), by = 2)) {
     if (delete[d] > delete[d + 1]) {
-      stop(paste0("The first date of a date pair in 'delete' needs to be ",
-                  "smaller than the second date. Error in date pair: ",
-                  delete[d], ", ", delete[d + 1], "."))
+      stop(paste0("Error in date pair: ", delete[d], ", ", delete[d + 1],
+                  ". The first date of a date pair in 'delete' needs ",
+                  "to be smaller than the second date."))
     }
   }
 }
