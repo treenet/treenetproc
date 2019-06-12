@@ -17,9 +17,11 @@
 #'   (\code{plot_show = "diff"}).
 #' @param plot_name character, specify name of the PDF in which the plots are
 #'   saved.
+#' @param plot_export logical, specifies whether the plots are exported as a
+#'   \code{PDF} file to the working directory or are plotted in the console.
 #' @inheritParams proc_L1
 #'
-#' @return Plots are saved to current working directory as
+#' @return Plots are saved in a PDF to current working directory as
 #'   \code{proc_L2_plot.pdf} or as specified in \code{plot_name}.
 #'
 #'   The first panel shows the \code{L1} data, the second panel the
@@ -31,29 +33,35 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' plot_proc_L2(data_L1 = data_L1_dendro, data_L2 = data_L2_dendro,
-#'             plot_period = "yearly")
-#' }
+#' plot_proc_L2(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
+#'             plot_period = "yearly", plot_export = FALSE)
+#'
 plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
-                         plot_show = "all", tz = "Etc/GMT-1",
-                         plot_name = "proc_L2_plot") {
+                         plot_show = "all", plot_export = TRUE,
+                         plot_name = "proc_L2_plot", tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
   if (!(plot_period %in% c("full", "yearly", "monthly"))) {
     stop("plot_period needs to be either 'full', 'yearly' or 'monthly'.")
   }
-  if (!(plot_show %in% c("all", "diff"))) {
+  if (!(plot_show %in% c("all", "diff", "diff_corr"))) {
     stop("plot_show needs to be either 'all' or 'diff'.")
   }
+  check_logical(var = plot_export, var_name = "plot_export")
   check_data_L1(data_L1 = data_L1)
   check_data_L2(data_L2 = data_L2)
 
 
   # Calculate differences -----------------------------------------------------
-  # add diff_plot_old, used to plot removed differences
-  if (!("diff_plot_old" %in% colnames(data_L1))) {
-    data_L1$diff_plot_old <- NA
+  # add diff_old, used to plot removed differences (see corr_dendro_L3)
+  if (!("diff_old" %in% colnames(data_L1))) {
+    data_L1$diff_old <- NA
+    data_L1$diff_nr_old <- NA
+  }
+  # add month_plot used to plot months with force or delete
+  # (see corr_dendro_L3)
+  if (!("month_plot" %in% colnames(data_L1))) {
+    data_L1$month_plot <- 0
   }
   data_L1 <- data_L1 %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
@@ -73,7 +81,9 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
   sensors <- unique(data_L1$series)
   years <- unique(data_L1$year)
 
-  grDevices::pdf(paste0(plot_name, ".pdf"), width = 8.3, height = 11.7)
+  if (plot_export) {
+    grDevices::pdf(paste0(plot_name, ".pdf"), width = 8.3, height = 11.7)
+  }
   for (s in 1:length(sensors)) {
     sensor_label <- sensors[s]
     passenv$sensor_label <- sensor_label
@@ -83,12 +93,13 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
       dplyr::filter(series == sensor_label)
 
     diff_sensor <- data_L1_sensor %>%
-      dplyr::select(series, ts, value_L1, diff_L1, diff_plot_old) %>%
+      dplyr::select(series, ts, value_L1, diff_L1, diff_old, diff_nr_old,
+                    month_plot) %>%
       dplyr::full_join(., data_L2_sensor, by = c("series", "ts")) %>%
       dplyr::select(series, ts, value_L1, value_L2, diff_L1, diff_L2,
-                    diff_plot_old, year, month) %>%
+                    diff_old, diff_nr_old, month_plot, year, month) %>%
       dplyr::mutate(diff = diff_L1 - diff_L2) %>%
-      dplyr::mutate(diff = ifelse(abs(diff) <= 0.001, 0, diff)) %>%
+      dplyr::mutate(diff = ifelse(abs(diff) <= 0.1, 0, diff)) %>%
       dplyr::mutate(diff = ifelse(is.na(diff), 0, diff)) %>%
       dplyr::mutate(diff_plot = abs(diff)) %>%
       dplyr::mutate(diff_nr = 0) %>%
@@ -148,38 +159,54 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
               dplyr::filter(month == month_label)
 
             if (sum(!is.na(diff_month$diff_nr)) != 0 |
-                sum(!is.na(diff_month$diff_plot_old))) {
+                sum(!is.na(diff_month$diff_nr_old)) != 0) {
 
-              diff_month_label <- diff_month %>%
+              diff_month <- diff_month %>%
                 dplyr::mutate(day = strftime(ts, format = "%d", tz = tz)) %>%
-                dplyr::filter(!is.na(diff_nr) | !is.na(diff_plot_old)) %>%
                 dplyr::group_by(year, month, day) %>%
-                dplyr::mutate(diff_nr_first = dplyr::first(diff_nr),
-                              diff_nr_last = dplyr::last(diff_nr)) %>%
+                dplyr::mutate(
+                  diff_nr_first = dplyr::first(diff_nr[which(!is.na(diff_nr))]),
+                  diff_nr_last = dplyr::last(diff_nr[which(!is.na(diff_nr))]),
+                  diff_nr_old_first =
+                    dplyr::first(diff_nr_old[which(!is.na(diff_nr_old))]),
+                  diff_nr_old_last =
+                    dplyr::last(diff_nr_old[which(!is.na(diff_nr_old))])) %>%
                 dplyr::mutate(
                   diff_nr = ifelse(diff_nr_first != diff_nr_last,
                                    paste0(diff_nr_first, "-", diff_nr_last),
-                                   as.character(diff_nr_first))) %>%
-                dplyr::summarise(ts = ts[1],
-                                 diff_nr = diff_nr[1]) %>%
+                                   as.character(diff_nr_first)),
+                  diff_nr_old = ifelse(diff_nr_old_first != diff_nr_old_last,
+                                       paste0(diff_nr_old_first, "-",
+                                              diff_nr_old_last),
+                                       as.character(diff_nr_old_first))) %>%
                 dplyr::ungroup() %>%
-                dplyr::select(ts, diff_nr)
-
-              diff_month <- diff_month %>%
-                dplyr::select(-diff_nr) %>%
-                dplyr::left_join(., diff_month_label, by = "ts")
+                dplyr::filter(diff != 0 & !is.na(diff_nr) |
+                                diff_old != 0 & !is.na(diff_nr_old)) %>%
+                # select middle value for positioning label in plot
+                dplyr::group_by(year, month, day) %>%
+                dplyr::slice(ceiling(dplyr::n() / 2)) %>%
+                dplyr::ungroup() %>%
+                dplyr::select(ts, diff_nr, diff_plot, diff_nr_old, diff_old,
+                              month_plot)
             }
 
             if (sum(!is.na(data_L1_month$value)) != 0 &
                 sum(!is.na(data_L2_month$value)) != 0) {
               if (plot_show == "diff" &
-                  max(abs(diff_month$diff), na.rm = TRUE) < 0.1) {
+                  sum(!is.na(diff_month$diff_nr)) == 0) {
                 next
               }
+              if (plot_show == "diff_corr") {
+                if (sum(!is.na(diff_month$diff_nr_old)) == 0 &
+                    !(1 %in% diff_month$month_plot)) {
+                  next
+                }
+              }
+
               plotting_proc_L2(data_L1 = data_L1_month,
                                data_L2 = data_L2_month,
-                               diff = diff_month, plot_period = plot_period,
-                               tz = tz)
+                               diff = diff_month,
+                               plot_period = plot_period, tz = tz)
             } else {
               next
             }
@@ -202,5 +229,7 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
       }
     }
   }
-  grDevices::dev.off()
+  if (plot_export) {
+    grDevices::dev.off()
+  }
 }
