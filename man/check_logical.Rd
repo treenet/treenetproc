@@ -14,7 +14,4 @@ check_logical(var, var_name)
 \description{
 \code{check_logical} checks whether input variable is of type logical.
 }
-\examples{
-
-}
 \keyword{internal}

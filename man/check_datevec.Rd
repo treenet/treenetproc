@@ -7,17 +7,12 @@
 check_datevec(datevec, tz)
 }
 \arguments{
-\item{tz}{specify the desired time zone. Default is \code{"Etc/GMT-1"}.}
+\item{datevec}{character vector in a standard date or datetime format.}
 
-\item{var}{character vector, dates to be checked.}
-
-\item{var_name}{character, name of variable to be checked.}
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{check_datevec} checks whether all dates specified are in a standard
   date or datetime format. Dates are converted to \code{POSIXct}.
-}
-\examples{
-
 }
 \keyword{internal}

@@ -16,7 +16,4 @@ standard date or datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).}
 \code{check_delete} checks whether the first value in a pair of dates
   occurs before the second value.
 }
-\examples{
-
-}
 \keyword{internal}

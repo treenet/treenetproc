@@ -12,7 +12,4 @@ check_format(df, input)
 \description{
 \code{check_format()} checks whether input table is in long or wide format.
 }
-\examples{
-
-}
 \keyword{internal}
