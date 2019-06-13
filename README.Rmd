@@ -33,11 +33,7 @@ devtools::install_github("treenet/treenetproc")
 
 ## Example
 
-Below you can see a basic example of a processing result. For more information
-on the functionality of the package please see the package vignettes:
-```{r browse vignettes}
-browseVignettes("treenetproc")
-```
+Below you can see a basic example of a processing result. 
 
 ```{r Figure 1, fig.width = 6, fig.height = 2, fig.retina = 2, echo = FALSE}
 library(treenetproc)
@@ -60,3 +56,9 @@ title(ylab = "processed", mgp = c(0.8, 1, 0))
 lines(data = example_L2, value ~ ts, col = "#08519c")
 ```
 
+For more information on the functionality of the package please see the 
+package vignettes:
+
+```{r browse vignettes, results="hide", message=FALSE, warning=FALSE}
+browseVignettes("treenetproc")
+```

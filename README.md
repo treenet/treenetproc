@@ -23,13 +23,13 @@ devtools::install_github("treenet/treenetproc")
 
 ## Example
 
-Below you can see a basic example of a processing result. For more
-information on the functionality of the package please see the package
-vignettes:
+Below you can see a basic example of a processing result.
+
+<img src="man/figures/README-Figure 1-1.png" width="100%" />
+
+For more information on the functionality of the package please see the
+package vignettes:
 
 ``` r
 browseVignettes("treenetproc")
-#> starting httpd help server ... done
 ```
-
-<img src="man/figures/README-Figure 1-1.png" width="100%" />
