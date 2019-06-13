@@ -110,14 +110,16 @@ axis_labels_period <- function(df, plot_period, tz) {
 #'
 #' @keywords internal
 #'
-plot_mds <- function(df, maxmin) {
+plot_mds <- function(df, maxmin, plot_export) {
   df <- df %>%
     dplyr::mutate(month = as.numeric(cut(ts, breaks = "month",
                                          labels = FALSE)))
 
   series <- unique(df$series)
-  grDevices::pdf(paste0("mds_plot_", series, ".pdf"),
-                 width = 8.3, height = 5.8)
+  if (plot_export) {
+    grDevices::pdf(paste0("mds_plot_", series, ".pdf"),
+                   width = 8.3, height = 5.8)
+  }
   for (s in 1:length(series)) {
     df_series <- df %>%
       dplyr::filter(series == series[s])
@@ -137,7 +139,9 @@ plot_mds <- function(df, maxmin) {
       }
     }
   }
-  grDevices::dev.off()
+  if (plot_export) {
+    grDevices::dev.off()
+  }
 }
 
 
