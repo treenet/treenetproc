@@ -163,8 +163,10 @@ createfrostflag <- function(df, tem, lowtemp = 5) {
 
   na_temp <- sum(is.na(df$frost))
   na_perc <- round(na_temp / nrow(df) * 100, 1)
-  if (na_perc > 0.9) {
-    message(paste0(na_perc, "% of temperature data is missing!"))
+  if (na_perc > 0.99) {
+    message("No temperature data is missing.")
+  } else {
+    message(paste0(na_perc, "% of temperature data is missing."))
   }
 
   df <- df %>%
@@ -686,7 +688,7 @@ removeconsec <- function(df, remove, notremove) {
 #'
 #' @keywords internal
 #'
-calcmds <- function(df, reso, tz, plot_mds = FALSE) {
+calcmds <- function(df, reso, tz, plot_mds = FALSE, plot_export) {
 
   if ("mds" %in% colnames(df)) {
     df <- df %>%
@@ -712,7 +714,7 @@ calcmds <- function(df, reso, tz, plot_mds = FALSE) {
 
   if (plot_mds) {
     print("plot mds...")
-    plot_mds(df = df, maxmin = maxmin)
+    plot_mds(df = df, maxmin = maxmin, plot_export = plot_export)
   }
 
   maxmin <- maxmin %>%
@@ -789,16 +791,9 @@ grostartend <- function(df, tol = 0.05, tz) {
 #'
 summariseflags <- function(df) {
 
-  list_flags <- vector("list", length = (passenv$flagjump_nr * 2) +
-                         passenv$flagout_nr)
+  list_flags <- vector("list", length = (passenv$flagjump_nr * 2))
 
   n_flags <- 1
-  for (out in n_flags:(passenv$flagout_nr + n_flags - 1)) {
-    flagout_nr <- out - n_flags + 1
-    flagout <- df[[paste0("flagout", flagout_nr)]]
-    list_flags[[out]] <- ifelse(flagout, paste0("out", flagout_nr), NA)
-  }
-  n_flags <- n_flags + passenv$flagout_nr
   for (out in n_flags:(passenv$flagjump_nr + n_flags - 1)) {
     flagjump_nr <- out - n_flags + 1
     flagjumpout <- df[[paste0("flagjumpout", flagjump_nr)]]
