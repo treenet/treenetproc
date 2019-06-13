@@ -169,9 +169,8 @@ flattened during processing (see example below).
 
 The applied threshold values are printed during the data processing as:  
 `series_name threshold low: -30.52; high: 30.64`.  
-The thresholds are printed for a first rough cleaning of the data as well 
-as for each iteration in the  data cleaning process (number of iterations
-is specified in `iter_clean`).
+The thresholds are printed for each iteration in the data cleaning process 
+(number of iterations is specified in `iter_clean`).
 
 
 #### Data cleaning with default 'tol'
