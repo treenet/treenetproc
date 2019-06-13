@@ -8,7 +8,7 @@
 <!-- badges: end -->
 
 The package `treenetproc` cleans raw dendrometer data. The cleaning
-process aligns measurements at regular time intervals, removes jumps and
+process aligns measurements into regular time intervals, removes jumps and
 outliers, flags all changes and plots them as well.
 
 ## Installation
