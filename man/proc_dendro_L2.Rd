@@ -5,7 +5,7 @@
 \title{Process L1 Dendrometer Data to L2}
 \usage{
 proc_dendro_L2(dendro_data, temp_data = NULL, tol = 9,
-  iter_clean = 3, lowtemp = 5, interpol = 120, plot = TRUE,
+  iter_clean = 2, lowtemp = 5, interpol = 120, plot = TRUE,
   plot_period = "full", plot_show = "all", plot_export = TRUE,
   plot_name = "proc_L2_plot", plot_mds = FALSE, tz = "UTC")
 }
