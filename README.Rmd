@@ -35,7 +35,7 @@ devtools::install_github("treenet/treenetproc")
 
 Below you can see a basic example of a processing result. 
 
-```{r Figure 1, fig.width = 6, fig.height = 2, fig.retina = 2, echo = FALSE}
+```{r Fig_1, fig.width = 6, fig.height = 2, fig.retina = 2, echo = FALSE}
 library(treenetproc)
 data("dendro_data_L1")
 data("dendro_data_L2")
