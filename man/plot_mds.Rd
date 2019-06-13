@@ -4,7 +4,7 @@
 \alias{plot_mds}
 \title{Plot Maxima and Minima of MDS}
 \usage{
-plot_mds(df, maxmin)
+plot_mds(df, maxmin, plot_export)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
