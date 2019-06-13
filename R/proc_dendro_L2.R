@@ -94,7 +94,7 @@
 #'                plot_export = FALSE)
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           tol = 9, iter_clean = 3,
+                           tol = 9, iter_clean = 2,
                            lowtemp = 5, interpol = 120, plot = TRUE,
                            plot_period = "full", plot_show = "all",
                            plot_export = TRUE, plot_name = "proc_L2_plot",
@@ -180,10 +180,6 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     lead_trail_na <- na_list[[2]]
 
     df <- createfrostflag(df = df, tem = tem, lowtemp = lowtemp)
-    df <- calcdiff(df = df, reso = passobj("reso"))
-    df <- createflagmad(df = df, reso = passobj("reso"), wnd = 30,
-                        tol = 3 * tol, print_thresh = TRUE)
-    df <- executeflagout(df = df, len = 2)
 
     clean_list <- vector("list", length = iter_clean + 1)
     clean_list[[1]] <- df
@@ -208,7 +204,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     df <- calctwdgro(df = df, tz = tz)
     df <- grostartend(df = df, tol = 0.05, tz = tz)
     df <- calcmds(df = df, reso = passobj("reso"), tz = tz,
-                  plot_mds = plot_mds)
+                  plot_mds = plot_mds, plot_export = plot_export)
     df <- summariseflags(df = df)
 
     # append leading and trailing NA's
