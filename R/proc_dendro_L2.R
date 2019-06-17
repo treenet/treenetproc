@@ -15,6 +15,9 @@
 #' @param iter_clean numeric, specifies the number of times the cleaning
 #'   process is repeated. Increase if jumps are not corrected after
 #'   processing.
+#' @param jump_corr logical, specify whether jump correction should be
+#'   applied. If \code{jump_corr = FALSE} outliers are deleted but jumps
+#'   are not corrected.
 #' @param interpol numeric, length of gaps (in minutes) in which values are
 #'   linearly interpolated.
 #' @param lowtemp numeric, specifies temperature in °C below which shrinkage
@@ -94,13 +97,14 @@
 #'                plot_export = FALSE)
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           tol = 9, iter_clean = 2,
+                           tol = 9, iter_clean = 3, jump_corr = TRUE,
                            lowtemp = 5, interpol = 120, plot = TRUE,
                            plot_period = "full", plot_show = "all",
                            plot_export = TRUE, plot_name = "proc_L2_plot",
                            plot_mds = FALSE, tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
+  check_logical(var = jump_corr, var_name = "jump_corr")
   check_logical(var = plot, var_name = "plot")
   check_logical(var = plot_export, var_name = "plot_export")
 
@@ -186,26 +190,37 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     for (i in 1:iter_clean) {
       df <- clean_list[[i]]
 
+      # delete outliers (no jump correction)
       df <- calcdiff(df = df, reso = passobj("reso"))
       df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
                           tol = tol, print_thresh = TRUE)
-      df <- creategapflag(df = df, reso = passobj("reso"),
-                          gaple = 24 * (60 / passobj("reso")))
-      df <- createjumpflag(df = df, thr = 0.2)
-      df <- executejump(df = df)
+      df <- executeflagout(df = df, len = 2)
+
+      # remove jumps (jump correction)
+      if (jump_corr) {
+        df <- calcdiff(df = df, reso = passobj("reso"))
+        df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
+                            tol = tol, print_thresh = TRUE)
+        df <- creategapflag(df = df, reso = passobj("reso"),
+                            gaple = 24 * (60 / passobj("reso")))
+        df <- createjumpflag(df = df, thr = 0.2)
+        df <- executejump(df = df)
+      }
 
       clean_list[[i + 1]] <- df
     }
     df <- clean_list[[iter_clean + 1]]
 
-    df <- fillintergaps(df = df, reso = passobj("reso"),
-                        interpol = interpol, type = "linear", flag = TRUE)
+    if (jump_corr) {
+      df <- fillintergaps(df = df, reso = passobj("reso"),
+                          interpol = interpol, type = "linear", flag = TRUE)
+    }
     df <- calcmax(df = df)
     df <- calctwdgro(df = df, tz = tz)
     df <- grostartend(df = df, tol = 0.05, tz = tz)
     df <- calcmds(df = df, reso = passobj("reso"), tz = tz,
                   plot_mds = plot_mds, plot_export = plot_export)
-    df <- summariseflags(df = df)
+    df <- summariseflags(df = df, jump_corr = jump_corr)
 
     # append leading and trailing NA's
     df <- append_lead_trail_na(df = df, na = lead_trail_na)
