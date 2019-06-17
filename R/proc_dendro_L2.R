@@ -85,9 +85,9 @@
 #'    \item{gro_end}{day of year at which growth stops. \code{gro_end} is
 #'      defined as the day of year at which 95\% of total yearly growth is
 #'      reached.}
-#'    \item{flags}{character vector specifying whether and which changes
-#'      occurred during the processing. For more details see the following
-#'      vignette: \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
+#'    \item{flags}{character vector specifying the changes that occurred
+#'      during the processing. For more details see the following vignette:
+#'      \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
 #'    \item{version}{processing version.}
 #'
 #' @export
@@ -97,7 +97,7 @@
 #'                plot_export = FALSE)
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           tol = 9, iter_clean = 2, jump_corr = TRUE,
+                           tol = 10, iter_clean = 2, jump_corr = TRUE,
                            lowtemp = 5, interpol = 120, plot = TRUE,
                            plot_period = "full", plot_show = "all",
                            plot_export = TRUE, plot_name = "proc_L2_plot",
@@ -132,6 +132,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     }
   }
 
+  passenv$sample_temp <- FALSE
   if (length(temp_data) == 0) {
     df_series <- unique(df$series)
 
@@ -141,6 +142,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     if (length(grep("temp", df_series, ignore.case = T)) == 0) {
       tem <- create_temp_dummy(df = df)
       message("sample temperature dataset is used.")
+      passenv$sample_temp <- TRUE
     }
     if (length(grep("temp", df_series, ignore.case = T)) == 1) {
       temp_series <- df_series[grep("temp", df_series, ignore.case = T)]
@@ -161,6 +163,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     passenv$reso <- reso_df
   }
 
+  # check for overlap between df and tem
   ts_overlap_check(df = df, tem = tem)
 
 
@@ -183,7 +186,8 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     df <- na_list[[1]]
     lead_trail_na <- na_list[[2]]
 
-    df <- createfrostflag(df = df, tem = tem, lowtemp = lowtemp)
+    df <- createfrostflag(df = df, tem = tem, lowtemp = lowtemp,
+                          sample_temp = passobj("sample_temp"))
 
     clean_list <- vector("list", length = iter_clean + 1)
     clean_list[[1]] <- df
@@ -211,10 +215,8 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     }
     df <- clean_list[[iter_clean + 1]]
 
-    if (jump_corr) {
-      df <- fillintergaps(df = df, reso = passobj("reso"),
-                          interpol = interpol, type = "linear", flag = TRUE)
-    }
+    df <- fillintergaps(df = df, reso = passobj("reso"),
+                        interpol = interpol, type = "linear", flag = TRUE)
     df <- calcmax(df = df)
     df <- calctwdgro(df = df, tz = tz)
     df <- grostartend(df = df, tol = 0.05, tz = tz)
