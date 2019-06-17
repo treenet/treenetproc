@@ -4,7 +4,7 @@
 \alias{calcmds}
 \title{Calculate Maximum Daily Shrinkage (MDS)}
 \usage{
-calcmds(df, reso, tz, plot_mds = FALSE)
+calcmds(df, reso, tz, plot_mds = FALSE, plot_export)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
@@ -14,6 +14,9 @@ calcmds(df, reso, tz, plot_mds = FALSE)
 \item{plot_mds}{logical, specify whether maxima and minima used for the
 calculation of the maximum daily shrinkage (\code{mds}) should be
 plotted.}
+
+\item{plot_export}{logical, specifies whether the plots are exported as a
+\code{PDF} file to the working directory or are plotted in the console.}
 }
 \description{
 \code{calcmds} calculates the maximum daily shrinkage (\code{mds}).
