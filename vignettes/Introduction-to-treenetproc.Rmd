@@ -96,8 +96,7 @@ proc_L1(data = dendro_data_L0_wide, reso = 10, input = "wide")
 ## Process data to L2 (dendrometer data cleaning)
 Time-aligned dendromter data can be cleaned with the function 
 `proc_dendro_L2`. The function returns a `data.frame` containing the 
-cleaned dendrometer data as well as growth, maximum daily shrinkage (mds), 
-tree water deficit (twd) and additional variables (Table 3).
+cleaned dendrometer data (Table 3).
 
 ```{r prepare for proc_dendro_L2, echo = FALSE}
 # reduce size of dendro_data_L1 to make computing of proc_dendro_L2 faster
@@ -117,17 +116,36 @@ knitr::kable(dendro_data_L2[1:5, ], caption = "Table 3: Processed dendrometer
              data.")
 ```
 
-The column `flags` in the output contains all the changes that occurred during
-the processing. The numbers after the name of the flag specify in which
-iteration of the cleaning process (number of iterations specified in 
-`iter_clean`) the change occurred:
+The output `data.frame` contains the following columns:
+
+* **series**: name of the series
+* **ts**: timestamp with format `%Y-%m-%d %H:%M:%S`
+* **value**: dendrometer value
+* **max**: highest measured dendrometer `value` up to this timestamp
+* **twd**: tree water deficit, i.e. the amount of stem shrinkage
+  expressed as the difference between `max` and `value`
+* **mds**: maximum daily shrinkage (see `?proc_dendro_L2` for more
+  information)
+* **gro_yr**: growth since the beginning of the year
+* **gro_start**: day of year at which growth starts. `gro_start` is defined
+  as the day of year at which 5% of total yearly growth is surpassed
+* **gro_end**: day of year at which growth stops. `gro_end` is defined as 
+  the day of year at which 95% of total yearly growth is reached
+* **flags**: character vector specifying the changes that occurred during the
+  processing, see below for details
+* **version**: processing version
+
+The column `flags` contains all changes that occurred during the processing. 
+The numbers after the name of the flag specify in which iteration of the 
+cleaning process (number of iterations specified in `iter_clean`) the changes
+occurred:
 
 * **out**: removed outlier point
 * **jumpout**: removed outlier point related to a jump in measured values
 * **jump**: corrected a jump in the measured values
 * **fill**: value is linearly interpolation between the two closest available 
   measured values (length of gaps that are linearly interpolated is specified 
-  in `interpol`).
+  in `interpol`)
 
 By default all changes are plotted (`plot = TRUE`) and saved to a PDF file
 in the current working directory (`plot_export = TRUE`). 
@@ -181,8 +199,8 @@ data("dendro_data_L1")
 data_L1 <- dendro_data_L1 %>% 
   dplyr::filter(series == "site-1_dendro-2")
 
-# clean dendrometer data (tol = 9, default)
-proc_dendro_L2(dendro_data = data_L1, tol = 9, plot_export = FALSE)
+# clean dendrometer data (tol = 10, default)
+proc_dendro_L2(dendro_data = data_L1, tol = 10, plot_export = FALSE)
 ```
 
 ```{r shrinking example plot, echo=FALSE, fig.width=5, fig.height=3, fig.retina = 2}
