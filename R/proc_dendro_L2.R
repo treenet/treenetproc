@@ -97,7 +97,7 @@
 #'                plot_export = FALSE)
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           tol = 9, iter_clean = 3, jump_corr = TRUE,
+                           tol = 9, iter_clean = 2, jump_corr = TRUE,
                            lowtemp = 5, interpol = 120, plot = TRUE,
                            plot_period = "full", plot_show = "all",
                            plot_export = TRUE, plot_name = "proc_L2_plot",
