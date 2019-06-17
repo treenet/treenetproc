@@ -163,7 +163,7 @@ createfrostflag <- function(df, tem, lowtemp = 5) {
 
   na_temp <- sum(is.na(df$frost))
   na_perc <- round(na_temp / nrow(df) * 100, 1)
-  if (na_perc > 0.99) {
+  if (na_perc > 0.98) {
     message("No temperature data is missing.")
   } else {
     message(paste0(na_perc, "% of temperature data is missing."))
@@ -786,24 +786,39 @@ grostartend <- function(df, tol = 0.05, tz) {
 #' \code{summariseflags} summarises all previously created flags in one column.
 #'
 #' @param df input \code{data.frame}.
+#' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
 #'
-summariseflags <- function(df) {
+summariseflags <- function(df, jump_corr) {
 
-  list_flags <- vector("list", length = (passenv$flagjump_nr * 2))
+  if (jump_corr) {
+    list_flags <- vector("list", length = (passenv$flagjump_nr * 2) +
+                           passenv$flagout_nr)
+  } else {
+    list_flags <- vector("list", length = passenv$flagout_nr)
+  }
+
 
   n_flags <- 1
-  for (out in n_flags:(passenv$flagjump_nr + n_flags - 1)) {
-    flagjump_nr <- out - n_flags + 1
-    flagjumpout <- df[[paste0("flagjumpout", flagjump_nr)]]
-    list_flags[[out]] <- ifelse(flagjumpout, paste0("jumpout", flagjump_nr), NA)
+  for (out in n_flags:(passenv$flagout_nr + n_flags - 1)) {
+    flagout_nr <- out - n_flags + 1
+    flagout <- df[[paste0("flagout", flagout_nr)]]
+    list_flags[[out]] <- ifelse(flagout, paste0("out", flagout_nr), NA)
   }
-  n_flags <- n_flags + passenv$flagjump_nr
-  for (jump in n_flags:(passenv$flagjump_nr + n_flags - 1)) {
-    flagjump_nr <- jump - n_flags + 1
-    flagjump <- df[[paste0("flagjump", flagjump_nr)]]
-    list_flags[[jump]] <- ifelse(flagjump, paste0("jump", flagjump_nr), NA)
+  if (jump_corr) {
+    n_flags <- n_flags + passenv$flagout_nr
+    for (out in n_flags:(passenv$flagjump_nr + n_flags - 1)) {
+      flagjump_nr <- out - n_flags + 1
+      flagjumpout <- df[[paste0("flagjumpout", flagjump_nr)]]
+      list_flags[[out]] <- ifelse(flagjumpout, paste0("jumpout", flagjump_nr), NA)
+    }
+    n_flags <- n_flags + passenv$flagjump_nr
+    for (jump in n_flags:(passenv$flagjump_nr + n_flags - 1)) {
+      flagjump_nr <- jump - n_flags + 1
+      flagjump <- df[[paste0("flagjump", flagjump_nr)]]
+      list_flags[[jump]] <- ifelse(flagjump, paste0("jump", flagjump_nr), NA)
+    }
   }
   if ("flagfill" %in% colnames(df)) {
     n_flags <- n_flags + 1
