@@ -30,9 +30,9 @@ The function returns a \code{data.frame} with processed dendrometer
    \item{gro_end}{day of year at which growth stops. \code{gro_end} is
      defined as the day of year at which 95\% of total yearly growth is
      reached.}
-   \item{flags}{character vector specifying whether and which changes
-     occurred during the processing. For more details see the following
-     vignette: \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
+   \item{flags}{character vector specifying the changes that occurred
+     during the processing. For more details see the following vignette:
+     \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
    \item{version}{processing version.}
 }
 \description{
