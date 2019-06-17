@@ -5,9 +5,9 @@
 \title{Process Treenet Data to L1 or L2}
 \usage{
 proc_treenet(site = NULL, sensor_name = NULL, from = NULL,
-  to = NULL, temp_name = NULL, reso = 10, year = "asis", tol = 9,
-  iter_clean = 2, jump_corr = TRUE, interpol = 120, lowtemp = 5,
-  version = "L2", plot = TRUE, plot_period = "full",
+  to = NULL, temp_name = NULL, reso = 10, year = "asis",
+  tol = 10, iter_clean = 2, jump_corr = TRUE, interpol = 120,
+  lowtemp = 5, version = "L2", plot = TRUE, plot_period = "full",
   plot_export = TRUE, plot_name = "proc_L2_plot", plot_show = "all",
   plot_mds = FALSE, path_cred = NULL, tz = "Etc/GMT-1")
 }
@@ -112,9 +112,9 @@ The function returns a \code{data.frame} with processed dendrometer
    \item{gro_end}{day of year at which growth stops. \code{gro_end} is
      defined as the day of year at which 95\% of total yearly growth is
      reached.}
-   \item{flags}{character vector specifying whether and which changes
-     occurred during the processing. For more details see the following
-     vignette: \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
+   \item{flags}{character vector specifying the changes that occurred
+     during the processing. For more details see the following vignette:
+     \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
    \item{version}{processing version.}
 }
 \description{

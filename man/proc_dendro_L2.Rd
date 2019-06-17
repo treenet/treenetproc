@@ -4,8 +4,8 @@
 \alias{proc_dendro_L2}
 \title{Process L1 Dendrometer Data to L2}
 \usage{
-proc_dendro_L2(dendro_data, temp_data = NULL, tol = 9,
-  iter_clean = 3, jump_corr = TRUE, lowtemp = 5, interpol = 120,
+proc_dendro_L2(dendro_data, temp_data = NULL, tol = 10,
+  iter_clean = 2, jump_corr = TRUE, lowtemp = 5, interpol = 120,
   plot = TRUE, plot_period = "full", plot_show = "all",
   plot_export = TRUE, plot_name = "proc_L2_plot", plot_mds = FALSE,
   tz = "UTC")
@@ -83,9 +83,9 @@ The function returns a \code{data.frame} with processed dendrometer
    \item{gro_end}{day of year at which growth stops. \code{gro_end} is
      defined as the day of year at which 95\% of total yearly growth is
      reached.}
-   \item{flags}{character vector specifying whether and which changes
-     occurred during the processing. For more details see the following
-     vignette: \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
+   \item{flags}{character vector specifying the changes that occurred
+     during the processing. For more details see the following vignette:
+     \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
    \item{version}{processing version.}
 }
 \description{
