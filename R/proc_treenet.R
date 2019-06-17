@@ -43,12 +43,12 @@
 proc_treenet <- function(site = NULL, sensor_name = NULL,
                          from = NULL, to = NULL,
                          temp_name = NULL, reso = 10, year = "asis",
-                         tol = 9, iter_clean = 2, interpol = 120,
-                         lowtemp = 5, tz = "Etc/GMT-1", version = "L2",
+                         tol = 9, iter_clean = 2, jump_corr = TRUE,
+                         interpol = 120, lowtemp = 5,  version = "L2",
                          plot = TRUE, plot_period = "full",
                          plot_export = TRUE, plot_name = "proc_L2_plot",
                          plot_show = "all", plot_mds = FALSE,
-                         path_cred = NULL) {
+                         path_cred = NULL, tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
   check_logical(var = plot, var_name = "plot")
@@ -73,10 +73,11 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
 
   print("process data to L2...")
   df_L2 <- proc_dendro_L2(dendro_data = df_L1, tol = tol,
-                          iter_clean = iter_clean, lowtemp = lowtemp,
-                          plot = plot, plot_period = plot_period,
-                          plot_show = plot_show, plot_export = plot_export,
-                          plot_name = plot_name, plot_mds = plot_mds, tz = tz)
+                          iter_clean = iter_clean, jump_corr = jump_corr,
+                          lowtemp = lowtemp, plot = plot,
+                          plot_period = plot_period, plot_show = plot_show,
+                          plot_export = plot_export, plot_name = plot_name,
+                          plot_mds = plot_mds, tz = tz)
 
   maxdiff(df = df_L2, tz = tz)
 
