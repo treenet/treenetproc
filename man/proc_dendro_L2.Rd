@@ -5,9 +5,10 @@
 \title{Process L1 Dendrometer Data to L2}
 \usage{
 proc_dendro_L2(dendro_data, temp_data = NULL, tol = 9,
-  iter_clean = 2, lowtemp = 5, interpol = 120, plot = TRUE,
-  plot_period = "full", plot_show = "all", plot_export = TRUE,
-  plot_name = "proc_L2_plot", plot_mds = FALSE, tz = "UTC")
+  iter_clean = 3, jump_corr = TRUE, lowtemp = 5, interpol = 120,
+  plot = TRUE, plot_period = "full", plot_show = "all",
+  plot_export = TRUE, plot_name = "proc_L2_plot", plot_mds = FALSE,
+  tz = "UTC")
 }
 \arguments{
 \item{dendro_data}{\code{data.frame} with time-aligned dendrometer
@@ -23,6 +24,10 @@ Details for further information).}
 \item{iter_clean}{numeric, specifies the number of times the cleaning
 process is repeated. Increase if jumps are not corrected after
 processing.}
+
+\item{jump_corr}{logical, specify whether jump correction should be
+applied. If \code{jump_corr = FALSE} outliers are deleted but jumps
+are not corrected.}
 
 \item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
 in stem diameter due to frost is expected. Default value is set to

@@ -6,10 +6,10 @@
 \usage{
 proc_treenet(site = NULL, sensor_name = NULL, from = NULL,
   to = NULL, temp_name = NULL, reso = 10, year = "asis", tol = 9,
-  iter_clean = 3, interpol = 120, lowtemp = 5, tz = "Etc/GMT-1",
+  iter_clean = 2, jump_corr = TRUE, interpol = 120, lowtemp = 5,
   version = "L2", plot = TRUE, plot_period = "full",
   plot_export = TRUE, plot_name = "proc_L2_plot", plot_show = "all",
-  plot_mds = FALSE, path_cred = NULL)
+  plot_mds = FALSE, path_cred = NULL, tz = "Etc/GMT-1")
 }
 \arguments{
 \item{site}{character, specify the site. String is not case sensitive.}
@@ -46,14 +46,16 @@ Details for further information).}
 process is repeated. Increase if jumps are not corrected after
 processing.}
 
+\item{jump_corr}{logical, specify whether jump correction should be
+applied. If \code{jump_corr = FALSE} outliers are deleted but jumps
+are not corrected.}
+
 \item{interpol}{numeric, length of gaps (in minutes) in which values are
 linearly interpolated.}
 
 \item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
 in stem diameter due to frost is expected. Default value is set to
 \code{5°C} due to hysteresis shortly before or after frost events.}
-
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 
 \item{version}{character, specify to which level the data should be
 processed. Can be one of \code{L0, L1} or \code{L2}.}
@@ -85,6 +87,8 @@ plotted.}
 file \code{config.yml} containing the database login data. File can
 also be copied to the main folder of the package for automatic
 recognition.}
+
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \value{
 The function returns a \code{data.frame} with processed dendrometer
