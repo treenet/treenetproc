@@ -4,7 +4,7 @@
 \alias{createfrostflag}
 \title{Creates Flag for Potential Frost}
 \usage{
-createfrostflag(df, tem, lowtemp = 5)
+createfrostflag(df, tem, lowtemp = 5, sample_temp)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
@@ -12,6 +12,9 @@ createfrostflag(df, tem, lowtemp = 5)
 \item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
 in stem diameter due to frost is expected. Default value is set to
 \code{5°C} due to hysteresis shortly before or after frost events.}
+
+\item{sample_temp}{logical, specifying whether sample temperature dataset
+is used.}
 }
 \description{
 \code{createfrostflag} adds a flag for potential frost. Gaps of temperature
