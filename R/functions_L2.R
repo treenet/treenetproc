@@ -150,23 +150,29 @@ calcdiff <- function(df, reso) {
 #'   data are filled with previous non-NA value.
 #'
 #' @param df input \code{data.frame}.
+#' @param sample_temp logical, specifying whether sample temperature dataset
+#'   is used.
 #' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
 #'
-createfrostflag <- function(df, tem, lowtemp = 5) {
+createfrostflag <- function(df, tem, lowtemp = 5, sample_temp) {
   df <- tem %>%
     dplyr::mutate(frost = ifelse(value < lowtemp, TRUE, FALSE)) %>%
     dplyr::select(ts, frost) %>%
     dplyr::left_join(df, ., by = "ts") %>%
     dplyr::arrange(ts)
 
-  na_temp <- sum(is.na(df$frost))
-  na_perc <- round(na_temp / nrow(df) * 100, 1)
-  if (na_perc > 0.98) {
-    message("No temperature data is missing.")
-  } else {
-    message(paste0(na_perc, "% of temperature data is missing."))
+  # print amount of missing temperature data (not if sample temperature
+  # dataset is used)
+  if (!passobj("sample_temp")) {
+    na_temp <- sum(is.na(df$frost))
+    na_perc <- round(na_temp / nrow(df) * 100, 1)
+    if (na_perc > 0.98) {
+      message("No temperature data is missing.")
+    } else {
+      message(paste0(na_perc, "% of temperature data is missing."))
+    }
   }
 
   df <- df %>%
