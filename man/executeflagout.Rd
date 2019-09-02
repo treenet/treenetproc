@@ -4,7 +4,7 @@
 \alias{executeflagout}
 \title{Remove Outliers}
 \usage{
-executeflagout(df, len)
+executeflagout(df, len, interpol)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
