@@ -359,13 +359,52 @@ createflagout <- function(df, flag, len) {
     dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
     dplyr::mutate(flag_nr = cumsum(z)) %>%
     dplyr::group_by(flag_nr) %>%
-    dplyr::mutate(flag_le = dplyr::n()) %>%
+    dplyr::mutate(flag_len = dplyr::n()) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(flagout = ifelse(flag_le >= len & flag, TRUE, FALSE)) %>%
+    dplyr::mutate(flagout = ifelse(flag_len >= len & flag, TRUE, FALSE)) %>%
     dplyr::select(flagout) %>%
     unlist()
 
   return(flagout)
+}
+
+
+#' Create Flag for Small Data Fragments
+#'
+#' \code{createflagfragment} flags short fragments of not flagged data that
+#'   is in-between flagged data. Such cases occur often in spikes of outlier
+#'   data.
+#'
+#' @param out logical, vector with outlier flags.
+#' @param frag_len numeric, specifying the length of the fragments that are
+#'   flagged.
+#'
+#' @keywords internal
+#'
+createflagfragment <- function(out, frag_len = interpol / passobj("reso")) {
+
+  out <- as.data.frame(out) %>%
+    dplyr::mutate(flag_group = cumsum(out)) %>%
+    dplyr::mutate(y = c(0, diff(flag_group, lag = 1))) %>%
+    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+    dplyr::mutate(flag_nr = cumsum(z)) %>%
+    dplyr::group_by(flag_nr) %>%
+    dplyr::mutate(flag_len = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(frag = ifelse(flag_len <= frag_len & !out,
+                                TRUE, FALSE)) %>%
+    # classsify first and last group as FALSE since they are not in-between
+    # flagged groups
+    dplyr::mutate(frag = ifelse(flag_group == 0, FALSE, frag)) %>%
+    dplyr::mutate(frag = ifelse(flag_group == max(flag_group),
+                                FALSE, frag)) %>%
+    # add frag to outliers
+    dplyr::mutate(out = ifelse(frag, TRUE, out)) %>%
+    dplyr::select(out) %>%
+    unlist()
+
+  return(out)
 }
 
 
@@ -379,7 +418,7 @@ createflagout <- function(df, flag, len) {
 #'
 #' @keywords internal
 #'
-executeflagout <- function(df, len) {
+executeflagout <- function(df, len, interpol) {
 
   nc <- ncol(df)
   flagout_nr <- length(grep("^flagout[0-9]", colnames(df)))
@@ -394,6 +433,8 @@ executeflagout <- function(df, len) {
 
   out <- out_low + out_high
   out <- ifelse(out > 0, TRUE, FALSE)
+  # flag short fragments in between flagged outlier data
+  out <- createflagfragment(out = out, frag_len = interpol / passobj("reso"))
 
   df <- df %>%
     dplyr::mutate(flagout = out) %>%
