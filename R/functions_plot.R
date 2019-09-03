@@ -147,8 +147,7 @@ plot_mds <- function(df, maxmin, plot_export) {
 
 #' Plot Command to Plot L1 Data
 #'
-#' \code{plotting_L1} contains the code necessary to plot \code{L1}
-#'   data.
+#' \code{plotting_L1} plots \code{L1} data.
 #'
 #' @param data_L1_orig uncorrected original \code{L1} data. If specified, it
 #'   is plotted behind the corrected \code{L1} data.
@@ -178,4 +177,54 @@ plotting_L1 <- function(data_L1, data_L1_orig, plot_period, tz) {
   }
   graphics::lines(data = data_L1, value ~ ts, col = "#08519c")
   graphics::axis(1, at = axis_labs[[1]], labels = axis_labs[[2]])
+}
+
+
+#' Plot density of differences
+#'
+#' \code{plot_density} plots the density of the value differences between
+#'   two time stamps. In addition, the threshold values used to classify
+#'   outliers are shown.
+#'
+#' @param df input \code{data.frame}.
+#' @param ran numeric, range of rows in df considered for the density plot.
+#'   Compatible with different window sizes for data processing.
+#' @param low numeric, low threshold defining outliers. Inherited of the
+#'   function \code{\link{calcflagmad}}.
+#' @param high numeric, high threshold defining outliers. Inherited of the
+#'   function \code{\link{calcflagmad}}.
+#' @param limit_val numeric, defines the x-axis limits of the density plot.
+#'   The x-axis limits are drawn at \code{limit_val * threshold}. Threshold
+#'   values are inherited of the function \code{\link{calcflagmad}}.
+#' @param plot_export logical, defines whether plots are exported or shown
+#'   directly in the console.
+#' @inheritParams proc_dendro_L2
+#'
+#' @return Plots are saved to current working directory as
+#'   \code{density_plot.pdf}.
+#'
+#' @keywords internal
+#'
+plot_density <- function(df, ran, low, high, limit_val = 20, iter_clean,
+                         plot_export = TRUE) {
+
+  check_logical(var = plot_export, var_name = "plot_export")
+
+  series <- unique(df$series)[1]
+  #if (plot_export) {
+  #  grDevices::pdf(paste0("density_plot_", series, ".pdf"),
+  #                 width = 8.3, height = 5.8)
+  #}
+  graphics::plot(stats::density(x = df$diff_val[ran], na.rm = TRUE),
+                 xlim = c(limit_val * low, limit_val * high),
+                 main = paste(series, "\n", substr(df$ts[ran][1], 1, 10),
+                              "to", substr(df$ts[dplyr::last(ran)], 1, 10)))
+  options(warn = -1)
+  graphics::rug(x = df$diff_val[ran])
+  options(warn = 0)
+  graphics::abline(v = low, col = "red")
+  graphics::abline(v = high, col = "red")
+  #if (plot_export) {
+  #  grDevices::dev.off()
+  #}
 }
