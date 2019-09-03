@@ -258,10 +258,8 @@ calcflagmad <- function(df, reso, wnd = NULL, tol = 9, frost,
     }
 
     if (plot_density) {
-      graphics::plot(stats::density(x = df$diff_val[ran], na.rm = T),
-                     main = df$ts[ran][1])
-      graphics::abline(v = low, col = "red")
-      graphics::abline(v = high, col = "red")
+      plot_density(df = df, ran = ran, low = low, high = high, limit_val = 20,
+                   plot_export = TRUE)
     }
 
     if (print_thresh) {
@@ -321,7 +319,7 @@ createflagmad <- function(df, reso, wnd, tol, plot_density, print_thresh) {
   df_frost <- calcflagmad(df = df, reso = reso, wnd = wnd, tol = tol,
                           frost = TRUE, plot_density = FALSE)
   df <- calcflagmad(df = df, reso = reso, wnd = wnd, tol = tol,
-                    frost = FALSE, plot_density = FALSE,
+                    frost = FALSE, plot_density = TRUE,
                     print_thresh = print_thresh)
 
   if (nrow(df_frost) > 0) {
