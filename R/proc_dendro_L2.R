@@ -194,11 +194,19 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     for (i in 1:iter_clean) {
       df <- clean_list[[i]]
 
+      #########################
+      message("remove density_plot command from code in proc_dendro_L2.")
+      if (plot_export && i == 1) {
+        series <- unique(df$series)[1]
+        grDevices::pdf(paste0("density_plot_", series, ".pdf"),
+                       width = 8.3, height = 5.8)
+      }
+      #########################
       # delete outliers (no jump correction)
       df <- calcdiff(df = df, reso = passobj("reso"))
       df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
                           tol = tol, print_thresh = TRUE)
-      df <- executeflagout(df = df, len = 2)
+      df <- executeflagout(df = df, len = 2, interpol = interpol)
 
       # remove jumps (jump correction)
       if (jump_corr) {
@@ -212,6 +220,12 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       }
 
       clean_list[[i + 1]] <- df
+      #########################
+      # code for plotting density_plots in single PDF
+      if (plot_export && i == iter_clean) {
+        grDevices::dev.off()
+      }
+      #########################
     }
     df <- clean_list[[iter_clean + 1]]
 
