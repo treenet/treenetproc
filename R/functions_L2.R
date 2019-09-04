@@ -405,6 +405,133 @@ executeflagout <- function(df, len) {
 }
 
 
+#' Anomalize Dendrometer Differences
+#'
+#' \code{anomalizeseries} uses the package \code{\link{anomalize}} to
+#'   detect outliers and data anomalies. The anomalies are calculated
+#'   for the differences between two timesteps instead of the actual
+#'   dendrometer values.
+#'
+#' @param df input \code{data.frame}.
+#' @param method_decompose character, the time series decomposition method.
+#'   For further information see description in
+#'   \code{\link[anomalize]{time_decompose}}.
+#' @param alpha numeric, controls the width of the "normal" range. Alpha is
+#'   set to \code{0.8 * alpha) in frost conditions (i.e. if the temperature
+#'   is below \code{lowtemp}). For further information see description in
+#'   \code{\link[anomalize]{anomalize}}.
+#' @param method_anomalize character, the anomaly detection method. For
+#'   further information see description in
+#'   \code{\link[anomalize]{anomalize}}.
+#' @param max_anoms numeric, the maximum percent of permitted anomalies.
+#'   For further information see description in
+#'   \code{\link[anomalize]{anomalize}}.
+#' @inheritParams proc_dendro_L2
+#'
+#' @return a \code{vector} of timestamps (\code{POSIXct}) in which
+#'   an anomaly was detected.
+#'
+#' @keywords internal
+#'
+anomalizeseries <- function(df, frost, method_decompose = "stl", alpha = alpha,
+                            method_anomalize = "iqr", max_anoms = 0.2) {
+
+  check_logical(var = frost, var_name = "frost")
+
+  if (frost) {
+    df <- df %>%
+      dplyr::filter(frost == TRUE)
+  }
+  if (!frost) {
+    df <- df %>%
+      dplyr::filter(frost == FALSE)
+  }
+
+  anomalize <- df %>%
+    tibble::as_tibble() %>%
+    dplyr::filter(!is.na(diff_val)) %>%
+    dplyr::arrange(ts) %>%
+    anomalize::time_decompose(., target = diff_val,
+                              method = method_decompose) %>%
+    anomalize::anomalize(target = remainder, method = method_anomalize,
+                         alpha = alpha, max_anoms = max_anoms) %>%
+    anomalize::time_recompose() %>%
+    dplyr::filter(anomaly == "Yes") %>%
+    dplyr::select(ts)
+
+  return(anomalize)
+}
+
+
+#' Create Flag with Anomalize
+#'
+#' \code{createanomalyflag} flags outliers classified with the package
+#'   \code{\link{anomalize}}. The rigidity of the outlier classification
+#'   is reduced in periods of probable frost (i.e. temperature <
+#'   \code{lowtemp}).
+#'
+#' @param df input \code{data.frame}.
+#' @inheritParams anomalizeseries
+#'
+#' @keywords internal
+#'
+createanomalyflag <- function(df, alpha = 0.05) {
+
+  anomalize_frost <- anomalizeseries(df = df, frost = TRUE,
+                                     alpha = 0.8 * alpha)
+  anomalize_nofrost <- anomalizeseries(df = df, frost = FALSE,
+                                       alpha = alpha)
+
+  nc <- ncol(df)
+  df <- df %>%
+    dplyr::mutate(anomaly_frost = ifelse(ts %in% anomalize_frost$ts,
+                                         TRUE, FALSE)) %>%
+    dplyr::mutate(anomaly_nofrost = ifelse(ts %in% anomalize_nofrost$ts,
+                                           TRUE, FALSE)) %>%
+    dplyr::mutate(
+      anomaly = ifelse(rowSums(.[, c("anomaly_frost", "anomaly_nofrost")]) > 0,
+                       TRUE, FALSE)) %>%
+    #dplyr::mutate(anomaly = anomaly_nofrost) %>%
+    dplyr::select(1:nc, anomaly)
+
+  return(df)
+}
+
+
+#' Remove Outliers Classified with Anomalize
+#'
+#' \code{removeoutliers} removes outliers flagged with the package
+#'   \code{\link{anomalize}}. To differentiate outlier points from jumps in
+#'   the data, outlier points are only classified if they occur in groups of
+#'   a specified minimum length (defined by \code{len}).
+#'
+#' @param df input \code{data.frame}.
+#' @param len numeric, specifies the minimal number of consecutive outliers
+#'   that is needed for removal (used to differentiate outliers from jumps).
+#'
+#' @keywords internal
+#'
+removeoutliers <- function(df, len) {
+
+  nc <- ncol(df)
+  df <- df %>%
+    dplyr::mutate(flag_group = cumsum(anomaly)) %>%
+    dplyr::mutate(y = c(0, diff(flag_group, lag = 1))) %>%
+    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+    dplyr::mutate(flag_nr = cumsum(z)) %>%
+    dplyr::group_by(flag_nr) %>%
+    dplyr::mutate(flag_le = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(flagout = ifelse(flag_le >= len & anomaly,
+                                   TRUE, FALSE)) %>%
+    dplyr::mutate(value = ifelse(flagout, NA, value)) %>%
+    dplyr::select(1:nc, flagout)
+
+  return(df)
+}
+
+
 #' Creates Flag for Jumps and Outliers in Data
 #'
 #' \code{createjumpflag} creates flag for jumps and ouliers. Outliers can be
@@ -416,7 +543,9 @@ executeflagout <- function(df, len) {
 #'
 #' @keywords internal
 #'
-createjumpflag <- function(df, thr = 0.2) {
+createjumpflag <- function(df, thr = 0.2, anomalize, alpha = 0.05) {
+
+  check_logical(var = anomalize, var_name = "anomalize")
 
   nc <- ncol(df)
   flagjump_nr <- length(grep("^flagjump[0-9]", colnames(df)))
@@ -426,7 +555,11 @@ createjumpflag <- function(df, thr = 0.2) {
     passenv$flagjump_nr <- 1
   }
 
-  ran <- which(df$flagoutlow | df$flagouthigh)
+  if (anomalize) {
+    ran <- which(df$anomaly)
+  } else {
+    ran <- which(df$flagoutlow | df$flagouthigh)
+  }
   outlier <- as.vector(rep(FALSE, nrow(df)), mode = "logical")
   jump <- as.vector(rep(FALSE, nrow(df)), mode = "logical")
   if (length(ran) != 0) {
@@ -798,22 +931,16 @@ grostartend <- function(df, tol = 0.05, tz) {
 #'
 summariseflags <- function(df, jump_corr) {
 
-  if (jump_corr) {
-    list_flags <- vector("list", length = (passenv$flagjump_nr * 2) +
-                           passenv$flagout_nr)
-  } else {
-    list_flags <- vector("list", length = passenv$flagout_nr)
-  }
-
+  list_flags <- vector("list", length = passenv$flagjump_nr)
 
   n_flags <- 1
-  for (out in n_flags:(passenv$flagout_nr + n_flags - 1)) {
-    flagout_nr <- out - n_flags + 1
-    flagout <- df[[paste0("flagout", flagout_nr)]]
-    list_flags[[out]] <- ifelse(flagout, paste0("out", flagout_nr), NA)
-  }
+  #for (out in n_flags:(passenv$flagout_nr + n_flags - 1)) {
+  #  flagout_nr <- out - n_flags + 1
+  #  flagout <- df[[paste0("flagout", flagout_nr)]]
+  #  list_flags[[out]] <- ifelse(flagout, paste0("out", flagout_nr), NA)
+  #}
   if (jump_corr) {
-    n_flags <- n_flags + passenv$flagout_nr
+    #n_flags <- n_flags + passenv$flagout_nr
     for (out in n_flags:(passenv$flagjump_nr + n_flags - 1)) {
       flagjump_nr <- out - n_flags + 1
       flagjumpout <- df[[paste0("flagjumpout", flagjump_nr)]]
