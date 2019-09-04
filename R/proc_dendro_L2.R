@@ -196,18 +196,16 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
 
       # delete outliers (no jump correction)
       df <- calcdiff(df = df, reso = passobj("reso"))
-      df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
-                          tol = tol, print_thresh = TRUE)
-      df <- executeflagout(df = df, len = 2)
+      df <- createanomalyflag(df = df, alpha = 0.05)
+      df <- removeoutliers(df = df, len = 2)
 
       # remove jumps (jump correction)
       if (jump_corr) {
         df <- calcdiff(df = df, reso = passobj("reso"))
-        df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
-                            tol = tol, print_thresh = TRUE)
+        df <- createanomalyflag(df = df, alpha = 0.001)
         df <- creategapflag(df = df, reso = passobj("reso"),
                             gaple = 24 * (60 / passobj("reso")))
-        df <- createjumpflag(df = df, thr = 0.2)
+        df <- createjumpflag(df = df, thr = 0.2, anomalize = TRUE)
         df <- executejump(df = df)
       }
 
