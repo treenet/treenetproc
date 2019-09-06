@@ -204,24 +204,12 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     for (i in 1:iter_clean) {
       df <- clean_list[[i]]
 
-
-      ######### plot #######
-      #df_orig <- df
-      #plot(data = df, value ~ ts, type = "l")
-      ######################
-
       # delete outliers and remove jumps with diff_val
       df <- calcdiff(df = df, reso = passobj("reso"))
       df <- createanomalyflag(df = df, alpha = alpha_jump * 2,
                               correction = "outlier", print_thresh = TRUE,
                               method = "diff_val")
       df <- removeoutliers(df = df, len = 2)
-
-      ######### plot #######
-      #removed_points <- which(df$flagout)
-      #points(x = df_orig$ts[removed_points], y = df_orig$value[removed_points],
-      #       col = "yellow")
-      ######################
 
       df <- calcdiff(df = df, reso = passobj("reso"))
       df <- createanomalyflag(df = df, alpha = alpha_jump, correction = "jump",
@@ -231,25 +219,11 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       df <- createjumpflag_anomalize(df = df)
       df <- executejump_anomalize(df = df)
 
-      ######### plot #######
-      #lines(x = df$ts, y = df$value, col = "blue")
-      #points(x = df$ts[df$flagjump == TRUE], y = df$value[df$flagjump == TRUE],
-      #       col = "red")
-      ######################
-
-
-      # delete outliers and remove jumps with value and diff_val
+      # delete outliers with value
       df <- calcdiff(df = df, reso = passobj("reso"))
       df <- createanomalyflag(df = df, alpha = alpha_out, correction = "outlier",
                               print_thresh = TRUE, method = "value")
       df <- removeoutliers(df = df, len = 2)
-
-      ######### plot #######
-      #removed_points <- which(df$flagout)
-      #points(x = df_orig$ts[removed_points], y = df_orig$value[removed_points],
-      #       col = "green")
-      ######################
-
 
       clean_list[[i + 1]] <- df
     }
