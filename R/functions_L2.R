@@ -197,7 +197,7 @@ createfrostflag <- function(df, tem, lowtemp = 5, sample_temp) {
 #'
 #' @keywords internal
 #'
-calcflagmad <- function(df, reso, wnd = NULL, tol = 9, frost,
+calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
                         plot_density = FALSE, print_thresh = FALSE) {
 
   check_logical(var = frost, var_name = "frost")
@@ -236,12 +236,12 @@ calcflagmad <- function(df, reso, wnd = NULL, tol = 9, frost,
   thresh_max <- 100000
   for (qq in steps) {
     b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
-    q40 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.4,
+    q30 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.3,
                                       na.rm = TRUE))
-    q60 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.6,
+    q70 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.7,
                                       na.rm = TRUE))
-    df$diff_val[ran][df$diff_val[ran] > q40 &
-                       df$diff_val[ran] < q60] <- NA
+    df$diff_val[ran][df$diff_val[ran] > q30 &
+                       df$diff_val[ran] < q70] <- NA
 
     q1 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.25,
                                      na.rm = TRUE))
@@ -450,12 +450,11 @@ executeflagout <- function(df, len, interpol) {
 #'   single points or errors before, after or in between jumps.
 #'
 #' @param df input \code{data.frame}.
-#' @param thr specifies the threshold to discriminate between outliers and
-#'     jumps due to adjustments of the dendrometer needle.
+#' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
 #'
-createjumpflag <- function(df, thr = 0.2) {
+createjumpflag <- function(df, jump_thr = 5) {
 
   nc <- ncol(df)
   flagjump_nr <- length(grep("^flagjump[0-9]", colnames(df)))
@@ -471,7 +470,7 @@ createjumpflag <- function(df, thr = 0.2) {
   if (length(ran) != 0) {
     for (iu in ran) {
       hhj <- sum(df$diff_val[(iu + 1):(iu + 3)], na.rm = TRUE)
-      if (abs(df$diff_val[iu] + hhj) < df$diff_val[iu] * thr) {
+      if (abs(df$diff_val[iu] + hhj) * jump_thr < df$diff_val[iu]) {
         outlier[iu] <- TRUE
       } else {
         jump[iu] <- TRUE
