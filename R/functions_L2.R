@@ -515,18 +515,6 @@ anomalizeseries <- function(df, method = NULL, method_decompose = "stl",
 createanomalyflag <- function(df, method, alpha = 0.05, print_thresh,
                               correction) {
 
-  if (method == "both") {
-    anomalize_diff_val <- anomalizeseries(df = df, method = "diff_val",
-                                          alpha = alpha,
-                                          print_thresh = print_thresh,
-                                          correction = correction)
-    anomalize_value <- anomalizeseries(df = df, method = "value",
-                                       alpha = alpha,
-                                       print_thresh = FALSE,
-                                       correction = correction)
-    anomalize <- dplyr::intersect(anomalize_diff_val, anomalize_value)
-  }
-
   if (method %in% c("value", "diff_val")) {
     anomalize <- anomalizeseries(df = df, method = method,
                                  alpha = alpha,
