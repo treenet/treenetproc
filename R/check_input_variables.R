@@ -24,8 +24,8 @@ check_logical <- function(var, var_name) {
 #' @keywords internal
 #'
 check_method <- function(var, var_name) {
-  if (!(var %in% c("value", "diff_val", "both"))) {
-    stop(paste(var_name, "has to be either 'value', 'diff_val' or 'both'."))
+  if (!(var %in% c("value", "diff_val"))) {
+    stop(paste(var_name, "has to be either 'value' or 'diff_val'."))
   }
 
   var <- dplyr::sym(var)
