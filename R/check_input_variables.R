@@ -14,6 +14,25 @@ check_logical <- function(var, var_name) {
 }
 
 
+#' Checks Input of Variable Method
+#'
+#' \code{check_method} checks the input of the variable method and converts
+#'   it to a symbol.
+#'
+#' @inheritParams check_logical
+#'
+#' @keywords internal
+#'
+check_method <- function(var, var_name) {
+  if (!(var %in% c("value", "diff_val", "both"))) {
+    stop(paste(var_name, "has to be either 'value', 'diff_val' or 'both'."))
+  }
+
+  var <- dplyr::sym(var)
+  return(var)
+}
+
+
 #' Check Date Format
 #'
 #' \code{isdate} checks whether values in a vector are in a standard
@@ -190,3 +209,4 @@ check_delete <- function(delete) {
     }
   }
 }
+
