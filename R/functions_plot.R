@@ -29,7 +29,9 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, plot_period,
   if (plot_add) {
     graphics::lines(data = data_L1, value ~ ts, col = "grey70")
   }
-  graphics::lines(data = data_L2, value ~ ts, col = "#08519c")
+  interpol_colour <- ifelse(length(grep("fill", data_L2$flags)) > 0, "#27e6e6",
+                            "#08519c")
+  graphics::lines(data = data_L2, value ~ ts, col = interpol_colour)
   graphics::title(ylab = "L2", mgp = c(3.5, 1, 0))
   graphics::par(mar = c(0, 5, 0, 2.1))
   options(warn = -1)
