@@ -12,6 +12,9 @@
 #' @param tol numeric, defines the tolerance of the threshold values above or
 #'   below which dendrometer measurements are classified as outliers (see
 #'   Details for further information).
+#' @param jump_thr specifies the threshold to apply jump correction. A higher
+#'   value only corrects large jumps. A small value also ajusts the data for
+#'   small jumps.
 #' @param iter_clean numeric, specifies the number of times the cleaning
 #'   process is repeated. Increase if jumps are not corrected after
 #'   processing.
@@ -97,7 +100,8 @@
 #'                plot_export = FALSE)
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           tol = 10, iter_clean = 2, jump_corr = TRUE,
+                           tol = 10, jump_thr = 5, jump_corr = TRUE,
+                           iter_clean = 2,
                            lowtemp = 5, interpol = 120, plot = TRUE,
                            plot_period = "full", plot_show = "all",
                            plot_export = TRUE, plot_name = "proc_L2_plot",
@@ -202,6 +206,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                        width = 8.3, height = 5.8)
       }
       #########################
+
       # delete outliers (no jump correction)
       df <- calcdiff(df = df, reso = passobj("reso"))
       df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
@@ -215,7 +220,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                             tol = tol, print_thresh = TRUE)
         df <- creategapflag(df = df, reso = passobj("reso"),
                             gaple = 24 * (60 / passobj("reso")))
-        df <- createjumpflag(df = df, thr = 0.2)
+        df <- createjumpflag(df = df, jump_thr = jump_thr)
         df <- executejump(df = df)
       }
 
