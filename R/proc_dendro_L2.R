@@ -9,9 +9,20 @@
 #'   data. Output of function \code{proc_L1()}.
 #' @param temp_data \code{data.frame} with time-aligned temperature data.
 #'   Output of function \code{proc_L1()} (see Details for further information).
-#' @param tol numeric, defines the tolerance of the threshold values above or
-#'   below which dendrometer measurements are classified as outliers (see
-#'   Details for further information).
+#' @param alpha_jump numeric, controls the rigidity of jump detection. Lower
+#'   values are more conservative while higher values increase the number of
+#'   identified potential outliers/jumps. \code{alpha_jump} is used to identify
+#'   jumps in the data. For further information on outlier detection see
+#'   description in \code{\link[anomalize]{anomalize}}.
+#' @param alpha_out numeric, controls the rigidity of outlier detection. See
+#'   description of \code{alpha_jump} or \code{\link[anomalize]{anomalize}}
+#'   for more information on outlier detection.
+#' @param frost_thresh numeric, increases the threshold for outliers in periods
+#'   of potential frost (i.e. temperature < \code{lowtemp}). The threshold is
+#'   multiplied by the value provided.
+#' @param lowtemp numeric, specifies temperature in °C below which shrinkage
+#'   in stem diameter due to frost is expected. Default value is set to
+#'   \code{5°C} due to hysteresis shortly before or after frost events.
 #' @param iter_clean numeric, specifies the number of times the cleaning
 #'   process is repeated. Increase if jumps are not corrected after
 #'   processing.
@@ -20,9 +31,6 @@
 #'   are not corrected.
 #' @param interpol numeric, length of gaps (in minutes) in which values are
 #'   linearly interpolated.
-#' @param lowtemp numeric, specifies temperature in °C below which shrinkage
-#'   in stem diameter due to frost is expected. Default value is set to
-#'   \code{5°C} due to hysteresis shortly before or after frost events.
 #' @param plot logical, specify whether a comparison of \code{L1} and \code{L2}
 #'   data should be plotted.
 #' @param plot_mds logical, specify whether maxima and minima used for the
@@ -97,8 +105,10 @@
 #'                plot_export = FALSE)
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           tol = 10, iter_clean = 2, jump_corr = TRUE,
-                           lowtemp = 5, interpol = 120, plot = TRUE,
+                           alpha_jump = 0.001, alpha_out = 0.01,
+                           frost_thresh = 10, lowtemp = 5, tol = 10,
+                           iter_clean = 1, jump_corr = TRUE,
+                           interpol = 120, plot = TRUE,
                            plot_period = "full", plot_show = "all",
                            plot_export = TRUE, plot_name = "proc_L2_plot",
                            plot_mds = FALSE, tz = "UTC") {
@@ -194,20 +204,52 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     for (i in 1:iter_clean) {
       df <- clean_list[[i]]
 
-      # delete outliers (no jump correction)
+
+      ######### plot #######
+      #df_orig <- df
+      #plot(data = df, value ~ ts, type = "l")
+      ######################
+
+      # delete outliers and remove jumps with diff_val
       df <- calcdiff(df = df, reso = passobj("reso"))
-      df <- createanomalyflag(df = df, alpha = 0.05)
+      df <- createanomalyflag(df = df, alpha = alpha_jump * 2,
+                              correction = "outlier", print_thresh = TRUE,
+                              method = "diff_val")
       df <- removeoutliers(df = df, len = 2)
 
-      # remove jumps (jump correction)
-      if (jump_corr) {
-        df <- calcdiff(df = df, reso = passobj("reso"))
-        df <- createanomalyflag(df = df, alpha = 0.001)
-        df <- creategapflag(df = df, reso = passobj("reso"),
-                            gaple = 24 * (60 / passobj("reso")))
-        df <- createjumpflag(df = df, thr = 0.2, anomalize = TRUE)
-        df <- executejump(df = df)
-      }
+      ######### plot #######
+      #removed_points <- which(df$flagout)
+      #points(x = df_orig$ts[removed_points], y = df_orig$value[removed_points],
+      #       col = "yellow")
+      ######################
+
+      df <- calcdiff(df = df, reso = passobj("reso"))
+      df <- createanomalyflag(df = df, alpha = alpha_jump, correction = "jump",
+                              print_thresh = TRUE, method = "diff_val")
+      df <- creategapflag(df = df, reso = passobj("reso"),
+                          gaple = 24 * (60 / passobj("reso")))
+      df <- createjumpflag_anomalize(df = df)
+      df <- executejump_anomalize(df = df)
+
+      ######### plot #######
+      #lines(x = df$ts, y = df$value, col = "blue")
+      #points(x = df$ts[df$flagjump == TRUE], y = df$value[df$flagjump == TRUE],
+      #       col = "red")
+      ######################
+
+
+      # delete outliers and remove jumps with value and diff_val
+      df <- calcdiff(df = df, reso = passobj("reso"))
+      df <- createanomalyflag(df = df, alpha = alpha_out, correction = "outlier",
+                              print_thresh = TRUE, method = "value")
+      df <- removeoutliers(df = df, len = 2)
+
+      ######### plot #######
+      #removed_points <- which(df$flagout)
+      #points(x = df_orig$ts[removed_points], y = df_orig$value[removed_points],
+      #       col = "green")
+      ######################
+
 
       clean_list[[i + 1]] <- df
     }
