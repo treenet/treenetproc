@@ -9,23 +9,22 @@
 #'   data. Output of function \code{proc_L1()}.
 #' @param temp_data \code{data.frame} with time-aligned temperature data.
 #'   Output of function \code{proc_L1()} (see Details for further information).
-#' @param tol numeric, defines the tolerance of the threshold values above or
-#'   below which dendrometer measurements are classified as outliers (see
-#'   Details for further information).
-#' @param jump_thr specifies the threshold to apply jump correction. A higher
-#'   value only corrects large jumps. A small value also ajusts the data for
-#'   small jumps.
+#' @param tol_jump numeric, defines the tolerance of the threshold above or
+#'   below which a value is flagged for jump correction.
+#' @param tol_out numeric, defines the tolerance of the threshold above or
+#'   below which a value is classified as outlier (see Details for further
+#'   information).
 #' @param iter_clean numeric, specifies the number of times the cleaning
 #'   process is repeated. Increase if jumps are not corrected after
 #'   processing.
-#' @param jump_corr logical, specify whether jump correction should be
-#'   applied. If \code{jump_corr = FALSE} outliers are deleted but jumps
-#'   are not corrected.
-#' @param interpol numeric, length of gaps (in minutes) in which values are
-#'   linearly interpolated.
+#' @param frost_thr numeric, increases the thresholds for outlier
+#'   classifiation in periods of probable frost (i.e. temperature <
+#'   \code{lowtemp}). The thresholds are multiplied by the value provided.
 #' @param lowtemp numeric, specifies temperature in °C below which shrinkage
 #'   in stem diameter due to frost is expected. Default value is set to
 #'   \code{5°C} due to hysteresis shortly before or after frost events.
+#' @param interpol numeric, length of gaps (in minutes) in which values are
+#'   linearly interpolated.
 #' @param plot logical, specify whether a comparison of \code{L1} and \code{L2}
 #'   data should be plotted.
 #' @param plot_mds logical, specify whether maxima and minima used for the
@@ -100,15 +99,14 @@
 #'                plot_export = FALSE)
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           tol = 10, jump_thr = 5, jump_corr = TRUE,
-                           iter_clean = 2,
-                           lowtemp = 5, interpol = 120, plot = TRUE,
-                           plot_period = "full", plot_show = "all",
-                           plot_export = TRUE, plot_name = "proc_L2_plot",
+                           tol_jump = 50, tol_out = 30, iter_clean = 1,
+                           frost_thr = 5, lowtemp = 5, interpol = 120,
+                           plot = TRUE, plot_period = "full",
+                           plot_show = "all", plot_export = TRUE,
+                           plot_name = "proc_L2_plot",
                            plot_mds = FALSE, tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
-  check_logical(var = jump_corr, var_name = "jump_corr")
   check_logical(var = plot, var_name = "plot")
   check_logical(var = plot_export, var_name = "plot_export")
 
@@ -207,22 +205,30 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       }
       #########################
 
-      # delete outliers (no jump correction)
+      # delete outliers before jump correction
       df <- calcdiff(df = df, reso = passobj("reso"))
       df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
-                          tol = tol, print_thresh = TRUE)
+                          tol = 0.8 * tol_jump, print_thresh = TRUE,
+                          correction = "outlier", frost_thr = frost_thr)
       df <- executeflagout(df = df, len = 2, interpol = interpol)
 
       # remove jumps (jump correction)
-      if (jump_corr) {
-        df <- calcdiff(df = df, reso = passobj("reso"))
-        df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
-                            tol = tol, print_thresh = TRUE)
-        df <- creategapflag(df = df, reso = passobj("reso"),
-                            gaple = 24 * (60 / passobj("reso")))
-        df <- createjumpflag(df = df, jump_thr = jump_thr)
-        df <- executejump(df = df)
-      }
+      df <- calcdiff(df = df, reso = passobj("reso"))
+      df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
+                          tol = tol_jump, print_thresh = TRUE,
+                          correction = "jump", frost_thr = frost_thr)
+      df <- creategapflag(df = df, reso = passobj("reso"),
+                          gaple = 24 * (60 / passobj("reso")))
+      df <- createjumpflag(df = df)
+      df <- executejump(df = df)
+
+      # remove outliers
+      df <- calcdiff(df = df, reso = passobj("reso"))
+      df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
+                          tol = tol_out, print_thresh = TRUE,
+                          correction = "outlier", frost_thr = frost_thr)
+      df <- executeflagout(df = df, len = 1, interpol = interpol)
+
 
       clean_list[[i + 1]] <- df
       #########################
@@ -241,7 +247,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     df <- grostartend(df = df, tol = 0.05, tz = tz)
     df <- calcmds(df = df, reso = passobj("reso"), tz = tz,
                   plot_mds = plot_mds, plot_export = plot_export)
-    df <- summariseflags(df = df, jump_corr = jump_corr)
+    df <- summariseflags(df = df)
 
     # append leading and trailing NA's
     df <- append_lead_trail_na(df = df, na = lead_trail_na)
