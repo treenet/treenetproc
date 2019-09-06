@@ -198,10 +198,15 @@ createfrostflag <- function(df, tem, lowtemp = 5, sample_temp) {
 #' @keywords internal
 #'
 calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
-                        plot_density = FALSE, print_thresh = FALSE) {
+                        frost_thr, plot_density = FALSE,
+                        print_thresh = FALSE, correction = NULL) {
 
   check_logical(var = frost, var_name = "frost")
   check_logical(var = print_thresh, var_name = "print_thresh")
+  if (!(correction %in% c("outlier", "jump"))) {
+    stop("correction needs to be either 'out' or 'jump'.")
+  }
+
   if (frost) {
     df <- df %>%
       dplyr::filter(frost == TRUE)
@@ -253,13 +258,13 @@ calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
     high <- q3 + tol * mad
 
     if (frost) {
-      low <- low * 15
-      high <- high * 15
+      low <- low * frost_thr
+      high <- high * frost_thr
     }
 
     if (plot_density) {
       plot_density(df = df, ran = ran, low = low, high = high, limit_val = 20,
-                   plot_export = TRUE)
+                   plot_export = TRUE, frost_thr = frost_thr)
     }
 
     if (print_thresh) {
@@ -288,8 +293,8 @@ calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
     dplyr::mutate(flagouthigh = flagqhigh)
 
   if (print_thresh) {
-    message(paste0(df$series[1], " threshold low: ", thresh_min,
-                   "; high: ", thresh_max))
+    message(paste0(df$series[1], " ", correction, " threshold low: ",
+                   thresh_min, "; high: ", thresh_max))
   }
 
   return(df)
@@ -309,7 +314,8 @@ calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
 #'
 #' @keywords internal
 #'
-createflagmad <- function(df, reso, wnd, tol, plot_density, print_thresh) {
+createflagmad <- function(df, reso, wnd, tol, plot_density, print_thresh,
+                          frost_thr, correction) {
 
   nc <- ncol(df)
   df <- df %>%
@@ -317,10 +323,11 @@ createflagmad <- function(df, reso, wnd, tol, plot_density, print_thresh) {
                                     NA, diff_val))
 
   df_frost <- calcflagmad(df = df, reso = reso, wnd = wnd, tol = tol,
-                          frost = TRUE, plot_density = FALSE)
+                          frost = TRUE, frost_thr = frost_thr,
+                          plot_density = TRUE, correction = correction)
   df <- calcflagmad(df = df, reso = reso, wnd = wnd, tol = tol,
-                    frost = FALSE, plot_density = TRUE,
-                    print_thresh = print_thresh)
+                    frost = FALSE, frost_thr = frost_thr, plot_density = TRUE,
+                    print_thresh = print_thresh, correction = correction)
 
   if (nrow(df_frost) > 0) {
     df <- dplyr::bind_rows(df, df_frost)
@@ -444,17 +451,15 @@ executeflagout <- function(df, len, interpol) {
 }
 
 
-#' Creates Flag for Jumps and Outliers in Data
+#' Creates Flag for Jumps in Data
 #'
-#' \code{createjumpflag} creates flag for jumps and ouliers. Outliers can be
-#'   single points or errors before, after or in between jumps.
+#' \code{createjumpflag} creates flag for jumps.
 #'
 #' @param df input \code{data.frame}.
-#' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
 #'
-createjumpflag <- function(df, jump_thr = 5) {
+createjumpflag <- function(df) {
 
   nc <- ncol(df)
   flagjump_nr <- length(grep("^flagjump[0-9]", colnames(df)))
@@ -464,27 +469,10 @@ createjumpflag <- function(df, jump_thr = 5) {
     passenv$flagjump_nr <- 1
   }
 
-  ran <- which(df$flagoutlow | df$flagouthigh)
-  outlier <- as.vector(rep(FALSE, nrow(df)), mode = "logical")
-  jump <- as.vector(rep(FALSE, nrow(df)), mode = "logical")
-  if (length(ran) != 0) {
-    for (iu in ran) {
-      hhj <- sum(df$diff_val[(iu + 1):(iu + 3)], na.rm = TRUE)
-      if (abs(df$diff_val[iu] + hhj) * jump_thr < df$diff_val[iu]) {
-        outlier[iu] <- TRUE
-      } else {
-        jump[iu] <- TRUE
-      }
-    }
-  }
-
   df <- df %>%
-    dplyr::mutate(flagjump = jump) %>%
+    dplyr::mutate(flagjump = ifelse(flagoutlow | flagouthigh, TRUE, FALSE)) %>%
     dplyr::mutate(!!paste0("flagjump", passobj("flagjump_nr")) := flagjump) %>%
-    dplyr::mutate(flagjumpout = outlier) %>%
-    dplyr::mutate(
-      !!paste0("flagjumpout", passobj("flagjump_nr")) := flagjumpout) %>%
-    dplyr::select(1:nc, grep("^(flagjumpout|flagjump)(?!.*low)(?!.*high)",
+    dplyr::select(1:nc, grep("^(flagjump)(?!.*low)(?!.*high)",
                              names(.), perl = TRUE)) %>%
     as.data.frame()
 
@@ -492,10 +480,10 @@ createjumpflag <- function(df, jump_thr = 5) {
 }
 
 
-#' Remove Jumps and Outliers
+#' Remove Jumps
 #'
 #' \code{executejump} removes jumps that occur after resetting the dendrometer
-#'   needle and removes outliers.
+#'   needle.
 #'
 #' @param df input \code{data.frame}.
 #'
@@ -525,7 +513,6 @@ executejump <- function(df) {
 
   df <- df %>%
     dplyr::mutate(value = val) %>%
-    dplyr::mutate(value = ifelse(flagjumpout, NA, value)) %>%
     dplyr::select(1:nc)
 
   return(df)
@@ -834,15 +821,9 @@ grostartend <- function(df, tol = 0.05, tz) {
 #'
 #' @keywords internal
 #'
-summariseflags <- function(df, jump_corr) {
+summariseflags <- function(df) {
 
-  if (jump_corr) {
-    list_flags <- vector("list", length = (passenv$flagjump_nr * 2) +
-                           passenv$flagout_nr)
-  } else {
-    list_flags <- vector("list", length = passenv$flagout_nr)
-  }
-
+  list_flags <- vector("list", length = passenv$flagout_nr)
 
   n_flags <- 1
   for (out in n_flags:(passenv$flagout_nr + n_flags - 1)) {
@@ -850,20 +831,20 @@ summariseflags <- function(df, jump_corr) {
     flagout <- df[[paste0("flagout", flagout_nr)]]
     list_flags[[out]] <- ifelse(flagout, paste0("out", flagout_nr), NA)
   }
-  if (jump_corr) {
-    n_flags <- n_flags + passenv$flagout_nr
-    for (out in n_flags:(passenv$flagjump_nr + n_flags - 1)) {
-      flagjump_nr <- out - n_flags + 1
-      flagjumpout <- df[[paste0("flagjumpout", flagjump_nr)]]
-      list_flags[[out]] <- ifelse(flagjumpout, paste0("jumpout", flagjump_nr), NA)
-    }
-    n_flags <- n_flags + passenv$flagjump_nr
-    for (jump in n_flags:(passenv$flagjump_nr + n_flags - 1)) {
-      flagjump_nr <- jump - n_flags + 1
-      flagjump <- df[[paste0("flagjump", flagjump_nr)]]
-      list_flags[[jump]] <- ifelse(flagjump, paste0("jump", flagjump_nr), NA)
-    }
+
+  n_flags <- n_flags + passenv$flagout_nr
+  for (out in n_flags:(passenv$flagjump_nr + n_flags - 1)) {
+    flagjump_nr <- out - n_flags + 1
+    flagjumpout <- df[[paste0("flagjumpout", flagjump_nr)]]
+    list_flags[[out]] <- ifelse(flagjumpout, paste0("jumpout", flagjump_nr), NA)
   }
+  n_flags <- n_flags + passenv$flagjump_nr
+  for (jump in n_flags:(passenv$flagjump_nr + n_flags - 1)) {
+    flagjump_nr <- jump - n_flags + 1
+    flagjump <- df[[paste0("flagjump", flagjump_nr)]]
+    list_flags[[jump]] <- ifelse(flagjump, paste0("jump", flagjump_nr), NA)
+  }
+
   if ("flagfill" %in% colnames(df)) {
     n_flags <- n_flags + 1
     list_flags[[n_flags]] <- ifelse(df$flagfill, "fill", NA)
