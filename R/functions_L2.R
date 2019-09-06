@@ -410,88 +410,133 @@ executeflagout <- function(df, len) {
 #' \code{anomalizeseries} uses the package \code{\link{anomalize}} to
 #'   detect outliers and data anomalies. The anomalies are calculated
 #'   for the differences between two timesteps instead of the actual
-#'   dendrometer values.
+#'   dendrometer values. In periods of probable frost (i.e. temperature <
+#'   \code{lowtemp}), the thresholds to classify outliers are multiplied by
+#'   \code{10}.
 #'
 #' @param df input \code{data.frame}.
 #' @param method_decompose character, the time series decomposition method.
 #'   For further information see description in
 #'   \code{\link[anomalize]{time_decompose}}.
-#' @param alpha numeric, controls the width of the "normal" range. Alpha is
-#'   set to \code{0.8 * alpha) in frost conditions (i.e. if the temperature
-#'   is below \code{lowtemp}). For further information see description in
-#'   \code{\link[anomalize]{anomalize}}.
+#' @param alpha numeric, controls the width of the "normal" range. For further
+#'   information see description in \code{\link[anomalize]{anomalize}}.
 #' @param method_anomalize character, the anomaly detection method. For
 #'   further information see description in
 #'   \code{\link[anomalize]{anomalize}}.
 #' @param max_anoms numeric, the maximum percent of permitted anomalies.
 #'   For further information see description in
 #'   \code{\link[anomalize]{anomalize}}.
-#' @inheritParams proc_dendro_L2
+#' @param print_thresh logical, specifies whether the applied thresholds are
+#'   printed to the console or not.
 #'
 #' @return a \code{vector} of timestamps (\code{POSIXct}) in which
 #'   an anomaly was detected.
 #'
 #' @keywords internal
 #'
-anomalizeseries <- function(df, frost, method_decompose = "stl", alpha = alpha,
-                            method_anomalize = "iqr", max_anoms = 0.2) {
+anomalizeseries <- function(df, method = NULL, method_decompose = "stl",
+                            alpha = NULL, method_anomalize = "iqr",
+                            max_anoms = 0.2, frost_thresh = 10,
+                            print_thresh = TRUE,
+                            correction = NULL) {
 
-  check_logical(var = frost, var_name = "frost")
+  check_logical(var = print_thresh, var_name = "print_thresh")
+  method <- check_method(var = method, var_name = "method")
+  if (!(correction %in% c("outlier", "jump"))) {
+      stop("correction needs to be either 'outlier' or 'jump'.")
+  }
+  if (length(alpha) == 0) {
+    stop("please provide a value for 'alpha'.")
+  }
 
-  if (frost) {
-    df <- df %>%
-      dplyr::filter(frost == TRUE)
-  }
-  if (!frost) {
-    df <- df %>%
-      dplyr::filter(frost == FALSE)
-  }
+  frost <- df %>%
+    dplyr::filter(!is.na(!!method)) %>%
+    dplyr::select(frost) %>%
+    unlist(., use.names = FALSE)
 
   anomalize <- df %>%
     tibble::as_tibble() %>%
-    dplyr::filter(!is.na(diff_val)) %>%
+    dplyr::filter(!is.na(!!method)) %>%
     dplyr::arrange(ts) %>%
-    anomalize::time_decompose(., target = diff_val,
+    anomalize::time_decompose(., target = !!method,
                               method = method_decompose) %>%
     anomalize::anomalize(target = remainder, method = method_anomalize,
                          alpha = alpha, max_anoms = max_anoms) %>%
-    anomalize::time_recompose() %>%
-    dplyr::filter(anomaly == "Yes") %>%
+    anomalize::time_recompose()
+
+  if (print_thresh) {
+    if (method == "diff_val") {
+      thresh_low_med <- round(median(anomalize$recomposed_l1, na.rm = TRUE), 1)
+      thresh_high_med <- round(median(anomalize$recomposed_l2, na.rm = TRUE), 1)
+    }
+    if (method == "value") {
+      conf_band <- round(median(anomalize$recomposed_l2 -
+                                  anomalize$recomposed_l1, na.rm = TRUE), 1)
+    }
+  }
+
+  anomalize_frost <- anomalize %>%
+    dplyr::mutate(frost = frost) %>%
+    dplyr::mutate(low_thresh =
+                    ifelse(frost, recomposed_l1 * frost_thresh, recomposed_l1)) %>%
+    dplyr::mutate(high_thresh =
+                    ifelse(frost, recomposed_l2 * frost_thresh, recomposed_l2)) %>%
+    dplyr::mutate(
+      anomaly = ifelse(observed < recomposed_l1 | observed > recomposed_l2,
+                       TRUE, FALSE)) %>%
+    dplyr::filter(anomaly == TRUE) %>%
     dplyr::select(ts)
 
-  return(anomalize)
+  if (print_thresh) {
+    if (method == "diff_val") {
+      message(paste0(df$series[1], " ", correction, " threshold low: ",
+                     thresh_low_med, "; high: ", thresh_high_med))
+    }
+    if (method == "value") {
+      message(paste0(df$series[1], " ", correction, " confidence band: ",
+                     conf_band))
+    }
+  }
+
+  return(anomalize_frost)
 }
 
 
 #' Create Flag with Anomalize
 #'
 #' \code{createanomalyflag} flags outliers classified with the package
-#'   \code{\link{anomalize}}. The rigidity of the outlier classification
-#'   is reduced in periods of probable frost (i.e. temperature <
-#'   \code{lowtemp}).
+#'   \code{\link{anomalize}}.
 #'
 #' @param df input \code{data.frame}.
 #' @inheritParams anomalizeseries
 #'
 #' @keywords internal
 #'
-createanomalyflag <- function(df, alpha = 0.05) {
+createanomalyflag <- function(df, method, alpha = 0.05, print_thresh,
+                              correction) {
 
-  anomalize_frost <- anomalizeseries(df = df, frost = TRUE,
-                                     alpha = 0.8 * alpha)
-  anomalize_nofrost <- anomalizeseries(df = df, frost = FALSE,
-                                       alpha = alpha)
+  if (method == "both") {
+    anomalize_diff_val <- anomalizeseries(df = df, method = "diff_val",
+                                          alpha = alpha,
+                                          print_thresh = print_thresh,
+                                          correction = correction)
+    anomalize_value <- anomalizeseries(df = df, method = "value",
+                                       alpha = alpha,
+                                       print_thresh = FALSE,
+                                       correction = correction)
+    anomalize <- dplyr::intersect(anomalize_diff_val, anomalize_value)
+  }
+
+  if (method %in% c("value", "diff_val")) {
+    anomalize <- anomalizeseries(df = df, method = method,
+                                 alpha = alpha,
+                                 print_thresh = print_thresh,
+                                 correction = correction)
+  }
 
   nc <- ncol(df)
   df <- df %>%
-    dplyr::mutate(anomaly_frost = ifelse(ts %in% anomalize_frost$ts,
-                                         TRUE, FALSE)) %>%
-    dplyr::mutate(anomaly_nofrost = ifelse(ts %in% anomalize_nofrost$ts,
-                                           TRUE, FALSE)) %>%
-    dplyr::mutate(
-      anomaly = ifelse(rowSums(.[, c("anomaly_frost", "anomaly_nofrost")]) > 0,
-                       TRUE, FALSE)) %>%
-    #dplyr::mutate(anomaly = anomaly_nofrost) %>%
+    dplyr::mutate(anomaly = ifelse(ts %in% anomalize$ts, TRUE, FALSE)) %>%
     dplyr::select(1:nc, anomaly)
 
   return(df)
@@ -526,7 +571,84 @@ removeoutliers <- function(df, len) {
     dplyr::mutate(flagout = ifelse(flag_le >= len & anomaly,
                                    TRUE, FALSE)) %>%
     dplyr::mutate(value = ifelse(flagout, NA, value)) %>%
+    dplyr::mutate(anomaly = ifelse(is.na(value), FALSE, anomaly)) %>%
     dplyr::select(1:nc, flagout)
+
+  return(df)
+}
+
+
+#' Creates Flag for Jumps in Data
+#'
+#' \code{createjumpflag_anomalize} creates flag for jumps.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @keywords internal
+#'
+createjumpflag_anomalize <- function(df) {
+
+  flagjump_nr <- length(grep("^flagjump[0-9]", colnames(df)))
+  if (flagjump_nr > 0) {
+    passenv$flagjump_nr <-  passenv$flagjump_nr + 1
+  } else {
+    passenv$flagjump_nr <- 1
+  }
+
+  nc <- ncol(df)
+  df <- df %>%
+    dplyr::mutate(flag_group = cumsum(anomaly)) %>%
+    dplyr::mutate(y = c(0, diff(flag_group, lag = 1))) %>%
+    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+    dplyr::mutate(flag_nr = cumsum(z)) %>%
+    dplyr::group_by(flag_nr) %>%
+    dplyr::mutate(flag_le = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(flagjump = ifelse(flag_le == 1 & anomaly,
+                                    TRUE, FALSE)) %>%
+    dplyr::mutate(!!paste0("flagjump", passobj("flagjump_nr")) := flagjump) %>%
+    dplyr::select(1:nc, grep("^(flagjump)", names(.), perl = TRUE)) %>%
+    as.data.frame()
+
+  return(df)
+}
+
+
+#' Remove Jumps
+#'
+#' \code{executejump_anomalize} removes jumps that occur after resetting the
+#'   dendrometer needle.
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @keywords internal
+#'
+executejump_anomalize <- function(df) {
+
+  nc <- ncol(df)
+  le <- nrow(df)
+  ran <- which(df$flagjump)
+
+  diff_jump <- df %>%
+    dplyr::filter(!is.na(value)) %>%
+    dplyr::mutate(diff_jump = c(NA, diff(value))) %>%
+    dplyr::select(ts, diff_jump)
+  df <- dplyr::left_join(df, diff_jump, by = "ts")
+
+  val <- as.vector(df$value, mode = "numeric")
+  if (length(ran) > 0) {
+    for (uu in 1:length(ran)) {
+      zz <- ran[uu]
+      dx <- df$gapflag[(zz - 1)]
+      dx <- dx + 1
+      val[zz:le] <- val[zz:le] - (df$diff_jump[zz] * dx)
+    }
+  }
+
+  df <- df %>%
+    dplyr::mutate(value = val) %>%
+    dplyr::select(1:nc)
 
   return(df)
 }
@@ -543,7 +665,7 @@ removeoutliers <- function(df, len) {
 #'
 #' @keywords internal
 #'
-createjumpflag <- function(df, thr = 0.2, anomalize, alpha = 0.05) {
+createjumpflag <- function(df, thr = 0.2, anomalize) {
 
   check_logical(var = anomalize, var_name = "anomalize")
 
