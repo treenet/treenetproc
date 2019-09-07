@@ -10,7 +10,8 @@
 #' @keywords internal
 #'
 plotting_proc_L2 <- function(data_L1, data_L2, diff, plot_period,
-                             plot_add = TRUE, tz) {
+                             plot_add = TRUE, plot_frost = TRUE,
+                             plot_interpol = TRUE, tz) {
 
   # define axis labels
   axis_labs <- axis_labels_period(df = data_L2, plot_period = plot_period,
@@ -26,10 +27,18 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, plot_period,
   graphics::par(mar = c(0, 5, 0, 2.1))
   graphics::plot(data = data_L2, value ~ ts, type = "n", xaxt = "n", ylab = "",
                  las = 1)
+  if (plot_frost) {
+    if (plot_period %in% c("yearly", "monthly")) {
+      plot_frost_period(data_L2 = data_L2)
+    }
+  }
   if (plot_add) {
     graphics::lines(data = data_L1, value ~ ts, col = "grey70")
   }
   graphics::lines(data = data_L2, value ~ ts, col = "#08519c")
+  if (plot_interpol & plot_period == "monthly") {
+    plot_interpol_points(data_L2 = data_L2)
+  }
   graphics::title(ylab = "L2", mgp = c(3.5, 1, 0))
   graphics::par(mar = c(0, 5, 0, 2.1))
   options(warn = -1)
@@ -93,6 +102,65 @@ axis_labels_period <- function(df, plot_period, tz) {
   axis_labs <- list(ticks, labs)
 
   return(axis_labs)
+}
+
+
+#' Plot Frost Period
+#'
+#' \code{plot_frost_period} draws a horizontal line in periods of possible
+#'   frost, i.e. when the temperature < \code{lowtemp}.
+#'
+#' @inheritParams plot_proc_L2
+#'
+#' @keywords internal
+#'
+plot_frost_period <- function(data_L2) {
+
+  if (sum(data_L2$frost, na.rm = TRUE) > 0) {
+    x0 <- data_L2 %>%
+      dplyr::mutate(frost_group = cumsum(frost)) %>%
+      dplyr::filter(frost == TRUE) %>%
+      dplyr::group_by(frost_group) %>%
+      dplyr::slice(1) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(ts)
+    x0 <- x0$ts
+
+    x1 <- data_L2 %>%
+      dplyr::mutate(frost_group = cumsum(frost)) %>%
+      dplyr::filter(frost == TRUE) %>%
+      dplyr::group_by(frost_group) %>%
+      dplyr::slice(dplyr::n()) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(ts)
+    x1 <- x1$ts
+
+    y0 <- min(data_L2$value, na.rm = TRUE) + 0.02 *
+      (max(data_L2$value, na.rm = TRUE) - min(data_L2$value, na.rm = TRUE))
+
+    for (s in 1:length(x0)) {
+      graphics::segments(x0 = x0[s], y0, x1 = x1[s], y1 = y0, col = "#1ac4c4")
+    }
+  }
+}
+
+
+#' Plot Interpolated Points
+#'
+#' \code{plot_interpol_points} adds points on top of line graph to show
+#'   points that were interpolated.
+#'
+#' @inheritParams plot_proc_L2
+#'
+#' @keywords internal
+#'
+plot_interpol_points <- function(data_L2) {
+
+  interpol <- grep("fill", data_L2$flags)
+  if (length(interpol) > 0) {
+    points(x = data_L2$ts[interpol], y = data_L2$value[interpol],
+           col = "#08519c", pch = 1, cex = 1.2)
+  }
 }
 
 
@@ -205,26 +273,24 @@ plotting_L1 <- function(data_L1, data_L1_orig, plot_period, tz) {
 #'
 #' @keywords internal
 #'
-plot_density <- function(df, ran, low, high, limit_val = 20, iter_clean,
-                         plot_export = TRUE) {
-
-  check_logical(var = plot_export, var_name = "plot_export")
+plot_density <- function(df, low, high, limit_val = 20, frost_thr,
+                         reso) {
 
   series <- unique(df$series)[1]
-  #if (plot_export) {
-  #  grDevices::pdf(paste0("density_plot_", series, ".pdf"),
-  #                 width = 8.3, height = 5.8)
-  #}
-  graphics::plot(stats::density(x = df$diff_val[ran], na.rm = TRUE),
+  df_plot <- df %>%
+    dplyr::mutate(diff_val = c(NA, diff(value)) * (60 / reso))
+
+  graphics::plot(stats::density(x = df_plot$diff_val, na.rm = TRUE),
                  xlim = c(limit_val * low, limit_val * high),
-                 main = paste(series, "\n", substr(df$ts[ran][1], 1, 10),
-                              "to", substr(df$ts[dplyr::last(ran)], 1, 10)))
-  options(warn = -1)
-  graphics::rug(x = df$diff_val[ran])
-  options(warn = 0)
-  graphics::abline(v = low, col = "red")
-  graphics::abline(v = high, col = "red")
-  #if (plot_export) {
-  #  grDevices::dev.off()
-  #}
+                 main = paste(series, "\n", substr(df_plot$ts[1], 1, 10),
+                              "to", substr(dplyr::last(df_plot$ts), 1, 10)))
+
+  graphics::rug(x = df_plot$diff_val[df$frost == FALSE], col = "black",
+                quiet = TRUE)
+  graphics::rug(x = df_plot$diff_val[df$frost == TRUE], col = "#73bfbf",
+                side = 3, quiet = TRUE)
+  graphics::abline(v = low, col = "#9c2828")
+  graphics::abline(v = high, col = "#9c2828")
+  graphics::abline(v = low * frost_thr, col = "#1ac4c4")
+  graphics::abline(v = high * frost_thr, col = "#1ac4c4")
 }
