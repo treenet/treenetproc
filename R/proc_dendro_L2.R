@@ -24,7 +24,8 @@
 #'   in stem diameter due to frost is expected. Default value is set to
 #'   \code{5°C} due to hysteresis shortly before or after frost events.
 #' @param interpol numeric, length of gaps (in minutes) in which values are
-#'   linearly interpolated.
+#'   linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
+#'   Default is to \code{2.1 * reso}.
 #' @param plot logical, specify whether a comparison of \code{L1} and \code{L2}
 #'   data should be plotted.
 #' @param plot_mds logical, specify whether maxima and minima used for the
@@ -100,7 +101,7 @@
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                            tol_jump = 50, tol_out = 30, iter_clean = 1,
-                           frost_thr = 5, lowtemp = 5, interpol = 120,
+                           frost_thr = 5, lowtemp = 5, interpol = NULL,
                            plot = TRUE, plot_period = "full",
                            plot_show = "all", plot_export = TRUE,
                            plot_name = "proc_L2_plot",
@@ -196,21 +197,14 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     for (i in 1:iter_clean) {
       df <- clean_list[[i]]
 
-      #########################
-      message("remove density_plot command from code in proc_dendro_L2.")
-      if (plot_export && i == 1) {
-        series <- unique(df$series)[1]
-        grDevices::pdf(paste0("density_plot_", series, ".pdf"),
-                       width = 8.3, height = 5.8)
-      }
-      #########################
-
       # delete outliers before jump correction
       df <- calcdiff(df = df, reso = passobj("reso"))
       df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
                           tol = 0.8 * tol_jump, print_thresh = TRUE,
                           correction = "outlier", frost_thr = frost_thr)
-      df <- executeflagout(df = df, len = 2, interpol = interpol)
+      df <- executeflagout(df = df, len = 2, interpol = interpol,
+                           plot_density = FALSE, plot_export = plot_export,
+                           frost_thr = frost_thr)
 
       # remove jumps (jump correction)
       df <- calcdiff(df = df, reso = passobj("reso"))
@@ -227,16 +221,12 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
                           tol = tol_out, print_thresh = TRUE,
                           correction = "outlier", frost_thr = frost_thr)
-      df <- executeflagout(df = df, len = 1, interpol = interpol)
+      df <- executeflagout(df = df, len = 1, interpol = interpol,
+                           plot_density = FALSE, plot_export = plot_export,
+                           frost_thr = frost_thr)
 
 
       clean_list[[i + 1]] <- df
-      #########################
-      # code for plotting density_plots in single PDF
-      if (plot_export && i == iter_clean) {
-        grDevices::dev.off()
-      }
-      #########################
     }
     df <- clean_list[[iter_clean + 1]]
 
@@ -259,7 +249,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
       dplyr::mutate(version = 2) %>%
       dplyr::select(series, ts, value, max, twd, mds, gro_yr, gro_start,
-                    gro_end, flags, version)
+                    gro_end, frost, flags, version)
 
     list_L2[[s]] <- df
   }
@@ -272,6 +262,9 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                  plot_period = plot_period, plot_show = plot_show,
                  plot_export = plot_export, plot_name = plot_name, tz = tz)
   }
+
+  df <- df %>%
+    dplyr::select(-frost)
 
   return(df)
 }
