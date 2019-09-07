@@ -197,12 +197,12 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     for (i in 1:iter_clean) {
       df <- clean_list[[i]]
 
-      # delete outliers before jump correction
+      # remove outliers
       df <- calcdiff(df = df, reso = passobj("reso"))
       df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
-                          tol = 0.8 * tol_jump, print_thresh = TRUE,
+                          tol = tol_out, print_thresh = TRUE,
                           correction = "outlier", frost_thr = frost_thr)
-      df <- executeflagout(df = df, len = 2, interpol = interpol,
+      df <- executeflagout(df = df, len = 1, interpol = interpol,
                            plot_density = FALSE, plot_export = plot_export,
                            frost_thr = frost_thr)
 
@@ -215,16 +215,6 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                           gaple = 24 * (60 / passobj("reso")))
       df <- createjumpflag(df = df)
       df <- executejump(df = df)
-
-      # remove outliers
-      df <- calcdiff(df = df, reso = passobj("reso"))
-      df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
-                          tol = tol_out, print_thresh = TRUE,
-                          correction = "outlier", frost_thr = frost_thr)
-      df <- executeflagout(df = df, len = 1, interpol = interpol,
-                           plot_density = FALSE, plot_export = plot_export,
-                           frost_thr = frost_thr)
-
 
       clean_list[[i + 1]] <- df
     }
