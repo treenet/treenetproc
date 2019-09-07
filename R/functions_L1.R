@@ -141,41 +141,45 @@ roundtimetoreso <- function(df, reso, pos, tz) {
 #'
 #' @keywords internal
 #'
-fillintergaps <- function(df, reso, interpol = reso * 2.1, type = "linear",
-                          flag = FALSE) {
+fillintergaps <- function(df, reso, interpol, type = "linear", flag = FALSE) {
 
   if (type != "linear" | length(type) == 0) {
     print("no gapfilling...")
   }
-
-  nc <- ncol(df)
-  if (type == "linear") {
-    df <- df %>%
-      dplyr::arrange(ts) %>%
-      dplyr::mutate(isgap = is.na(value)) %>%
-      dplyr::mutate(gaps = cumsum(isgap)) %>%
-      dplyr::mutate(y = c(0, diff(gaps, lag = 1))) %>%
-      dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
-      dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
-      dplyr::mutate(gapnr = cumsum(z)) %>%
-      dplyr::mutate(diff_ts = as.numeric(difftime(ts, dplyr::lag(ts, 1),
-                                                  units = "mins"))) %>%
-      dplyr::mutate(diff_ts = c(0, diff_ts[2:dplyr::n()])) %>%
-      dplyr::group_by(gapnr) %>%
-      dplyr::mutate(gaple_mins = sum(diff_ts)) %>%
-      dplyr::ungroup() %>%
-      dplyr::mutate(value = ifelse(isgap & gaple_mins < interpol,
-                                   stats::approx(ts, value, ts)$y, value))
+  if (length(interpol) == 0) {
+    interpol <- passobj("reso") * 2.1
   }
 
-  if (flag) {
-    df <- df %>%
-      dplyr::mutate(flagfill = ifelse(isgap & gaple_mins < interpol,
-                                      TRUE, FALSE)) %>%
-      dplyr::select(1:nc, flagfill)
-  } else {
-    df <- df %>%
-      dplyr::select(1:nc)
+  if (interpol > 0) {
+    nc <- ncol(df)
+    if (type == "linear") {
+      df <- df %>%
+        dplyr::arrange(ts) %>%
+        dplyr::mutate(isgap = is.na(value)) %>%
+        dplyr::mutate(gaps = cumsum(isgap)) %>%
+        dplyr::mutate(y = c(0, diff(gaps, lag = 1))) %>%
+        dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+        dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+        dplyr::mutate(gapnr = cumsum(z)) %>%
+        dplyr::mutate(diff_ts = as.numeric(difftime(ts, dplyr::lag(ts, 1),
+                                                    units = "mins"))) %>%
+        dplyr::mutate(diff_ts = c(0, diff_ts[2:dplyr::n()])) %>%
+        dplyr::group_by(gapnr) %>%
+        dplyr::mutate(gaple_mins = sum(diff_ts)) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(value = ifelse(isgap & gaple_mins < interpol,
+                                     stats::approx(ts, value, ts)$y, value))
+    }
+
+    if (flag) {
+      df <- df %>%
+        dplyr::mutate(flagfill = ifelse(isgap & gaple_mins < interpol,
+                                        TRUE, FALSE)) %>%
+        dplyr::select(1:nc, flagfill)
+    } else {
+      df <- df %>%
+        dplyr::select(1:nc)
+    }
   }
 
   return(df)
