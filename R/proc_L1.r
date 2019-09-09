@@ -58,7 +58,7 @@ proc_L1 <- function(data, reso = 10, year = "asis", input = "long",
   if (!(input %in% c("long", "wide"))) {
     stop("input needs to be either 'long' or 'wide'.")
   }
-
+  passenv$reso <- reso
 
   # Check input data ----------------------------------------------------------
   df <- data
