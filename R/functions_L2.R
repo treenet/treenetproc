@@ -537,9 +537,7 @@ executejump <- function(df) {
   if (length(ran) > 0) {
     for (uu in 1:length(ran)) {
       zz <- ran[uu]
-      dx <- df$gapflag[(zz - 1)]
-      dx <- dx + 1
-      val[zz:le] <- val[zz:le] - (df$diff_jump[zz] * dx)
+      val[zz:le] <- val[zz:le] - df$diff_jump[zz]
     }
   }
 
