@@ -25,7 +25,12 @@
 #'   \code{5°C} due to hysteresis shortly before or after frost events.
 #' @param interpol numeric, length of gaps (in minutes) in which values are
 #'   linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
-#'   Default is to \code{2.1 * reso}.
+#'   If \code{interpol = NULL} the default value is set to
+#'   \code{interpol = 2.1 * reso}.
+#' @param frag_len numeric, specifying the length of non-\code{NA} data in
+#'   between \code{NA} data. This is often the case if there is erroneous data
+#'   in between jumps. If \code{frag_len = NULL} the devault value is set to
+#'   \code{frag_len = 2.1}.
 #' @param plot logical, specify whether a comparison of \code{L1} and \code{L2}
 #'   data should be plotted.
 #' @param plot_mds logical, specify whether maxima and minima used for the
@@ -102,6 +107,7 @@
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                            tol_jump = 50, tol_out = 30, iter_clean = 1,
                            frost_thr = 5, lowtemp = 5, interpol = NULL,
+                           frag_len = NULL,
                            plot = TRUE, plot_period = "full",
                            plot_show = "all", plot_export = TRUE,
                            plot_name = "proc_L2_plot",
@@ -202,7 +208,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
                           tol = tol_out, print_thresh = TRUE,
                           correction = "outlier", frost_thr = frost_thr)
-      df <- executeflagout(df = df, len = 1, interpol = interpol,
+      df <- executeflagout(df = df, len = 1, frag_len = frag_len,
                            plot_density = FALSE, plot_export = plot_export,
                            frost_thr = frost_thr)
 
