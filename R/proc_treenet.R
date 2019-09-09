@@ -41,14 +41,14 @@
 #'                              "Bachtel-2.dendrometer.ch0"))
 #' }
 proc_treenet <- function(site = NULL, sensor_name = NULL,
-                         from = NULL, to = NULL,
-                         temp_name = NULL, reso = 10, year = "asis",
-                         tol = 10, iter_clean = 2, jump_corr = TRUE,
-                         interpol = 120, lowtemp = 5,  version = "L2",
-                         plot = TRUE, plot_period = "full",
+                         from = NULL, to = NULL, reso = 10,
+                         temp_name = NULL, frost_thr = 5, lowtemp = 5,
+                         tol_jump = 50, tol_out = 10, iter_clean = 1,
+                         interpol = NULL, frag_len = NULL,
+                         version = "L2", plot = TRUE, plot_period = "full",
                          plot_export = TRUE, plot_name = "proc_L2_plot",
                          plot_show = "all", plot_mds = FALSE,
-                         path_cred = NULL, tz = "Etc/GMT-1") {
+                         path_cred = NULL, year = "asis", tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
   check_logical(var = plot, var_name = "plot")
@@ -72,12 +72,14 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
   }
 
   print("process data to L2...")
-  df_L2 <- proc_dendro_L2(dendro_data = df_L1, tol = tol,
-                          iter_clean = iter_clean, jump_corr = jump_corr,
-                          lowtemp = lowtemp, plot = plot,
-                          plot_period = plot_period, plot_show = plot_show,
-                          plot_export = plot_export, plot_name = plot_name,
-                          plot_mds = plot_mds, tz = tz)
+  df_L2 <- proc_dendro_L2(dendro_data = df_L1, tol_jump = tol_jump,
+                          tol_out = tol_out, iter_clean = iter_clean,
+                          frost_thr = frost_thr, lowtemp = lowtemp,
+                          interpol = interpol, frag_len = frag_len,
+                          plot = plot, plot_period = plot_period,
+                          plot_show = plot_show, plot_export = plot_export,
+                          plot_name = plot_name, plot_mds = plot_mds,
+                          tz = tz)
 
   maxdiff(df = df_L2, tz = tz)
 
