@@ -76,7 +76,7 @@ forcejump <- function(data_L2, force, n_days = 5) {
     dplyr::select(ts, diff) %>%
     dplyr::right_join(., data_L2, by = "ts") %>%
     dplyr::select(diff) %>%
-    unlist(use.names = FALSE)
+    unlist(., use.names = FALSE)
 
   val <- data_L2$value
   ts <- data_L2$ts
