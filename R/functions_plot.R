@@ -9,9 +9,9 @@
 #'
 #' @keywords internal
 #'
-plotting_proc_L2 <- function(data_L1, data_L2, diff, plot_period,
-                             plot_add = TRUE, plot_frost = TRUE,
-                             plot_interpol = TRUE, tz) {
+plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
+                             plot_period, plot_add = TRUE,
+                             plot_frost = TRUE, plot_interpol = TRUE, tz) {
 
   # define axis labels
   axis_labs <- axis_labels_period(df = data_L2, plot_period = plot_period,
@@ -48,6 +48,8 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, plot_period,
                  yaxt = "n", xaxt = "n", ylab = "", ylim = c(0.1, 1200),
                  las = 1)
   graphics::abline(h = c(0.1, 1, 10, 100, 1000), col = "grey70")
+  graphics::lines(data = deleted, deleted ~ ts, type = "h", lwd = 1,
+                  col = "#fcdcd9")
   graphics::lines(data = diff, diff_old ~ ts, type = "h", lwd = 2,
                   col = "grey70")
   graphics::lines(data = diff, diff_plot ~ ts, type = "h", lwd = 2,
