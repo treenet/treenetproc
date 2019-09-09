@@ -346,11 +346,10 @@ createflagmad <- function(df, reso, wnd, tol, print_thresh, frost_thr,
 #'
 #' @keywords internal
 #'
-createflagout <- function(df, len) {
+createflagout <- function(df, out, len) {
 
   flagout <- df %>%
-    dplyr::mutate(flag = flagoutlow + flagouthigh) %>%
-    dplyr::mutate(flag = ifelse(flag > 0, TRUE, FALSE)) %>%
+    dplyr::mutate(flag = out) %>%
     dplyr::mutate(flag_group = cumsum(flag)) %>%
     dplyr::mutate(y = c(0, diff(flag_group, lag = 1))) %>%
     dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
@@ -378,35 +377,46 @@ createflagout <- function(df, len) {
 #'
 #' @keywords internal
 #'
-createflagfragment <- function(out, frag_len = NULL) {
+createflagfragment <- function(df, frag_len = NULL) {
 
   if (length(frag_len) == 0) {
     frag_len <- 2.1
   }
 
-  out_test <- as.data.frame(out) %>%
-    dplyr::mutate(flag_group = cumsum(out)) %>%
+  flagfrag1 <- df %>%
+    dplyr::mutate(flagout = flagoutlow + flagouthigh) %>%
+    dplyr::mutate(flagout = ifelse(flagout > 0, TRUE, FALSE)) %>%
+    dplyr::mutate(flag_group = cumsum(flagout)) %>%
     dplyr::mutate(y = c(0, diff(flag_group, lag = 1))) %>%
     dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
     dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
     dplyr::mutate(flag_nr = cumsum(z)) %>%
+    # remove NA's of value column to enable flagging of fragments in between
+    # long periods of NA
+    dplyr::filter(!(is.na(value) & !flagout)) %>%
     dplyr::group_by(flag_nr) %>%
     dplyr::mutate(flag_len = dplyr::n()) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(frag = ifelse(flag_len <= frag_len & !out,
+    dplyr::mutate(flagfrag = ifelse(flag_len <= frag_len & !flagout,
                                 TRUE, FALSE)) %>%
     # classsify first and last group as FALSE since they are not in-between
     # flagged groups
-    dplyr::mutate(frag = ifelse(flag_group == 0, FALSE, frag)) %>%
-    dplyr::mutate(frag = ifelse(flag_group == max(flag_group),
-                                FALSE, frag)) %>%
-    # add frag to outliers
-    dplyr::mutate(out = frag + out) %>%
-    dplyr::mutate(out = ifelse(out > 0, TRUE, FALSE)) %>%
-    dplyr::select(out) %>%
+    dplyr::mutate(flagfrag = ifelse(flag_group == 0, FALSE, flagfrag)) %>%
+    dplyr::mutate(flagfrag = ifelse(flag_group == max(flag_group),
+                                FALSE, flagfrag)) %>%
+    # add flagfrag to outliers
+    dplyr::mutate(flagfrag = flagfrag + flagout) %>%
+    dplyr::mutate(flagfrag = ifelse(flagfrag > 0, TRUE, FALSE)) %>%
+    dplyr::select(ts, flagfrag)
+
+  flagfrag2 <- df %>%
+    dplyr::full_join(flagfrag1, by = "ts") %>%
+    dplyr::arrange(ts) %>%
+    dplyr::mutate(flagfrag = ifelse(is.na(flagfrag), FALSE, flagfrag)) %>%
+    dplyr::select(flagfrag) %>%
     unlist(., use.names = FALSE)
 
-  return(out)
+  return(flagfrag2)
 }
 
 
@@ -447,9 +457,10 @@ executeflagout <- function(df, len, frag_len, plot_density = FALSE,
                  frost_thr = frost_thr, reso = passobj("reso"))
   }
 
-  out <- createflagout(df = df, len = len)
-  # flag short fragments in between flagged outlier data
-  out <- createflagfragment(out = out, frag_len = frag_len)
+  # flag short fragments of not flagged data in between flagged data
+  out <- createflagfragment(df = df, frag_len = frag_len)
+  # only flag outliers that occur in groups of a certain length
+  out <- createflagout(df = df, out = out, len = len)
 
   nc <- ncol(df)
   df <- df %>%
