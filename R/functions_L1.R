@@ -29,7 +29,8 @@ tsalign <- function(df, reso, year, tz) {
                   "precipitation data. Error in ", series, "."))
     }
   } else {
-    df <- fillintergaps(df = df, reso = reso, flag = FALSE)
+    df <- fillintergaps(df = df, reso = reso, flag = FALSE,
+                        interpol = NULL)
   }
 
   df <- df %>%
@@ -141,7 +142,8 @@ roundtimetoreso <- function(df, reso, pos, tz) {
 #'
 #' @keywords internal
 #'
-fillintergaps <- function(df, reso, interpol, type = "linear", flag = FALSE) {
+fillintergaps <- function(df, reso, interpol = NULL, type = "linear",
+                          flag = FALSE) {
 
   if (type != "linear" | length(type) == 0) {
     print("no gapfilling...")
