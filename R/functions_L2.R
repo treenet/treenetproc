@@ -374,20 +374,17 @@ createflagout <- function(df, len) {
 #'   data.
 #'
 #' @param out logical, vector with outlier flags.
-#' @param frag_len numeric, specifying the length of the fragments that are
-#'   flagged.
+#' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
 #'
-createflagfragment <- function(out, interpol = NULL) {
+createflagfragment <- function(out, frag_len = NULL) {
 
-  if (length(interpol) == 0) {
+  if (length(frag_len) == 0) {
     frag_len <- 2.1
-  } else {
-    frag_len <- interpol / passobj("reso")
   }
 
-  out <- as.data.frame(out) %>%
+  out_test <- as.data.frame(out) %>%
     dplyr::mutate(flag_group = cumsum(out)) %>%
     dplyr::mutate(y = c(0, diff(flag_group, lag = 1))) %>%
     dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
@@ -426,7 +423,7 @@ createflagfragment <- function(out, interpol = NULL) {
 #'
 #' @keywords internal
 #'
-executeflagout <- function(df, len, interpol, plot_density = FALSE,
+executeflagout <- function(df, len, frag_len, plot_density = FALSE,
                            plot_export, frost_thr) {
 
   check_logical(var = plot_density, var_name = "plot_density")
@@ -452,13 +449,13 @@ executeflagout <- function(df, len, interpol, plot_density = FALSE,
 
   out <- createflagout(df = df, len = len)
   # flag short fragments in between flagged outlier data
-  out <- createflagfragment(out = out, interpol = interpol)
+  out <- createflagfragment(out = out, frag_len = frag_len)
 
   nc <- ncol(df)
   df <- df %>%
     dplyr::mutate(flagout = out) %>%
-    dplyr::mutate(!!paste0("flagout", passobj("flagout_nr")) := flagout) %>%
     dplyr::mutate(value = ifelse(flagout, NA, value)) %>%
+    dplyr::mutate(!!paste0("flagout", passobj("flagout_nr")) := flagout) %>%
     dplyr::select(1:nc, grep("^flagout[0-9]", colnames(.)))
 
   # optional density plot after outlier removal
