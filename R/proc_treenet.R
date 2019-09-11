@@ -81,8 +81,6 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                           plot_name = plot_name, plot_mds = plot_mds,
                           tz = tz)
 
-  maxdiff(df = df_L2, tz = tz)
-
   print("Done!")
   return(df_L2)
 }
