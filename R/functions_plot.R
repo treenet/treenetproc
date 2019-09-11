@@ -11,19 +11,30 @@
 #'
 plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
                              plot_period, plot_add = TRUE,
-                             plot_frost = TRUE, plot_interpol = TRUE, tz) {
+                             plot_frost = TRUE, plot_interpol = TRUE, tz,
+                             print_vars) {
 
   # define axis labels
   axis_labs <- axis_labels_period(df = data_L2, plot_period = plot_period,
                                   tz = tz)
 
-  # plot
-  graphics::layout(matrix(c(1, 2, 3, 4), nrow = 4), heights = c(2, 1.6, 1, 2),
-                   widths = 1)
+  # plot ----------------------------------------------------------------------
+  if (print_vars) {
+    # plot input variables and output values
+    graphics::layout(matrix(c(1, 2, 3, 4, 5), nrow = 5),
+                     heights = c(2, 1.6, 1.1, 1.1, 0.8), widths = 1)
+  } else {
+    graphics::layout(matrix(c(1, 2, 3, 4), nrow = 4),
+                     heights = c(2, 1.6, 1, 2), widths = 1)
+  }
+
+  # plot data_L1
   graphics::par(mar = c(0, 5, 4.1, 2.1))
   graphics::plot(data = data_L1, value ~ ts, type = "l", xaxt = "n", ylab = "",
                  las = 1, main = passobj("sensor_label"))
   graphics::title(ylab = "L1", mgp = c(3.5, 1, 0))
+
+  # plot data_L2
   graphics::par(mar = c(0, 5, 0, 2.1))
   graphics::plot(data = data_L2, value ~ ts, type = "n", xaxt = "n", ylab = "",
                  las = 1)
@@ -42,6 +53,8 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
     }
   }
   graphics::title(ylab = "L2", mgp = c(3.5, 1, 0))
+
+  # plot diff
   graphics::par(mar = c(0, 5, 0, 2.1))
   options(warn = -1)
   graphics::plot(data = data_L2, value ~ ts, type = "n", xlab = "", log = "y",
@@ -66,12 +79,43 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
                  labels = c(0, 1, 10, 100, 1000), las = 1)
   graphics::title(ylab = "difference [L1 - L2]", mgp = c(3.5, 1, 0))
   options(warn = 0)
+
+  # plot twd
   graphics::par(mar = c(4.1, 5, 0, 2.1))
   graphics::plot(data = data_L2, twd ~ ts, type = "l", xaxt = "n",
                  xlab = passobj("year_label"),  ylab = "", las = 1,
                  col = "#7a0177")
   graphics::axis(1, at = axis_labs[[1]], labels = axis_labs[[2]])
   graphics::title(ylab = "twd", mgp = c(3.5, 1, 0))
+
+  # print used variables and threshold values
+  if (print_vars) {
+    graphics::par(mar = c(4.1, 4.1, 2.1, 2.1))
+    plot(x = c(0, 1), y = c(0, 1), ann = FALSE, bty = 'n', type = 'n',
+         xaxt = 'n', yaxt = 'n')
+    text(x = 0, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
+         labels = "input variables")
+    text(x = 0, y = 0.8, adj = c(0, 1), cex = 0.8,
+         labels = paste0("tol_jump = ", passobj("tol_jump_plot"), "\n",
+                         "tol_out = ", passobj("tol_out_plot"), "\n",
+                         "frost_thr = ", passobj("frost_thr_plot"), "\n",
+                         "lowtemp = ", passobj("lowtemp_plot"), "\n"))
+    text(x = 0.1, y = 0.8, adj = c(0, 1), cex = 0.8,
+         labels = paste0("interpol = ", passobj("interpol_plot"), "\n",
+                         "frag_len = ", passobj("frag_len_plot"), "\n",
+                         "tz = ", passobj("tz_plot")))
+    text(x = 0.3, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
+         labels = "applied thresholds and values")
+    text(x = 0.3, y = 0.8, adj = c(0, 1), cex = 0.8,
+         labels = paste0("tol_jump = ", passobj("thr_jump_plot")[1], " / ",
+                         passobj("thr_jump_plot")[2], "\n",
+                         "tol_out = ", passobj("thr_out_plot")[1], " / ",
+                         passobj("thr_out_plot")[2], "\n\n",
+                         "frost_thr = 'tol_jump' or 'tol_out' * 'frost_thr'\n"))
+    text(x = 0.5, y = 0.8, adj = c(0, 1), cex = 0.8,
+         labels = paste0("interpol = ", passobj("interpol_plot"), " min\n",
+                         "frag_len = ", passobj("frag_len_plot"), " min\n"))
+  }
 }
 
 

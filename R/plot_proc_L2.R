@@ -19,6 +19,9 @@
 #'   saved.
 #' @param plot_export logical, specifies whether the plots are exported as a
 #'   \code{PDF} file to the working directory or are plotted in the console.
+#' @param print_vars logical, specifies whether used variables should be
+#'   plotted in the first panel. Command is only used internally in the
+#'   function \code{\link{proc_dendro_L2}}.
 #' @inheritParams proc_L1
 #'
 #' @return Plots are saved in a PDF to current working directory as
@@ -38,7 +41,8 @@
 #'
 plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
                          plot_show = "all", plot_export = TRUE,
-                         plot_name = "proc_L2_plot", tz = "UTC") {
+                         plot_name = "proc_L2_plot", tz = "UTC",
+                         print_vars = FALSE) {
 
   # Check input variables -----------------------------------------------------
   if (!(plot_period %in% c("full", "yearly", "monthly"))) {
@@ -48,6 +52,7 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
     stop("plot_show needs to be either 'all' or 'diff'.")
   }
   check_logical(var = plot_export, var_name = "plot_export")
+  check_logical(var = print_vars, var_name = "print_vars")
   check_data_L1(data_L1 = data_L1)
   check_data_L2(data_L2 = data_L2)
 
@@ -144,7 +149,8 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
             }
             plotting_proc_L2(data_L1 = data_L1_year, data_L2 = data_L2_year,
                              diff = diff_year, deleted = deleted_year,
-                             plot_period = plot_period, tz = tz)
+                             plot_period = plot_period, tz = tz,
+                             print_vars = print_vars)
           } else {
             next
           }
@@ -219,7 +225,8 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
                                data_L2 = data_L2_month,
                                diff = diff_month,
                                deleted = deleted_month,
-                               plot_period = plot_period, tz = tz)
+                               plot_period = plot_period, tz = tz,
+                               print_vars = print_vars)
             } else {
               next
             }
@@ -236,7 +243,8 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
           sum(!is.na(data_L2_sensor$value)) != 0) {
         plotting_proc_L2(data_L1 = data_L1_sensor, data_L2 = data_L2_sensor,
                          diff = diff_sensor, deleted = deleted_sensor,
-                         plot_period = plot_period, tz = tz)
+                         plot_period = plot_period, tz = tz,
+                         print_vars = print_vars)
       } else {
         next
       }

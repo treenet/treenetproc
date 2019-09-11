@@ -184,6 +184,9 @@ fillintergaps <- function(df, reso, interpol = NULL, type = "linear",
     }
   }
 
+  # save value of interpol for later plotting
+  passenv$interpol_plot <- interpol
+
   return(df)
 }
 

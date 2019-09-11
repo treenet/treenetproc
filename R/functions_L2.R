@@ -189,17 +189,17 @@ createfrostflag <- function(df, tem, lowtemp = 5, sample_temp) {
 #' @param df input \code{data.frame}.
 #' @param frost logical, defines whether outliers should be calculated for
 #'   frost periods or other periods.
-#' @param print_thresh logical, specifies whether the applied thresholds are
-#'   printed to the console or not.
+#' @param save_thr logical, specifies whether the applied thresholds are
+#'   saved for later plotting or not.
 #' @inheritParams createflagmad
 #'
 #' @keywords internal
 #'
 calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
-                        frost_thr, print_thresh = FALSE, correction = NULL) {
+                        frost_thr, save_thr = FALSE, correction = NULL) {
 
   check_logical(var = frost, var_name = "frost")
-  check_logical(var = print_thresh, var_name = "print_thresh")
+  check_logical(var = save_thr, var_name = "save_thr")
   if (!(correction %in% c("outlier", "jump"))) {
     stop("correction needs to be either 'out' or 'jump'.")
   }
@@ -234,8 +234,8 @@ calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
 
   flagqlow <- vector(length = nrow(df))
   flagqhigh <- vector(length = nrow(df))
-  thresh_min <- -100000
-  thresh_max <- 100000
+  thr_min <- -100000
+  thr_max <- 100000
   for (qq in steps) {
     b1 <- qq - span; b2 <- qq + span - 1; ran <- b1:b2
     q30 <- as.numeric(stats::quantile(df$diff_val[ran], probs = 0.3,
@@ -259,16 +259,22 @@ calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
       high <- high * frost_thr
     }
 
-    if (print_thresh) {
+    if (save_thr) {
       if (!is.na(low) && low != 0) {
-        if (low > thresh_min){
-          thresh_min <- round(low, 2)
+        if (low > thr_min){
+          thr_min <- round(low, 2)
         }
       }
       if (!is.na(high) && high != 0) {
-        if (high < thresh_max) {
-          thresh_max <- round(high, 2)
+        if (high < thr_max) {
+          thr_max <- round(high, 2)
         }
+      }
+      if (correction == "outlier") {
+        passenv$thr_out_plot <- c(thr_min, thr_max)
+      }
+      if (correction == "jump") {
+        passenv$thr_jump_plot <- c(thr_min, thr_max)
       }
     }
 
@@ -284,10 +290,6 @@ calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
     dplyr::mutate(flagoutlow = flagqlow) %>%
     dplyr::mutate(flagouthigh = flagqhigh)
 
-  if (print_thresh) {
-    message(paste0(df$series[1], " ", correction, " threshold low: ",
-                   thresh_min, "; high: ", thresh_max))
-  }
   # save applied thresholds for density_plot
   passenv$thr_low <- low
   passenv$thr_high <- high
@@ -309,7 +311,7 @@ calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
 #'
 #' @keywords internal
 #'
-createflagmad <- function(df, reso, wnd, tol, print_thresh, frost_thr,
+createflagmad <- function(df, reso, wnd, tol, save_thr, frost_thr,
                           correction) {
 
   nc <- ncol(df)
@@ -322,7 +324,7 @@ createflagmad <- function(df, reso, wnd, tol, print_thresh, frost_thr,
                           correction = correction)
   df <- calcflagmad(df = df, reso = reso, wnd = wnd, tol = tol,
                     frost = FALSE, frost_thr = frost_thr,
-                    print_thresh = print_thresh, correction = correction)
+                    save_thr = save_thr, correction = correction)
 
   if (nrow(df_frost) > 0) {
     df <- dplyr::bind_rows(df, df_frost)
@@ -415,6 +417,9 @@ createflagfragment <- function(df, frag_len = NULL) {
     dplyr::mutate(flagfrag = ifelse(is.na(flagfrag), FALSE, flagfrag)) %>%
     dplyr::select(flagfrag) %>%
     unlist(., use.names = FALSE)
+
+  # save value of frag_len for later plotting
+  passenv$frag_len_plot <- frag_len
 
   return(flagfrag2)
 }

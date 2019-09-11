@@ -105,7 +105,7 @@
 #'                plot_export = FALSE)
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           tol_jump = 50, tol_out = 30, iter_clean = 1,
+                           tol_jump = 50, tol_out = 10, iter_clean = 1,
                            frost_thr = 5, lowtemp = 5, interpol = NULL,
                            frag_len = NULL,
                            plot = TRUE, plot_period = "full",
@@ -121,6 +121,12 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     stop("plot_period needs to be either 'full', 'yearly' or 'monthly'.")
   }
 
+  # Save input variables for plotting -----------------------------------------
+  passenv$tol_jump_plot <- tol_jump
+  passenv$tol_out_plot <- tol_out
+  passenv$frost_thr_plot <- frost_thr
+  passenv$lowtemp_plot <- lowtemp
+  passenv$tz_plot <- tz
 
   # Check input data ----------------------------------------------------------
   df <- dendro_data
@@ -181,6 +187,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
   list_L2 <- vector("list", length = length(series_vec))
   df_L1 <- df
   for (s in 1:length(series_vec)) {
+    message(paste0("processing ", series_vec[s], "..."))
     df <- df_L1 %>%
       dplyr::filter(series == series_vec[s])
 
@@ -206,7 +213,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       # remove outliers
       df <- calcdiff(df = df, reso = passobj("reso"))
       df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
-                          tol = tol_out, print_thresh = TRUE,
+                          tol = tol_out, save_thr = TRUE,
                           correction = "outlier", frost_thr = frost_thr)
       df <- executeflagout(df = df, len = 1, frag_len = frag_len,
                            plot_density = FALSE, plot_export = plot_export,
@@ -215,7 +222,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       # remove jumps (jump correction)
       df <- calcdiff(df = df, reso = passobj("reso"))
       df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
-                          tol = tol_jump, print_thresh = TRUE,
+                          tol = tol_jump, save_thr = TRUE,
                           correction = "jump", frost_thr = frost_thr)
       df <- createjumpflag(df = df)
       df <- executejump(df = df)
@@ -254,11 +261,13 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     print("plot data...")
     plot_proc_L2(data_L1 = dendro_data, data_L2 = df,
                  plot_period = plot_period, plot_show = plot_show,
-                 plot_export = plot_export, plot_name = plot_name, tz = tz)
+                 plot_export = plot_export, plot_name = plot_name, tz = tz,
+                 print_vars = TRUE)
   }
 
   df <- df %>%
-    dplyr::select(-frost)
+    dplyr::select(-frost) %>%
+    dplyr::mutate(version_pck = packageVersion("treenetproc"))
 
   return(df)
 }
