@@ -853,8 +853,7 @@ grostartend <- function(df, tol = 0.05, tz) {
 #'
 summariseflags <- function(df) {
 
-  message("check lenght of list_flags, is maybe not correct yet.")
-  list_flags <- vector("list", length = passenv$flagout_nr)
+  list_flags <- vector("list", length = passenv$flagout_nr * 2 + 1)
 
   n_flags <- 1
   for (out in n_flags:(passenv$flagout_nr + n_flags - 1)) {
@@ -878,6 +877,7 @@ summariseflags <- function(df) {
   flags <- do.call("paste", c(list_flags, sep = ", "))
   flags <- gsub(", NA", "", flags)
   flags <- gsub("NA, ", "", flags)
+  flags <- gsub(", $", "", flags)
   flags <- ifelse(flags == "NA", NA, flags)
 
   df$flags <- flags
