@@ -43,7 +43,7 @@
 proc_treenet <- function(site = NULL, sensor_name = NULL,
                          from = NULL, to = NULL, reso = 10,
                          temp_name = NULL, frost_thr = 5, lowtemp = 5,
-                         tol_jump = 50, tol_out = 10, iter_clean = 1,
+                         tol_jump = 50, tol_out = 10,
                          interpol = NULL, frag_len = NULL,
                          version = "L2", plot = TRUE, plot_period = "full",
                          plot_export = TRUE, plot_name = "proc_L2_plot",

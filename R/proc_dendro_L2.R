@@ -14,9 +14,6 @@
 #' @param tol_out numeric, defines the tolerance of the threshold above or
 #'   below which a value is classified as outlier (see Details for further
 #'   information).
-#' @param iter_clean numeric, specifies the number of times the cleaning
-#'   process is repeated. Increase if jumps are not corrected after
-#'   processing.
 #' @param frost_thr numeric, increases the thresholds for outlier
 #'   classifiation in periods of probable frost (i.e. temperature <
 #'   \code{lowtemp}). The thresholds are multiplied by the value provided.
@@ -105,9 +102,9 @@
 #'                plot_export = FALSE)
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           tol_jump = 50, tol_out = 10, iter_clean = 1,
-                           frost_thr = 5, lowtemp = 5, interpol = NULL,
-                           frag_len = NULL,
+                           tol_jump = 50, tol_out = 10,
+                           frost_thr = 5, lowtemp = 5,
+                           interpol = NULL, frag_len = NULL,
                            plot = TRUE, plot_period = "full",
                            plot_show = "all", plot_export = TRUE,
                            plot_name = "proc_L2_plot",
@@ -205,6 +202,8 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     df <- createfrostflag(df = df, tem = tem, lowtemp = lowtemp,
                           sample_temp = passobj("sample_temp"))
 
+    # data cleaning can be iterated with iter_clean > 1
+    iter_clean <- 1
     clean_list <- vector("list", length = iter_clean + 1)
     clean_list[[1]] <- df
     for (i in 1:iter_clean) {
