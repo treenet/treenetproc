@@ -217,8 +217,6 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       df <- createflagmad(df = df, reso = passobj("reso"), wnd = NULL,
                           tol = tol_jump, print_thresh = TRUE,
                           correction = "jump", frost_thr = frost_thr)
-      df <- creategapflag(df = df, reso = passobj("reso"),
-                          gaple = 24 * (60 / passobj("reso")))
       df <- createjumpflag(df = df)
       df <- executejump(df = df)
 
