@@ -93,6 +93,8 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
     graphics::par(mar = c(4.1, 4.1, 2.1, 2.1))
     plot(x = c(0, 1), y = c(0, 1), ann = FALSE, bty = 'n', type = 'n',
          xaxt = 'n', yaxt = 'n')
+
+    # print input variables
     text(x = 0, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
          labels = "input variables")
     text(x = 0, y = 0.8, adj = c(0, 1), cex = 0.8,
@@ -104,6 +106,8 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
          labels = paste0("interpol = ", passobj("interpol_plot"), "\n",
                          "frag_len = ", passobj("frag_len_plot"), "\n",
                          "tz = ", passobj("tz_plot")))
+
+    # print applied thresholds and values
     text(x = 0.3, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
          labels = "applied thresholds and values")
     text(x = 0.3, y = 0.8, adj = c(0, 1), cex = 0.8,
@@ -115,6 +119,21 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
     text(x = 0.5, y = 0.8, adj = c(0, 1), cex = 0.8,
          labels = paste0("interpol = ", passobj("interpol_plot"), " min\n",
                          "frag_len = ", passobj("frag_len_plot"), " min\n"))
+
+    # print amount of missing, deleted and interpolated data
+    list_missing <- calcmissing(data_L1 = data_L1, data_L2 = data_L2)
+    text(x = 0.7, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
+         labels = "changes in data")
+    text(x = 0.7, y = 0.8, adj = c(0, 1), cex = 0.8,
+         labels = paste0("interpolated: ", list_missing[[1]], "%\n",
+                         "deleted: ", list_missing[[2]], "%\n",
+                         "missing: ", list_missing[[3]], "%"))
+
+    # print package version
+    version_pck <- packageDescription("treenetproc", fields = "Version",
+                                      drop = TRUE)
+    text(x = 1, y = 0.1, adj = c(1, 1), cex = 0.8,
+         labels = paste0("treenetproc: ", version_pck))
   }
 }
 

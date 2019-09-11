@@ -847,6 +847,51 @@ grostartend <- function(df, tol = 0.05, tz) {
 }
 
 
+#' Calculates Percentages of Interpolated, Deleted and Missing Data
+#'
+#' \code{calcmissing} calculates the percentage of interpolated, deleted and
+#'   missing data.
+#'
+#' @param data_L1
+#' @param data_L2
+#' @inheritParams plot_proc_L2
+#'
+#' @return a list of length = 3 with percentages of interpolated, deleted,
+#'   and missing data.
+#'
+#' @keywords internal
+#'
+calcmissing <- function(data_L1, data_L2) {
+
+  len <- nrow(data_L2)
+  interpol_L2 <- data_L2 %>%
+    dplyr::slice(grep("fill", flags))
+  interpol_perc <- round(nrow(interpol_L2) / len * 100, 2)
+
+  deleted_L2 <- data_L2 %>%
+    dplyr::select(value_L2 = value) %>%
+    dplyr::mutate(value_L1 = data_L1$value) %>%
+    dplyr::mutate(deleted = ifelse(!is.na(value_L1) & is.na(value_L2),
+                                   1, 0)) %>%
+    dplyr::summarise(deleted = sum(deleted)) %>%
+    unlist(., use.names = FALSE)
+  deleted_perc = round(deleted_L2 / len * 100, 2)
+
+  missing_L2 <- data_L2 %>%
+    dplyr::select(value_L2 = value) %>%
+    dplyr::mutate(value_L1 = data_L1$value) %>%
+    dplyr::mutate(missing = ifelse(is.na(value_L1) & is.na(value_L2),
+                                   1, 0)) %>%
+    dplyr::summarise(missing = sum(missing)) %>%
+    unlist(., use.names = FALSE)
+  missing_perc <- round(missing_L2 / len * 100, 2)
+
+  list_missing <- list(interpol_perc, deleted_perc, missing_perc)
+
+  return(list_missing)
+}
+
+
 #' Summarise Flags
 #'
 #' \code{summariseflags} summarises all previously created flags in one column.
