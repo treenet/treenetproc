@@ -85,7 +85,7 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
   deleted <- data_L2 %>%
     dplyr::select(ts, value_L2) %>%
     dplyr::left_join(., data_L1, by = "ts") %>%
-    dplyr::mutate(deleted = ifelse((!is.na(value_L1) & is.na(value_L2)),
+    dplyr::mutate(deleted = ifelse(!is.na(value_L1) & is.na(value_L2),
                                    100, NA)) %>%
     dplyr::select(ts, year, month, series, deleted)
 
