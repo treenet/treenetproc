@@ -208,7 +208,7 @@ calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
     df <- df %>%
       dplyr::filter(frost == TRUE)
   }
-  if (!frost) {
+  if (!frost & correction == "outlier") {
     df <- df %>%
       dplyr::filter(frost == FALSE)
   }
@@ -319,9 +319,14 @@ createflagmad <- function(df, reso, wnd, tol, save_thr, frost_thr,
     dplyr::mutate(diff_val = ifelse(diff_val < 0.001 & diff_val > -0.001,
                                     NA, diff_val))
 
-  df_frost <- calcflagmad(df = df, reso = reso, wnd = wnd, tol = tol,
-                          frost = TRUE, frost_thr = frost_thr,
-                          correction = correction)
+  if (correction == "outlier") {
+    df_frost <- calcflagmad(df = df, reso = reso, wnd = wnd, tol = tol,
+                            frost = TRUE, frost_thr = frost_thr,
+                            correction = correction)
+  }
+  if (correction == "jump") {
+    df_frost <- df[0, ]
+  }
   df <- calcflagmad(df = df, reso = reso, wnd = wnd, tol = tol,
                     frost = FALSE, frost_thr = frost_thr,
                     save_thr = save_thr, correction = correction)

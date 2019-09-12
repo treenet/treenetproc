@@ -115,7 +115,7 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
                          passobj("thr_jump_plot")[2], "\n",
                          "tol_out = ", passobj("thr_out_plot")[1], " / ",
                          passobj("thr_out_plot")[2], "\n\n",
-                         "frost_thr = 'tol_jump' or 'tol_out' * 'frost_thr'\n"))
+                         "frost_thr = 'tol_out' * 'frost_thr'\n"))
     text(x = 0.5, y = 0.8, adj = c(0, 1), cex = 0.8,
          labels = paste0("interpol = ", passobj("interpol_plot"), " min\n",
                          "frag_len = ", passobj("frag_len_plot"), " min\n"))
