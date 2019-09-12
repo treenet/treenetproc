@@ -161,7 +161,7 @@ The plot contains...
 * and the input variables as well as the applied threshold values at the 
   bottom.
 
-```{r processs to L2, fig.show="hide", fig.height=8, fig.width=6, message=FALSE, warning=FALSE, results="hide"}
+```{r processs to L2, fig.show="hide", fig.height=10, fig.width=6, message=FALSE, warning=FALSE, results="hide"}
 # Clean time-aligned (L1) dendrometer data and plot changes
 proc_dendro_L2(dendro_data = dendro_data_L1, plot_period = "monthly",
                plot_export = FALSE)
@@ -199,7 +199,7 @@ The applied threshold values are printed at the bottom of the plots as:
 
 
 #### Data cleaning with low 'tol_jump' and 'tol_out'
-```{r shrinking example code, results="hide", fig.show="hide", fig.height=8, fig.width=6, message = FALSE, warning = FALSE}
+```{r shrinking example code, results="hide", fig.show="hide", fig.height=10, fig.width=6, message = FALSE, warning = FALSE}
 # load data
 data("dendro_data_L1")
 # subset data for example
@@ -228,13 +228,13 @@ lines(data = data_shrink_L2, value ~ ts, col = "#08519c")
 
 
 #### Data cleaning with increased value of 'tol_jump' and 'tol_out'
-```{r shrinking example higher tol code, fig.show="hide", fig.height=8, fig.width=6, results="hide", message = FALSE, warning = FALSE}
+```{r shrinking example higher tol code, fig.show="hide", fig.height=10, fig.width=6, results="hide", message = FALSE, warning = FALSE}
 # clean dendrometer data (default value of tol_jump and tol_out)
 proc_dendro_L2(dendro_data = data_L1, tol_jump = 50, tol_out = 10, 
                plot_export = FALSE)
 ```
 
-```{r shrinking example higher tol code #2, echo=FALSE, results = "hide", fig.show="hide", fig.height=8, fig.width=6, message = FALSE, warning = FALSE}
+```{r shrinking example higher tol code #2, echo=FALSE, results = "hide", fig.show="hide", fig.height=10, fig.width=6, message = FALSE, warning = FALSE}
 data_L2 <- proc_dendro_L2(dendro_data = data_L1, tol_jump = 50, 
                           tol_out = 10, plot_export = FALSE)
 ```
@@ -265,7 +265,7 @@ months the temperature is set to 10°C.
 
 
 #### Data cleaning without temperature data
-```{r frost no temp data_1, fig.show="hide", fig.height=8, fig.width=6, message=FALSE, warning=FALSE, results="hide"}
+```{r frost no temp data_1, fig.show="hide", fig.height=10, fig.width=6, message=FALSE, warning=FALSE, results="hide"}
 # load data
 data("dendro_data_L1")
 # subset data for example
@@ -292,7 +292,7 @@ lines(data = data_L2, value ~ ts, col = "#08519c")
 
 
 #### Data cleaning with temperature data
-```{r frost with temp data_1, fig.show="hide", fig.height=8, fig.width=6, message=FALSE, warning=FALSE, results="hide"}
+```{r frost with temp data_1, fig.show="hide", fig.height=10, fig.width=6, message=FALSE, warning=FALSE, results="hide"}
 # load temperature data
 data("temp_data_L0")
 # time-align temperature data
@@ -335,7 +335,7 @@ changes:
 
 
 #### Data cleaning to L2
-```{r corr_dendro_L3 example_1, results="hide", fig.width=6, fig.height=8, fig.retina=2, message=FALSE, warning=FALSE}
+```{r corr_dendro_L3 example_1, results="hide", fig.width=6, fig.height=10, fig.retina=2, message=FALSE, warning=FALSE}
 # load data
 data("dendro_data_L1")
 # subset data for example
@@ -354,7 +354,7 @@ proc_dendro_L2(dendro_data = data_L1, plot_period = "monthly",
 data("dendro_data_L2")
 ```
 
-```{r corr_dendro_L3 example_3, results="hide", fig.width=6, fig.height=8, fig.retina=2, message=FALSE, warning=FALSE}
+```{r corr_dendro_L3 example_3, results="hide", fig.width=6, fig.height=7, fig.retina=2, message=FALSE, warning=FALSE}
 # correct errors in dendrometer data cleaning
 corr_dendro_L3(data_L1 = data_L1, data_L2 = dendro_data_L2, 
                remove = c(1:4, 6), force = "2016-08-12", 
