@@ -73,13 +73,12 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
 
   print("process data to L2...")
   df_L2 <- proc_dendro_L2(dendro_data = df_L1, tol_jump = tol_jump,
-                          tol_out = tol_out, iter_clean = iter_clean,
-                          frost_thr = frost_thr, lowtemp = lowtemp,
-                          interpol = interpol, frag_len = frag_len,
-                          plot = plot, plot_period = plot_period,
-                          plot_show = plot_show, plot_export = plot_export,
-                          plot_name = plot_name, plot_mds = plot_mds,
-                          tz = tz)
+                          tol_out = tol_out, frost_thr = frost_thr,
+                          lowtemp = lowtemp, interpol = interpol,
+                          frag_len = frag_len, plot = plot,
+                          plot_period = plot_period, plot_show = plot_show,
+                          plot_export = plot_export, plot_name = plot_name,
+                          plot_mds = plot_mds, tz = tz)
 
   print("Done!")
   return(df_L2)
