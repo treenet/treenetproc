@@ -83,7 +83,7 @@ forcejump <- function(data_L2, force, n_days = 5) {
   flag <- as.vector(rep(FALSE, nrow(data_L2)), mode = "logical")
   for (f in 1:length(force)) {
     f_start <- force[f]
-    f_end <- f_start + as.difftime(n_days, unit = "days")
+    f_end <- f_start + as.difftime(n_days, units = "days")
     pos_start <- which(ts == f_start)
     pos_end <- which(ts == f_end)
     pos_diff <- which.max(abs(diff[pos_start:pos_end])) + pos_start - 1
