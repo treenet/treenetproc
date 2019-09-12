@@ -33,3 +33,11 @@ package vignettes:
 ``` r
 browseVignettes("treenetproc")
 ```
+
+If you want to access the vignettes you need to build them when
+installing the package:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("treenet/treenetproc", build_vignettes = TRUE)
+```
