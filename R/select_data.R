@@ -140,6 +140,7 @@ select_data <- function(site = NULL, sensor_class = NULL, sensor_name = NULL,
     googlesheets::gs_read(ss = spread, ws = "Metadata", progress = FALSE)))
 
   meta_filter <- meta$Seriesname
+  meta_airtemp <- vector()
   # site
   if (!is.null(site)) {
     meta_select <- vector()
@@ -150,6 +151,7 @@ select_data <- function(site = NULL, sensor_class = NULL, sensor_name = NULL,
 
       if (nrow(meta_sub) != 0) {
         meta_select <- c(meta_select, meta_sub$Seriesname)
+        meta_airtemp <- unique(meta_sub$Site_temp_ref)
       } else {
         stop(paste0("Site '", site[t], "' does not exist."))
       }
@@ -193,35 +195,36 @@ select_data <- function(site = NULL, sensor_class = NULL, sensor_name = NULL,
   # select temperature data
   if (select_temp) {
     if (length(temp_name) == 0) {
-      if (length(sensor_name) == 0) {
-        meta_airtemp <- vector()
-        meta_sub <- meta %>%
-          dplyr::filter(Seriesname %in% meta_filter) %>%
-          dplyr::filter(grepl("airtemperature", Sensor_query,
-                              ignore.case = TRUE))
-      }
-      if (length(sensor_name) != 0) {
-        meta_airtemp <- vector()
-        meta_sub <- meta %>%
-          dplyr::filter(Seriesname %in% meta_filter)
-        temp_site <- unique(meta_sub$Site)
-        if (length(temp_site) > 1) {
-          stop("you can only select sensors from one site at a time.")
+      if (length(meta_airtemp) == 0) {
+        if (length(sensor_name) == 0) {
+          meta_airtemp <- vector()
+          meta_sub <- meta %>%
+            dplyr::filter(Seriesname %in% meta_filter) %>%
+            dplyr::filter(grepl("airtemperature", Sensor_query,
+                                ignore.case = TRUE))
         }
-        meta_sub <- meta %>%
-          dplyr::filter(Site %in% temp_site) %>%
-          dplyr::filter(grepl("airtemperature", Sensor_query,
-                              ignore.case = TRUE))
-      }
-      if (nrow(meta_sub) == 1) {
-        meta_airtemp <- meta_sub$Seriesname
-      }
-      if (nrow(meta_sub) > 1) {
-        stop("Multiple air temperature datasets found. Please specify the ",
-             "temperature sensor name explicitly in 'temp_name'.")
+        if (length(sensor_name) != 0) {
+          meta_airtemp <- vector()
+          meta_sub <- meta %>%
+            dplyr::filter(Seriesname %in% meta_filter)
+          temp_site <- unique(meta_sub$Site)
+          if (length(temp_site) > 1) {
+            stop("you can only select sensors from one site at a time.")
+          }
+          meta_sub <- meta %>%
+            dplyr::filter(Site %in% temp_site) %>%
+            dplyr::filter(grepl("airtemperature", Sensor_query,
+                                ignore.case = TRUE))
+        }
+        if (nrow(meta_sub) == 1) {
+          meta_airtemp <- meta_sub$Seriesname
+        }
+        if (nrow(meta_sub) > 1) {
+          stop("Multiple air temperature datasets found. Please specify the ",
+               "temperature sensor name explicitly in 'temp_name'.")
+        }
       }
     } else {
-      meta_airtemp <- vector()
       meta_sub <- meta %>%
         dplyr::filter(grepl(temp_name, Seriesname, ignore.case = TRUE))
 
