@@ -41,7 +41,7 @@
 #'
 #' @examples
 #' corr_dendro_L3(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
-#'                remove = c(84, 86:88), force = "2016-08-12",
+#'                remove = c(1:4, 6), force = "2016-08-12",
 #'                delete = c("2016-08-01", "2016-08-05"),
 #'                series = "site-1_dendro-3", plot_export = FALSE)
 #'
@@ -139,7 +139,7 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
     dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
     dplyr::mutate(version = 3) %>%
     dplyr::select(series, ts, value, max, twd, mds, gro_yr, gro_start,
-                  gro_end, flags, version)
+                  gro_end, frost, flags, version, version_pck)
 
   # append leading and trailing NA's
   df <- append_lead_trail_na(df = df, na = lead_trail_na)
