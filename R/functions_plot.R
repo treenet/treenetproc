@@ -21,10 +21,10 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
   # plot ----------------------------------------------------------------------
   if (print_vars) {
     # plot input variables and output values
-    graphics::layout(matrix(c(1, 2, 3, 4, 5), nrow = 5),
+    graphics::layout(mat = matrix(c(1, 2, 3, 4, 5), nrow = 5),
                      heights = c(2, 1.6, 1.1, 1.1, 0.8), widths = 1)
   } else {
-    graphics::layout(matrix(c(1, 2, 3, 4), nrow = 4),
+    graphics::layout(mat = matrix(c(1, 2, 3, 4), nrow = 4),
                      heights = c(2, 1.6, 1, 2), widths = 1)
   }
 
@@ -91,49 +91,59 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
   # print used variables and threshold values
   if (print_vars) {
     graphics::par(mar = c(4.1, 4.1, 2.1, 2.1))
-    plot(x = c(0, 1), y = c(0, 1), ann = FALSE, bty = 'n', type = 'n',
-         xaxt = 'n', yaxt = 'n')
+    graphics::plot(x = c(0, 1), y = c(0, 1), ann = FALSE, bty = "n",
+                   type = "n", xaxt = "n", yaxt = "n")
 
     # print input variables
-    text(x = 0, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
-         labels = "input variables")
-    text(x = 0, y = 0.8, adj = c(0, 1), cex = 0.8,
-         labels = paste0("tol_jump = ", passobj("tol_jump_plot"), "\n",
-                         "tol_out = ", passobj("tol_out_plot"), "\n",
-                         "frost_thr = ", passobj("frost_thr_plot"), "\n",
-                         "lowtemp = ", passobj("lowtemp_plot"), "\n"))
-    text(x = 0.1, y = 0.8, adj = c(0, 1), cex = 0.8,
-         labels = paste0("interpol = ", passobj("interpol_plot"), "\n",
-                         "frag_len = ", passobj("frag_len_plot"), "\n",
-                         "tz = ", passobj("tz_plot")))
+    graphics::text(x = 0, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
+                   labels = "input variables")
+    graphics::text(x = 0, y = 0.8, adj = c(0, 1), cex = 0.8,
+                   labels = paste0("tol_jump = ",
+                                   passobj("tol_jump_plot"), "\n",
+                                   "tol_out = ",
+                                   passobj("tol_out_plot"), "\n",
+                                   "frost_thr = ",
+                                   passobj("frost_thr_plot"), "\n",
+                                   "lowtemp = ",
+                                   passobj("lowtemp_plot"), "\n"))
+    graphics::text(x = 0.1, y = 0.8, adj = c(0, 1), cex = 0.8,
+                   labels = paste0("interpol = ",
+                                   passobj("interpol_plot"), "\n",
+                                   "frag_len = ",
+                                   passobj("frag_len_plot"), "\n",
+                                   "tz = ", passobj("tz_plot")))
 
     # print applied thresholds and values
-    text(x = 0.3, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
-         labels = "applied thresholds and values")
-    text(x = 0.3, y = 0.8, adj = c(0, 1), cex = 0.8,
-         labels = paste0("tol_jump = ", passobj("thr_jump_plot")[1], " / ",
-                         passobj("thr_jump_plot")[2], "\n",
-                         "tol_out = ", passobj("thr_out_plot")[1], " / ",
-                         passobj("thr_out_plot")[2], "\n\n",
-                         "frost_thr = 'tol_out' * 'frost_thr'\n"))
-    text(x = 0.5, y = 0.8, adj = c(0, 1), cex = 0.8,
-         labels = paste0("interpol = ", passobj("interpol_plot"), " min\n",
-                         "frag_len = ", passobj("frag_len_plot"), " min\n"))
+    graphics::text(x = 0.3, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
+                   labels = "applied thresholds and values")
+    graphics::text(x = 0.3, y = 0.8, adj = c(0, 1), cex = 0.8,
+                   labels = paste0("tol_jump = ",
+                                   passobj("thr_jump_plot")[1], " / ",
+                                   passobj("thr_jump_plot")[2], "\n",
+                                   "tol_out = ",
+                                   passobj("thr_out_plot")[1], " / ",
+                                   passobj("thr_out_plot")[2], "\n\n",
+                                   "frost_thr = 'tol_out' * 'frost_thr'\n"))
+    graphics::text(x = 0.5, y = 0.8, adj = c(0, 1), cex = 0.8,
+                   labels = paste0("interpol = ",
+                                   passobj("interpol_plot"), " min\n",
+                                   "frag_len = ",
+                                   passobj("frag_len_plot"), " min\n"))
 
     # print amount of missing, deleted and interpolated data
     list_missing <- calcmissing(data_L1 = data_L1, data_L2 = data_L2)
-    text(x = 0.7, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
-         labels = "changes in data")
-    text(x = 0.7, y = 0.8, adj = c(0, 1), cex = 0.8,
-         labels = paste0("interpolated: ", list_missing[[1]], "%\n",
-                         "deleted: ", list_missing[[2]], "%\n",
-                         "missing: ", list_missing[[3]], "%"))
+    graphics::text(x = 0.7, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
+                   labels = "changes in data")
+    graphics::text(x = 0.7, y = 0.8, adj = c(0, 1), cex = 0.8,
+                   labels = paste0("interpolated: ", list_missing[[1]], "%\n",
+                                   "deleted: ", list_missing[[2]], "%\n",
+                                   "missing: ", list_missing[[3]], "%"))
 
     # print package version
-    version_pck <- packageDescription("treenetproc", fields = "Version",
-                                      drop = TRUE)
-    text(x = 1, y = 0.1, adj = c(1, 1), cex = 0.8,
-         labels = paste0("treenetproc: ", version_pck))
+    version_pck <- utils::packageDescription("treenetproc",
+                                             fields = "Version", drop = TRUE)
+    graphics::text(x = 1, y = 0.1, adj = c(1, 1), cex = 0.8,
+                   labels = paste0("treenetproc: ", version_pck))
   }
 }
 
@@ -176,9 +186,11 @@ axis_labels_period <- function(df, plot_period, tz) {
 #'
 #' \code{plot_frost_period} draws a horizontal line in periods of possible
 #'   frost, i.e. when the temperature < \code{lowtemp}.
+#'   This function is exported for its use in vignettes only.
 #'
 #' @inheritParams plot_proc_L2
 #'
+#' @export
 #' @keywords internal
 #'
 plot_frost_period <- function(data_L2) {
@@ -225,8 +237,8 @@ plot_interpol_points <- function(data_L2) {
 
   interpol <- grep("fill", data_L2$flags)
   if (length(interpol) > 0) {
-    points(x = data_L2$ts[interpol], y = data_L2$value[interpol],
-           col = "#08519c", pch = 1, cex = 1.2)
+    graphics::points(x = data_L2$ts[interpol], y = data_L2$value[interpol],
+                     col = "#08519c", pch = 1, cex = 1.2)
   }
 }
 
