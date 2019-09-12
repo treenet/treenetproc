@@ -3,10 +3,10 @@
 library(tidyverse)
 
 # prepare L0 data -------------------------------------------------------------
-temp_data_L0 <- download_treenet(sensor_name = "Jussy-2.sht-temperature.ch0",
-                                 from = "2019-02-10", to = "2019-03-10",
-                                 data_format = "L0", server = "decentlab",
-                                 tz = "UTC") %>%
+temp_data_L0_1 <- download_treenet(sensor_name = "Jussy-2.sht-temperature.ch0",
+                                   from = "2019-02-10", to = "2019-03-10",
+                                   data_format = "L0", server = "decentlab",
+                                   tz = "UTC") %>%
   mutate(series = "site-1_tempearture")
 
 data("dendro_data_L0")
@@ -15,14 +15,14 @@ data_L0 <- dendro_data_L0 %>%
   select(ts)
 
 # add timestamp of dendrometer data
-temp_data_L0 <- temp_data_L0 %>%
+temp_data_L0_1 <- temp_data_L0_1 %>%
   slice(1:nrow(data_L0)) %>%
   select(-version)
 
-temp_data_L0$ts <- data_L0$ts
+temp_data_L0_1$ts <- data_L0$ts
 
 # shift temperature data to fit dendrometer data
-temp_data_L0_2 <- temp_data_L0 %>%
+temp_data_L0 <- temp_data_L0_1 %>%
   mutate(value = ifelse(ts <= "2013-03-12 05:00:00", value + 8, value)) %>%
   mutate(value = ifelse(ts >= "2013-03-12 05:00:00" &
                           ts <= "2013-03-14 05:00:00",
