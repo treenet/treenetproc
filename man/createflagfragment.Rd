@@ -4,13 +4,15 @@
 \alias{createflagfragment}
 \title{Create Flag for Small Data Fragments}
 \usage{
-createflagfragment(out, frag_len = interpol/passobj("reso"))
+createflagfragment(df, frag_len = NULL)
 }
 \arguments{
-\item{out}{logical, vector with outlier flags.}
+\item{frag_len}{numeric, specifying the length of non-\code{NA} data in
+between \code{NA} data. This is often the case if there is erroneous data
+in between jumps. If \code{frag_len = NULL} the devault value is set to
+\code{frag_len = 2.1}.}
 
-\item{frag_len}{numeric, specifying the length of the fragments that are
-flagged.}
+\item{out}{logical, vector with outlier flags.}
 }
 \description{
 \code{createflagfragment} flags short fragments of not flagged data that

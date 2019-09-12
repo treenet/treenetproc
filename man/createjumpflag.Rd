@@ -2,18 +2,14 @@
 % Please edit documentation in R/functions_L2.R
 \name{createjumpflag}
 \alias{createjumpflag}
-\title{Creates Flag for Jumps and Outliers in Data}
+\title{Creates Flag for Jumps in Data}
 \usage{
-createjumpflag(df, thr = 0.2)
+createjumpflag(df)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
-
-\item{thr}{specifies the threshold to discriminate between outliers and
-jumps due to adjustments of the dendrometer needle.}
 }
 \description{
-\code{createjumpflag} creates flag for jumps and ouliers. Outliers can be
-  single points or errors before, after or in between jumps.
+\code{createjumpflag} creates flag for jumps.
 }
 \keyword{internal}

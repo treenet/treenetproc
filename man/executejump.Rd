@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_L2.R
 \name{executejump}
 \alias{executejump}
-\title{Remove Jumps and Outliers}
+\title{Remove Jumps}
 \usage{
 executejump(df)
 }
@@ -11,6 +11,6 @@ executejump(df)
 }
 \description{
 \code{executejump} removes jumps that occur after resetting the dendrometer
-  needle and removes outliers.
+  needle.
 }
 \keyword{internal}

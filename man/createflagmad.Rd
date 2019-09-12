@@ -4,20 +4,17 @@
 \alias{createflagmad}
 \title{Creates Flag for Outliers Based on Median Absolute Deviation}
 \usage{
-createflagmad(df, reso, wnd, tol, plot_density, print_thresh)
+createflagmad(df, reso, wnd, tol, save_thr, frost_thr, correction)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{tol}{numeric, defines the tolerance of the threshold values above or
-below which dendrometer measurements are classified as outliers (see
-Details for further information).}
+\item{save_thr}{logical, specifies whether the applied thresholds are
+saved for later plotting or not.}
 
-\item{plot_density}{logical, defines whether density plots should be drawn
-in the console. Can be used to check outlier thresholds.}
-
-\item{print_thresh}{logical, specifies whether the applied thresholds are
-printed to the console or not.}
+\item{frost_thr}{numeric, increases the thresholds for outlier
+classifiation in periods of probable frost (i.e. temperature <
+\code{lowtemp}). The thresholds are multiplied by the value provided.}
 }
 \description{
 \code{createflagmad} creates flag for outliers that are above or below a

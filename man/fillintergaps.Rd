@@ -4,7 +4,7 @@
 \alias{fillintergaps}
 \title{Interpolate Between Irregular and Regular Timesteps}
 \usage{
-fillintergaps(df, reso, interpol = reso * 2.1, type = "linear",
+fillintergaps(df, reso, interpol = NULL, type = "linear",
   flag = FALSE)
 }
 \arguments{
@@ -14,7 +14,9 @@ fillintergaps(df, reso, interpol = reso * 2.1, type = "linear",
 \code{Details} for more information on data aggregation.}
 
 \item{interpol}{numeric, length of gaps (in minutes) in which values are
-linearly interpolated.}
+linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
+If \code{interpol = NULL} the default value is set to
+\code{interpol = 2.1 * reso}.}
 
 \item{type}{specify type of interpolation between regular timesteps.}
 }

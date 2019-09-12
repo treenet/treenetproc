@@ -4,14 +4,10 @@
 \alias{summariseflags}
 \title{Summarise Flags}
 \usage{
-summariseflags(df, jump_corr)
+summariseflags(df)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
-
-\item{jump_corr}{logical, specify whether jump correction should be
-applied. If \code{jump_corr = FALSE} outliers are deleted but jumps
-are not corrected.}
 }
 \description{
 \code{summariseflags} summarises all previously created flags in one column.

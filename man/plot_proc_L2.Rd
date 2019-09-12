@@ -5,7 +5,8 @@
 \title{Plot Processed Dendrometer Data}
 \usage{
 plot_proc_L2(data_L1, data_L2, plot_period = "full", plot_show = "all",
-  plot_export = TRUE, plot_name = "proc_L2_plot", tz = "UTC")
+  plot_export = TRUE, plot_name = "proc_L2_plot", tz = "UTC",
+  print_vars = FALSE)
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by
@@ -31,6 +32,10 @@ plot_period (\code{plot_period = "full"}), for each year separately
 saved.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+
+\item{print_vars}{logical, specifies whether used variables should be
+plotted in the first panel. Command is only used internally in the
+function \code{\link{proc_dendro_L2}}.}
 }
 \value{
 Plots are saved in a PDF to current working directory as

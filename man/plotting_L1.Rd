@@ -21,7 +21,6 @@ plot_period (\code{plot_period = "full"}), for each year separately
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
-\code{plotting_L1} contains the code necessary to plot \code{L1}
-  data.
+\code{plotting_L1} plots \code{L1} data.
 }
 \keyword{internal}

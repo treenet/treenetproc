@@ -5,11 +5,12 @@
 \title{Process Treenet Data to L1 or L2}
 \usage{
 proc_treenet(site = NULL, sensor_name = NULL, from = NULL,
-  to = NULL, temp_name = NULL, reso = 10, year = "asis",
-  tol = 10, iter_clean = 2, jump_corr = TRUE, interpol = 120,
-  lowtemp = 5, version = "L2", plot = TRUE, plot_period = "full",
-  plot_export = TRUE, plot_name = "proc_L2_plot", plot_show = "all",
-  plot_mds = FALSE, path_cred = NULL, tz = "Etc/GMT-1")
+  to = NULL, reso = 10, temp_name = NULL, frost_thr = 5,
+  lowtemp = 5, tol_jump = 50, tol_out = 10, interpol = NULL,
+  frag_len = NULL, version = "L2", plot = TRUE,
+  plot_period = "full", plot_export = TRUE,
+  plot_name = "proc_L2_plot", plot_show = "all", plot_mds = FALSE,
+  path_cred = NULL, year = "asis", tz = "Etc/GMT-1")
 }
 \arguments{
 \item{site}{character, specify the site. String is not case sensitive.}
@@ -24,38 +25,39 @@ date (\code{"YYYY-MM-DD"}).}
 \item{to}{character, optional argument to select data up to a specific
 date (\code{"YYYY-MM-DD"}).}
 
+\item{reso}{desired time resolution of output (in minutes). See
+\code{Details} for more information on data aggregation.}
+
 \item{temp_name}{character, optional argument to specify the series name
 of a temperature dataset. Needed if there are no or multiple on-site air
 temperature measurements. If \code{temp_name} is not specified and no
 temperature dataset is found on the server, a sample dataset will be
 used with a warning.}
 
-\item{reso}{desired time resolution of output (in minutes). See
-\code{Details} for more information on data aggregation.}
-
-\item{year}{if \code{year = "full"} then the output \code{data.frame}
-contains data of complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}; if
-\code{year = "asis"} the output \code{data.frame} covers the same period
-as the input data.}
-
-\item{tol}{numeric, defines the tolerance of the threshold values above or
-below which dendrometer measurements are classified as outliers (see
-Details for further information).}
-
-\item{iter_clean}{numeric, specifies the number of times the cleaning
-process is repeated. Increase if jumps are not corrected after
-processing.}
-
-\item{jump_corr}{logical, specify whether jump correction should be
-applied. If \code{jump_corr = FALSE} outliers are deleted but jumps
-are not corrected.}
-
-\item{interpol}{numeric, length of gaps (in minutes) in which values are
-linearly interpolated.}
+\item{frost_thr}{numeric, increases the thresholds for outlier
+classifiation in periods of probable frost (i.e. temperature <
+\code{lowtemp}). The thresholds are multiplied by the value provided.}
 
 \item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
 in stem diameter due to frost is expected. Default value is set to
 \code{5°C} due to hysteresis shortly before or after frost events.}
+
+\item{tol_jump}{numeric, defines the tolerance of the threshold above or
+below which a value is flagged for jump correction.}
+
+\item{tol_out}{numeric, defines the tolerance of the threshold above or
+below which a value is classified as outlier (see Details for further
+information).}
+
+\item{interpol}{numeric, length of gaps (in minutes) in which values are
+linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
+If \code{interpol = NULL} the default value is set to
+\code{interpol = 2.1 * reso}.}
+
+\item{frag_len}{numeric, specifying the length of non-\code{NA} data in
+between \code{NA} data. This is often the case if there is erroneous data
+in between jumps. If \code{frag_len = NULL} the devault value is set to
+\code{frag_len = 2.1}.}
 
 \item{version}{character, specify to which level the data should be
 processed. Can be one of \code{L0, L1} or \code{L2}.}
@@ -87,6 +89,11 @@ plotted.}
 file \code{config.yml} containing the database login data. File can
 also be copied to the main folder of the package for automatic
 recognition.}
+
+\item{year}{if \code{year = "full"} then the output \code{data.frame}
+contains data of complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}; if
+\code{year = "asis"} the output \code{data.frame} covers the same period
+as the input data.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }

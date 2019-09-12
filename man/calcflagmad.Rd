@@ -4,24 +4,21 @@
 \alias{calcflagmad}
 \title{Define Outliers Based on Value Distribution}
 \usage{
-calcflagmad(df, reso, wnd = NULL, tol = 9, frost,
-  plot_density = FALSE, print_thresh = FALSE)
+calcflagmad(df, reso, wnd = NULL, tol = 10, frost, frost_thr,
+  save_thr = FALSE, correction = NULL)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{tol}{numeric, defines the tolerance of the threshold values above or
-below which dendrometer measurements are classified as outliers (see
-Details for further information).}
-
 \item{frost}{logical, defines whether outliers should be calculated for
 frost periods or other periods.}
 
-\item{plot_density}{logical, defines whether density plots should be drawn
-in the console. Can be used to check outlier thresholds.}
+\item{frost_thr}{numeric, increases the thresholds for outlier
+classifiation in periods of probable frost (i.e. temperature <
+\code{lowtemp}). The thresholds are multiplied by the value provided.}
 
-\item{print_thresh}{logical, specifies whether the applied thresholds are
-printed to the console or not.}
+\item{save_thr}{logical, specifies whether the applied thresholds are
+saved for later plotting or not.}
 }
 \description{
 \code{calcflagmad} is a helper function of \code{\link{createflagmad}}.

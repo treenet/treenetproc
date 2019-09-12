@@ -4,13 +4,29 @@
 \alias{executeflagout}
 \title{Remove Outliers}
 \usage{
-executeflagout(df, len, interpol)
+executeflagout(df, len, frag_len, plot_density = FALSE, plot_export,
+  frost_thr)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
 
 \item{len}{specifies the minimal number of consecutive times the value
 difference threshold has to be exceeded for flagging.}
+
+\item{frag_len}{numeric, specifying the length of non-\code{NA} data in
+between \code{NA} data. This is often the case if there is erroneous data
+in between jumps. If \code{frag_len = NULL} the devault value is set to
+\code{frag_len = 2.1}.}
+
+\item{plot_density}{logical, defines whether density plots should be drawn
+in the console. Can be used to check outlier thresholds and removal.}
+
+\item{plot_export}{logical, specifies whether the plots are exported as a
+\code{PDF} file to the working directory or are plotted in the console.}
+
+\item{frost_thr}{numeric, increases the thresholds for outlier
+classifiation in periods of probable frost (i.e. temperature <
+\code{lowtemp}). The thresholds are multiplied by the value provided.}
 }
 \description{
 \code{executeflagout} removes outlier values flagged by

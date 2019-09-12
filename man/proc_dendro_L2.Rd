@@ -4,11 +4,11 @@
 \alias{proc_dendro_L2}
 \title{Process L1 Dendrometer Data to L2}
 \usage{
-proc_dendro_L2(dendro_data, temp_data = NULL, tol = 10,
-  iter_clean = 2, jump_corr = TRUE, lowtemp = 5, interpol = 120,
-  plot = TRUE, plot_period = "full", plot_show = "all",
-  plot_export = TRUE, plot_name = "proc_L2_plot", plot_mds = FALSE,
-  tz = "UTC")
+proc_dendro_L2(dendro_data, temp_data = NULL, tol_jump = 50,
+  tol_out = 10, frost_thr = 5, lowtemp = 5, interpol = NULL,
+  frag_len = NULL, plot = TRUE, plot_period = "full",
+  plot_show = "all", plot_export = TRUE, plot_name = "proc_L2_plot",
+  plot_mds = FALSE, tz = "UTC")
 }
 \arguments{
 \item{dendro_data}{\code{data.frame} with time-aligned dendrometer
@@ -17,24 +17,30 @@ data. Output of function \code{proc_L1()}.}
 \item{temp_data}{\code{data.frame} with time-aligned temperature data.
 Output of function \code{proc_L1()} (see Details for further information).}
 
-\item{tol}{numeric, defines the tolerance of the threshold values above or
-below which dendrometer measurements are classified as outliers (see
-Details for further information).}
+\item{tol_jump}{numeric, defines the tolerance of the threshold above or
+below which a value is flagged for jump correction.}
 
-\item{iter_clean}{numeric, specifies the number of times the cleaning
-process is repeated. Increase if jumps are not corrected after
-processing.}
+\item{tol_out}{numeric, defines the tolerance of the threshold above or
+below which a value is classified as outlier (see Details for further
+information).}
 
-\item{jump_corr}{logical, specify whether jump correction should be
-applied. If \code{jump_corr = FALSE} outliers are deleted but jumps
-are not corrected.}
+\item{frost_thr}{numeric, increases the thresholds for outlier
+classifiation in periods of probable frost (i.e. temperature <
+\code{lowtemp}). The thresholds are multiplied by the value provided.}
 
 \item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
 in stem diameter due to frost is expected. Default value is set to
 \code{5°C} due to hysteresis shortly before or after frost events.}
 
 \item{interpol}{numeric, length of gaps (in minutes) in which values are
-linearly interpolated.}
+linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
+If \code{interpol = NULL} the default value is set to
+\code{interpol = 2.1 * reso}.}
+
+\item{frag_len}{numeric, specifying the length of non-\code{NA} data in
+between \code{NA} data. This is often the case if there is erroneous data
+in between jumps. If \code{frag_len = NULL} the devault value is set to
+\code{frag_len = 2.1}.}
 
 \item{plot}{logical, specify whether a comparison of \code{L1} and \code{L2}
 data should be plotted.}
