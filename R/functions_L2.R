@@ -857,8 +857,6 @@ grostartend <- function(df, tol = 0.05, tz) {
 #' \code{calcmissing} calculates the percentage of interpolated, deleted and
 #'   missing data.
 #'
-#' @param data_L1
-#' @param data_L2
 #' @inheritParams plot_proc_L2
 #'
 #' @return a list of length = 3 with percentages of interpolated, deleted,
@@ -880,7 +878,7 @@ calcmissing <- function(data_L1, data_L2) {
                                    1, 0)) %>%
     dplyr::summarise(deleted = sum(deleted)) %>%
     unlist(., use.names = FALSE)
-  deleted_perc = round(deleted_L2 / len * 100, 2)
+  deleted_perc <- round(deleted_L2 / len * 100, 2)
 
   missing_L2 <- data_L2 %>%
     dplyr::select(value_L2 = value) %>%
