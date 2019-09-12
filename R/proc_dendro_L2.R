@@ -265,10 +265,9 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
   }
 
   df <- df %>%
-    dplyr::select(-frost) %>%
-    dplyr::mutate(version_pck =
-                    packageDescription("treenetproc", fields = "Version",
-                                       drop = TRUE))
+    dplyr::mutate(
+      version_pck = utils::packageDescription("treenetproc",
+                                              fields = "Version", drop = TRUE))
 
   return(df)
 }
