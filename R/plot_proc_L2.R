@@ -248,11 +248,8 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
     }
 
     # Plot yearly growth and print variables  ---------------------------------
-    message("insert gro_yr and print_vars plot. data_L2 = data_L2_sensor")
     plot_gro_yr_print_vars(data_L1 = data_L1_sensor, data_L2 = data_L2_sensor,
                            tz = tz, print_vars = print_vars)
-
-
   }
   if (plot_export) {
     grDevices::dev.off()
