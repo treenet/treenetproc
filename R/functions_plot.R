@@ -11,22 +11,15 @@
 #'
 plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
                              plot_period, plot_add = TRUE,
-                             plot_frost = TRUE, plot_interpol = TRUE, tz,
-                             print_vars) {
+                             plot_frost = TRUE, plot_interpol = TRUE, tz) {
 
   # define axis labels
   axis_labs <- axis_labels_period(df = data_L2, plot_period = plot_period,
                                   tz = tz)
 
   # plot ----------------------------------------------------------------------
-  if (print_vars) {
-    # plot input variables and output values
-    graphics::layout(mat = matrix(c(1, 2, 3, 4, 5), nrow = 5),
-                     heights = c(2, 1.6, 1.1, 1.1, 0.8), widths = 1)
-  } else {
-    graphics::layout(mat = matrix(c(1, 2, 3, 4), nrow = 4),
-                     heights = c(2, 1.6, 1, 2), widths = 1)
-  }
+  graphics::layout(mat = matrix(c(1, 2, 3, 4), nrow = 4),
+                   heights = c(2, 1.6, 1, 2), widths = 1)
 
   # plot data_L1
   graphics::par(mar = c(0, 5, 4.1, 2.1))
@@ -88,63 +81,6 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
   graphics::axis(1, at = axis_labs[[1]], labels = axis_labs[[2]])
   graphics::title(ylab = "twd", mgp = c(3.5, 1, 0))
 
-  # print used variables and threshold values
-  if (print_vars) {
-    graphics::par(mar = c(4.1, 4.1, 2.1, 2.1))
-    graphics::plot(x = c(0, 1), y = c(0, 1), ann = FALSE, bty = "n",
-                   type = "n", xaxt = "n", yaxt = "n")
-
-    # print input variables
-    graphics::text(x = 0, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
-                   labels = "input variables")
-    graphics::text(x = 0, y = 0.8, adj = c(0, 1), cex = 0.8,
-                   labels = paste0("tol_jump = ",
-                                   passobj("tol_jump_plot"), "\n",
-                                   "tol_out = ",
-                                   passobj("tol_out_plot"), "\n",
-                                   "frost_thr = ",
-                                   passobj("frost_thr_plot"), "\n",
-                                   "lowtemp = ",
-                                   passobj("lowtemp_plot"), "\n"))
-    graphics::text(x = 0.1, y = 0.8, adj = c(0, 1), cex = 0.8,
-                   labels = paste0("interpol = ",
-                                   passobj("interpol_plot"), "\n",
-                                   "frag_len = ",
-                                   passobj("frag_len_plot"), "\n",
-                                   "tz = ", passobj("tz_plot")))
-
-    # print applied thresholds and values
-    graphics::text(x = 0.3, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
-                   labels = "applied thresholds and values")
-    graphics::text(x = 0.3, y = 0.8, adj = c(0, 1), cex = 0.8,
-                   labels = paste0("tol_jump = ",
-                                   passobj("thr_jump_plot")[1], " / ",
-                                   passobj("thr_jump_plot")[2], "\n",
-                                   "tol_out = ",
-                                   passobj("thr_out_plot")[1], " / ",
-                                   passobj("thr_out_plot")[2], "\n\n",
-                                   "frost_thr = 'tol_out' * 'frost_thr'\n"))
-    graphics::text(x = 0.5, y = 0.8, adj = c(0, 1), cex = 0.8,
-                   labels = paste0("interpol = ",
-                                   passobj("interpol_plot"), " min\n",
-                                   "frag_len = ",
-                                   passobj("frag_len_plot"), " min\n"))
-
-    # print amount of missing, deleted and interpolated data
-    list_missing <- calcmissing(data_L1 = data_L1, data_L2 = data_L2)
-    graphics::text(x = 0.7, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
-                   labels = "changes in data")
-    graphics::text(x = 0.7, y = 0.8, adj = c(0, 1), cex = 0.8,
-                   labels = paste0("interpolated: ", list_missing[[1]], "%\n",
-                                   "deleted: ", list_missing[[2]], "%\n",
-                                   "missing: ", list_missing[[3]], "%"))
-
-    # print package version
-    version_pck <- utils::packageDescription("treenetproc",
-                                             fields = "Version", drop = TRUE)
-    graphics::text(x = 1, y = 0.1, adj = c(1, 1), cex = 0.8,
-                   labels = paste0("treenetproc: ", version_pck))
-  }
 }
 
 
@@ -179,6 +115,114 @@ axis_labels_period <- function(df, plot_period, tz) {
   axis_labs <- list(ticks, labs)
 
   return(axis_labs)
+}
+
+
+#' Plot Yearly Growth Curves and Print Variables
+#'
+#' \code{plot_gro_yr_print_vars} plots yearly growth curves for the whole
+#'   period in a single plot and prints the used variables for plotting.
+#'
+#' @inheritParams plot_proc_L2
+#'
+#' @keywords internal
+#'
+plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
+
+  #data_L2 <- visp_L2_single %>%
+  #  dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz))
+  #tz <- "UTC"
+
+
+  graphics::layout(mat = matrix(c(1, 2), nrow = 2), heights = c(2, 4.6),
+                   widths = 1)
+
+  # plot yearly growth curves
+  graphics::par(mar = c(0, 5, 4.1, 2.1))
+
+  data_L2_plot <- data_L2 %>%
+    dplyr::mutate(doy = as.numeric(strftime(ts, format = "%j", tz = tz)) - 1)
+
+  graphics::plot(data = data_L2_plot, gro_yr ~ doy, type = "n",
+                 main = passobj("sensor_label"), ylab = "gro_yr",
+                 xlab = "day of year", xlim = c(0, 365),
+                 ylim = c(0, max(data_L2$gro_yr, na.rm = TRUE)), las = 1)
+
+  years <- unique(data_L2_plot$year)
+  colors <- rainbow(length(years))
+  data_L2_year <- data_L2_plot %>%
+    dplyr::group_by(year) %>%
+    dplyr::group_split()
+  for (y in 1:length(years)) {
+    lines(data = data_L2_year[[y]], gro_yr ~ doy, col = colors[y])
+  }
+  legend(x = "topleft", legend = years, col = colors, bty = "n",
+         lty = 1, seg.len = 0.8)
+
+
+  # print used variables and threshold values
+  if (print_vars) {
+    graphics::par(mar = c(5.1, 5.1, 4.1, 2.1))
+
+    graphics::plot(x = c(0, 1), y = c(0, 1), ann = FALSE, bty = "n",
+                   type = "n", xaxt = "n", yaxt = "n")
+    # print input variables
+    graphics::text(x = 0, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
+                   labels = "input variables")
+    graphics::text(x = 0, y = 0.97, adj = c(0, 1), cex = 0.8,
+                   labels = paste0("tol_jump = ",
+                                   passobj("tol_jump_plot"), "\n",
+                                   "tol_out = ",
+                                   passobj("tol_out_plot"), "\n",
+                                   "frost_thr = ",
+                                   passobj("frost_thr_plot"), "\n",
+                                   "lowtemp = ",
+                                   passobj("lowtemp_plot"), "\n",
+                                   "interpol = ",
+                                   passobj("interpol_plot"), "\n",
+                                   "frag_len = ",
+                                   passobj("frag_len_plot") *
+                                     passobj("reso"), "\n",
+                                   "tz = ", passobj("tz_plot")))
+    # print applied thresholds and values
+    graphics::text(x = 0.3, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
+                   labels = "applied thresholds and values")
+    graphics::text(x = 0.3, y = 0.97, adj = c(0, 1), cex = 0.8,
+                   labels = paste0("tol_jump = ",
+                                   passobj("thr_jump_plot")[1], " / ",
+                                   passobj("thr_jump_plot")[2], "\n",
+                                   "tol_out = ",
+                                   passobj("thr_out_plot")[1], " / ",
+                                   passobj("thr_out_plot")[2], "\n",
+                                   "tol_jump_frost = ",
+                                   passobj("thr_jump_plot")[1] *
+                                     passobj("frost_thr_plot"), " / ",
+                                   passobj("thr_jump_plot")[2] *
+                                     passobj("frost_thr_plot"), "\n",
+                                   "tol_out_frost = ",
+                                   passobj("thr_out_plot")[1] *
+                                     passobj("frost_thr_plot"), " / ",
+                                   passobj("thr_out_plot")[2] *
+                                     passobj("frost_thr_plot"), "\n",
+                                   "interpol = ",
+                                   passobj("interpol_plot"), " min\n",
+                                   "frag_len = ",
+                                   passobj("frag_len_plot"), " min\n"))
+    # print amount of missing, deleted and interpolated data
+    list_missing <- calcmissing(data_L1 = data_L1, data_L2 = data_L2)
+    graphics::text(x = 0.8, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
+                   labels = "changes in data")
+    graphics::text(x = 0.8, y = 0.97, adj = c(0, 1), cex = 0.8,
+                   labels = paste0("interpolated: ", list_missing[[1]], "%\n",
+                                   "deleted: ", list_missing[[2]], "%\n",
+                                   "missing: ", list_missing[[3]], "%"))
+    # print package version
+    version_pck <- utils::packageDescription("treenetproc",
+                                             fields = "Version", drop = TRUE)
+    graphics::text(x = 1, y = 0.6, adj = c(1, 1), cex = 0.8,
+                   labels = paste0("treenetproc: ", version_pck))
+  }
+
 }
 
 
