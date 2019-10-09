@@ -895,6 +895,73 @@ calcmissing <- function(data_L1, data_L2) {
 }
 
 
+#' Calculate Growth for Different Time Periods
+#'
+#' \code{calcgroperiods} calculates the minimum, median and maximum growth
+#'   for different time periods. The periods are selected depending on the
+#'   resolution. Growth values are calculated after removing periods without
+#'   growth (i.e. growth = 0).
+#'
+#' @param df input \code{data.frame}.
+#' @inheritParams proc_L1
+#'
+#' @keywords internal
+#'
+calcgroperiods <- function(df, reso, tz) {
+
+  # add grouping variables
+  df <- df %>%
+    dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
+    dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
+    dplyr::mutate(week = strftime(ts, format = "%V", tz = tz)) %>%
+    dplyr::mutate(day = strftime(ts, format = "%d", tz = tz)) %>%
+    dplyr::mutate(hour = strftime(ts, format = "%H", tz = tz)) %>%
+    dplyr::mutate(diff_gro = c(NA, diff(max)))
+
+  # define grouping variables
+  list_gro <- vector("list", length = 4)
+  list_cond <- vector("list", length = 4)
+  if (reso > 43800) {
+    return(NA)
+  }
+  if (reso <= 43800) {
+    list_cond[[1]] <- c("year", "month")
+  }
+  if (reso <= 10080) {
+    list_cond[[2]] <- c("year", "week")
+  }
+  if (reso <= 1440) {
+    list_cond[[3]] <- c("year", "week", "day")
+  }
+  if (reso <= 60) {
+    list_cond[[4]] <- c("year", "week", "day", "hour")
+  }
+  # remove empty list elements
+  list_cond <- Filter(f = length, x = list_cond)
+
+  # calculate growth for different periods
+  for (l in 1:length(list_cond)) {
+    gro_period <- df %>%
+      dplyr::group_by_at(list_cond[[l]]) %>%
+      dplyr::summarise(gro = sum(diff_gro, na.rm = TRUE)) %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(gro > 0) %>%
+      dplyr::summarise(gro_max = max(gro, na.rm = TRUE),
+                       gro_med = median(gro, na.rm = TRUE),
+                       gro_min = min(gro, na.rm = TRUE)) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(period = dplyr::last(list_cond[[l]]))
+
+    list_gro[[l]] <- gro_period
+  }
+
+  gro_period <- dplyr::bind_rows(list_gro)
+
+  return(mediangro)
+
+}
+
+
 #' Summarise Flags
 #'
 #' \code{summariseflags} summarises all previously created flags in one column.
