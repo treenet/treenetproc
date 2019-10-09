@@ -121,7 +121,9 @@ axis_labels_period <- function(df, plot_period, tz) {
 #' Plot Yearly Growth Curves and Print Variables
 #'
 #' \code{plot_gro_yr_print_vars} plots yearly growth curves for the whole
-#'   period in a single plot and prints the used variables for plotting.
+#'   period in a single plot and prints the used input variables for plotting.
+#'   In addition, median, maximum and minimum growth values for different
+#'   periods are printed.
 #'
 #' @inheritParams plot_proc_L2
 #'
@@ -216,13 +218,27 @@ plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
                    labels = paste0("interpolated: ", list_missing[[1]], "%\n",
                                    "deleted: ", list_missing[[2]], "%\n",
                                    "missing: ", list_missing[[3]], "%"))
+    # print growth values for different periods
+    gro_period <- calcgroperiods(df = data_L2, reso = passobj("reso"),
+                                 tz = tz)
+    if (length(gro_period) > 0) {
+      graphics::text(x = 0, y = 0.7, adj = c(0, 1), font = 2, cex = 0.8,
+                     labels = "growth statistics: median (min / max)")
+      for (r in 1:nrow(gro_period)) {
+        gro_period_single <- gro_period[r, ]
+        graphics::text(x = 0, y = 0.7 - 0.03 * r, adj = c(0, 1), cex = 0.8,
+                       labels = paste0(gro_period_single$period, ": ",
+                                       gro_period_single$gro_med, " (",
+                                       gro_period_single$gro_min, " / ",
+                                       gro_period_single$gro_max, ")"))
+      }
+    }
     # print package version
     version_pck <- utils::packageDescription("treenetproc",
                                              fields = "Version", drop = TRUE)
-    graphics::text(x = 1, y = 0.6, adj = c(1, 1), cex = 0.8,
+    graphics::text(x = 1, y = 0.4, adj = c(1, 1), cex = 0.8,
                    labels = paste0("treenetproc: ", version_pck))
   }
-
 }
 
 
