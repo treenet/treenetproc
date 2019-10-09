@@ -922,7 +922,7 @@ calcgroperiods <- function(df, reso, tz) {
   list_gro <- vector("list", length = 4)
   list_cond <- vector("list", length = 4)
   if (reso > 43800) {
-    return(NA)
+    return(NULL)
   }
   if (reso <= 43800) {
     list_cond[[1]] <- c("year", "month")
@@ -946,9 +946,9 @@ calcgroperiods <- function(df, reso, tz) {
       dplyr::summarise(gro = sum(diff_gro, na.rm = TRUE)) %>%
       dplyr::ungroup() %>%
       dplyr::filter(gro > 0) %>%
-      dplyr::summarise(gro_max = max(gro, na.rm = TRUE),
-                       gro_med = median(gro, na.rm = TRUE),
-                       gro_min = min(gro, na.rm = TRUE)) %>%
+      dplyr::summarise(gro_max = round(max(gro, na.rm = TRUE), 2),
+                       gro_med = round(median(gro, na.rm = TRUE), 2),
+                       gro_min = round(min(gro, na.rm = TRUE), 2)) %>%
       dplyr::ungroup() %>%
       dplyr::mutate(period = dplyr::last(list_cond[[l]]))
 
@@ -957,7 +957,7 @@ calcgroperiods <- function(df, reso, tz) {
 
   gro_period <- dplyr::bind_rows(list_gro)
 
-  return(mediangro)
+  return(gro_period)
 
 }
 
