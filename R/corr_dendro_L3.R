@@ -32,8 +32,7 @@
 #' @inheritParams plot_proc_L2
 #'
 #' @return The function returns a \code{data.frame} with corrected \code{L2}
-#'   dendrometer data. The corrections are added to \code{flags} and the
-#'   version of the corrected \code{series} is changed to \code{version = 3}.
+#'   dendrometer data. The corrections are added to \code{flags}.
 #'
 #' @seealso \code{\link{corr_dendro_L1}} to correct \code{L1} data.
 #'
@@ -137,9 +136,11 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
     dplyr::mutate(mds = ifelse(is.na(value), NA, mds)) %>%
     dplyr::mutate(twd = ifelse(is.na(value), NA, twd)) %>%
     dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
-    dplyr::mutate(version = 3) %>%
+    dplyr::mutate(
+      version = utils::packageDescription("treenetproc",
+                                          fields = "Version", drop = TRUE)) %>%
     dplyr::select(series, ts, value, max, twd, mds, gro_yr, gro_start,
-                  gro_end, frost, flags, version, version_pck)
+                  gro_end, frost, flags, version)
 
   # append leading and trailing NA's
   df <- append_lead_trail_na(df = df, na = lead_trail_na)
