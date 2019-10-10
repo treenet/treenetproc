@@ -93,7 +93,7 @@
 #'    \item{flags}{character vector specifying the changes that occurred
 #'      during the processing. For more details see the following vignette:
 #'      \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
-#'    \item{version}{processing version.}
+#'    \item{version}{package version that was used.}
 #'
 #' @export
 #'
@@ -139,7 +139,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     if (length(grep("temp", tem_series, ignore.case = T)) > 1) {
       stop("provide single temperature dataset.")
     }
-    if (sum(colnames(tem) %in% c("series", "ts", "value", "version")) != 4) {
+    if (sum(colnames(tem) %in% c("series", "ts", "value")) != 3) {
       stop("provide time-aligned temperature data generated with 'proc_L1'")
     }
   }
@@ -247,9 +247,8 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       dplyr::mutate(mds = ifelse(is.na(value), NA, mds)) %>%
       dplyr::mutate(twd = ifelse(is.na(value), NA, twd)) %>%
       dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
-      dplyr::mutate(version = 2) %>%
       dplyr::select(series, ts, value, max, twd, mds, gro_yr, gro_start,
-                    gro_end, frost, flags, version)
+                    gro_end, frost, flags)
 
     list_L2[[s]] <- df
   }
@@ -266,8 +265,8 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
 
   df <- df %>%
     dplyr::mutate(
-      version_pck = utils::packageDescription("treenetproc",
-                                              fields = "Version", drop = TRUE))
+      version = utils::packageDescription("treenetproc",
+                                          fields = "Version", drop = TRUE))
 
   return(df)
 }
