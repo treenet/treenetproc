@@ -62,8 +62,8 @@ select_data <- function(site = NULL, sensor_class = NULL, sensor_name = NULL,
                         server = "treenet", reso = 10, tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
-  if (!(data_format %in% c("L0", "L1", "L2")) || is.null(data_format)) {
-    stop("Provide a valid 'data_format'.")
+  if (!(data_format %in% c("L0", "L1", "L2"))) {
+    stop("'data_format' needs to be 'L0', 'L1' or 'L2'.")
   }
   if (length(data_format) > 1) {
     stop("You cannot download multiple 'data_formats' at once.")
@@ -249,27 +249,23 @@ select_data <- function(site = NULL, sensor_class = NULL, sensor_name = NULL,
       db_folder <- "treenet0"
       db_version <- "version = 0;"
       select_col <- c("series", "ts", "value")
-      version_nr <- 0
       version_nm <- "L0"
     }
     if (data_format == "L1") {
       db_folder <- "treenet1"
       db_version <- "version = 1;"
       select_col <- c("series", "ts", "value")
-      version_nr <- 1
       version_nm <- "L1"
     }
     if (data_format == "L2") {
       db_folder <- "treenet2"
       db_version <- "version = 2;"
       select_col <- NA
-      version_nr <- 2
       version_nm <- "L2"
     }
   }
   if (server == "decentlab") {
     select_col <- NA
-    version_nr <- 0
     version_nm <- "L0"
   }
 
@@ -349,8 +345,7 @@ select_data <- function(site = NULL, sensor_class = NULL, sensor_name = NULL,
 
   if (bind_df && data_format == "L0") {
     df <- dplyr::bind_rows(server_data) %>%
-      dplyr::mutate(version = version_nr) %>%
-      dplyr::select(series, ts, value, version)
+      dplyr::select(series, ts, value)
 
     return(df)
   }
