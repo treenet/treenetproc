@@ -40,7 +40,7 @@
 #'    \item{series}{name of the series.}
 #'    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
 #'    \item{value}{dendrometer value.}
-#'    \item{version}{processing version.}
+#'    \item{version}{package version that was used.}
 #'
 #' @export
 #'
@@ -83,7 +83,10 @@ proc_L1 <- function(data, reso = 10, year = "asis", input = "long",
 
     df <- df %>%
       dplyr::mutate(series = series_vec[s]) %>%
-      dplyr::mutate(version = 1) %>%
+      dplyr::mutate(
+        version =
+          utils::packageDescription("treenetproc",
+                                    fields = "Version", drop = TRUE)) %>%
       dplyr::select(series, ts, value, version)
     list_L1[[s]] <- df
   }

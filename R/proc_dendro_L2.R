@@ -139,7 +139,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     if (length(grep("temp", tem_series, ignore.case = T)) > 1) {
       stop("provide single temperature dataset.")
     }
-    if (sum(colnames(tem) %in% c("series", "ts", "value")) != 3) {
+    if (sum(colnames(tem) %in% c("series", "ts", "value", "version")) != 4) {
       stop("provide time-aligned temperature data generated with 'proc_L1'")
     }
   }
