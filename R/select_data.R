@@ -321,12 +321,11 @@ select_data <- function(site = NULL, sensor_class = NULL, sensor_name = NULL,
       df <- last_values(df = df, last = last, reso = reso, tz = tz)
     }
 
-    # if there is not data in selected series
+    # skip series if there is not data available
     if (all(is.na(df$value))) {
-      df[1, ] <- c(rep(NA, ncol(df)))
-      df$series <- meta_filter[i]
       print(paste0("There is no data for '", meta_filter[i],
                    "' in specified period."))
+      next
     }
 
     if (export) {
@@ -338,6 +337,9 @@ select_data <- function(site = NULL, sensor_class = NULL, sensor_name = NULL,
     }
   }
   options(warn = 0)
+
+  # remove empty list elements
+  server_data <- Filter(f = length, x = server_data)
 
   if (!export && !bind_df) {
     return(server_data)
