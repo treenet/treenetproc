@@ -1,7 +1,7 @@
 Package: treenetproc
 Type: Package
 Title: Process Raw Dendrometer Data
-Version: 0.1.3.9001
+Version: 0.1.3.9002
 Authors@R: c(person("Simon", "Knüsel", email = "simon.knuesel@wsl.ch",
     role = c("aut")),
     person("Matthias", "Haeni", email = "matthias.haeni@wsl.ch",
@@ -28,6 +28,9 @@ Suggests:
     DBI (>= 1.0.0),
     RPostgres (>= 1.1.1),
     config (>= 0.3),
-    googlesheets (>= 0.3.0),
-    httr (>= 1.4.0)
+    httr (>= 1.4.0),
+    googlesheets4 (>= 0.0.0.9000),
+    googledrive (>= 1.0.0)
+Remotes:
+    tidyverse/googlesheets4
 VignetteBuilder: knitr
