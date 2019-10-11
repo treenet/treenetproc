@@ -135,10 +135,17 @@ select_data <- function(site = NULL, sensor_class = NULL, sensor_name = NULL,
   Sys.setenv(TZ = tz)
   options(warn = -1)
 
-  spread <- suppressMessages(googlesheets::gs_title("Metadata"))
-  meta <- suppressMessages(as.data.frame(
-    googlesheets::gs_read(ss = spread, ws = "Metadata", progress = FALSE)))
+  # read metadata file
+  auth <- config::get("googledrive_auth", file = path_cred)
+  googledrive::drive_auth(email = auth$email)
+  googlesheets4::sheets_auth(token = googledrive::drive_token())
 
+  suppressMessages(
+  meta <- googledrive::drive_get("Metadata") %>%
+    googlesheets4::read_sheet()
+  )
+
+  # select specified series from metadata file
   meta_filter <- meta$Seriesname
   meta_airtemp <- vector()
   # site
