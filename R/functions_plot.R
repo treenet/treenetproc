@@ -131,11 +131,6 @@ axis_labels_period <- function(df, plot_period, tz) {
 #'
 plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
 
-  #data_L2 <- visp_L2_single %>%
-  #  dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz))
-  #tz <- "UTC"
-
-
   graphics::layout(mat = matrix(c(1, 2), nrow = 2), heights = c(2, 4.6),
                    widths = 1)
 
