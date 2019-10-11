@@ -1,3 +1,203 @@
+#' Check all input variables automatically
+#'
+#' \code{check_input_variables} checks all input variables of exported
+#'   functions.
+#'
+#' @param list list of all input arguments to be checked.
+#'
+#' @keywords internal
+#'
+check_input_variables <- function(list) {
+
+  var_names <- names(list)
+
+  # Check character variables -------------------------------------------
+  # data_format
+  if ("data_format" %in% var_names) {
+    if (length(list$data_format) > 1) {
+      stop("You cannot download multiple 'data_formats' at once.\n",
+           "'data_format' needs to be 'L0', 'L1' or 'L2'.")
+    }
+    if (length(list$data_format) > 0) {
+      if (!(list$data_format %in% c("L0", "L1", "L2"))) {
+        stop("Variable 'data_format' needs to be 'L0', 'L1' or 'L2'.")
+      }
+    }
+  }
+
+  # site
+  if ("site" %in% var_names) {
+    if (length(list$site) > 1) {
+      stop("You can only specify one 'site' at a time.")
+    }
+  }
+
+  # site and sensor_name
+  if ("site" %in% var_names & "sensor_name" %in% var_names) {
+    if (length(list$site) == 0 & length(list$sensor_name) == 0) {
+      stop(paste0("Specify at least one of the following: site, ",
+                  " sensor_name."))
+    }
+    if (length(list$site) != 0 & length(list$sensor_name) != 0) {
+      if (!grepl(list$site, list$sensor_name, ignore.case = TRUE)) {
+        stop("Variables 'site' and 'sensor_name' need to correspond.")
+      }
+    }
+  }
+
+  # temp_name
+  if ("temp_name"%in% var_names) {
+    if (length(list$temp_name) > 1) {
+      stop("Provide single temperature dataset in 'temp_name'.")
+    }
+  }
+
+  # server
+  if ("server" %in% var_names) {
+    if (!(list$server %in% c("treenet", "decentlab"))) {
+      stop("Variable 'server' needs to be 'treenet' or 'decentlab'.")
+    }
+    if (length(list$data_format) != 0) {
+      if (list$server == "decentlab" & list$data_format != "L0") {
+        stop(paste("Only 'L0' data can be downloaded from the decentlab",
+                   "server. Change variable 'data_format' to 'L0'."))
+      }
+    }
+  }
+
+  # plot_period
+  if ("plot_period" %in% var_names) {
+    if (!(list$plot_period %in% c("full", "yearly", "monthly"))) {
+      stop(paste0("Variable 'plot_period' needs to be ",
+                  "'full', 'yearly' or 'monthly'."))
+    }
+  }
+
+  # plot_show
+  if ("plot_show" %in% var_names) {
+    if (!(list$plot_show %in% c("all", "diff"))) {
+      stop(paste0("Variable 'plot_show' needs to be ",
+                  "'all' or 'diff'."))
+    }
+  }
+
+  # version
+  if ("version" %in% var_names) {
+    if (!(list$version %in% c("L1", "L2"))) {
+      stop("Variable 'version' needs to be 'L1' or 'L2'.")
+    }
+  }
+
+  # Check date variables -------------------------------------------
+  # from
+  if ("from" %in% var_names) {
+    if (length(list$from) != 0) {
+      if (is.na(as.Date(list$from, format = "%Y-%m-%d"))) {
+        stop("Provide variable 'from' in date format. ",
+             "Format needs to be 'YYYY-MM-DD'.")
+      }
+    }
+  }
+
+  # to
+  if ("to" %in% var_names) {
+    if (length(list$to) != 0) {
+      if (is.na(as.Date(list$to, format = "%Y-%m-%d"))) {
+        stop("Provide variable 'to' in date format. ",
+             "Format needs to be 'YYYY-MM-DD'.")
+      }
+    }
+  }
+
+  # Check logical variables -------------------------------------------
+  # export
+  if ("export" %in% var_names) {
+    check_logical(var = list$export, var_name = "export")
+  }
+
+  # bind_df
+  if ("bind_df" %in% var_names) {
+    check_logical(var = list$bind_df, var_name = "bind_df")
+  }
+
+  # export and bind_df
+  if ("export" %in% var_names & "bind_df" %in% var_names) {
+    if (list$export && list$bind_df) {
+      stop(paste0("Variables 'export' and 'bind_df' cannot both be TRUE ",
+                  "at the same time."))
+    }
+  }
+
+  # plot
+  if ("plot" %in% var_names) {
+    check_logical(var = list$plot, var_name = "plot")
+  }
+
+  # plot_export
+  if ("plot_export" %in% var_names) {
+    check_logical(var = list$plot_export, var_name = "plot_export")
+  }
+
+  # plot_mds
+  if ("plot_mds" %in% var_names) {
+    check_logical(var = list$plot_mds, var_name = "plot_mds")
+  }
+
+  # print_vars
+  if ("print_vars" %in% var_names) {
+    check_logical(var = list$print_vars, var_name = "print_vars")
+  }
+
+  # Check numeric variables -------------------------------------------
+  # tol_jump
+  if ("tol_jump" %in% var_names) {
+    check_numeric(var = list$tol_jump, var_name = "tol_jump")
+  }
+
+  # tol_out
+  if ("tol_out" %in% var_names) {
+    check_numeric(var = list$tol_out, var_name = "tol_out")
+  }
+
+  # frost_thr
+  if ("frost_thr" %in% var_names) {
+    check_numeric(var = list$frost_thr, var_name = "frost_thr")
+  }
+
+  # lowtemp
+  if ("lowtemp" %in% var_names) {
+    check_numeric(var = list$lowtemp, var_name = "lowtemp")
+  }
+
+  # iter_clean
+  if ("iter_clean" %in% var_names) {
+    check_numeric(var = list$iter_clean, var_name = "iter_clean")
+  }
+
+  # interpol
+  if ("interpol" %in% var_names) {
+    if (length(list$interpol > 0)) {
+      check_numeric(var = list$interpol, var_name = "interpol")
+    }
+  }
+
+  # frag_len
+  if ("frag_len" %in% var_names) {
+    if (length(list$frag_len > 0)) {
+      check_numeric(var = list$frag_len, var_name = "frag_len")
+    }
+  }
+
+  # n_days
+  if ("n_days" %in% var_names) {
+    if (length(list$n_days > 0)) {
+      check_numeric(var = list$n_days, var_name = "n_days")
+    }
+  }
+
+}
+
+
 #' Check for Logical Input
 #'
 #' \code{check_logical} checks whether input variable is of type logical.
@@ -8,8 +208,24 @@
 #' @keywords internal
 #'
 check_logical <- function(var, var_name) {
-  if (!(var %in% c(TRUE, FALSE))) {
-    stop(paste(var_name, "has to be either 'TRUE' or 'FALSE'."))
+  if (!(is.logical(var))) {
+    stop(paste0("Variable '", var_name,
+                "' has to be either 'TRUE' or 'FALSE'."))
+  }
+}
+
+
+#' Check for Numeric Input
+#'
+#' \code{check_numeric} checks whether input variable is of type numeric.
+#'
+#' @inheritParams check_logical
+#'
+#' @keywords internal
+#'
+check_numeric <- function(var, var_name) {
+  if (!(is.numeric(var))) {
+    stop(paste0("Variable '", var_name, "' hast to be numeric."))
   }
 }
 
@@ -141,8 +357,8 @@ check_data_L1 <- function(data_L1) {
 #' @keywords internal
 #'
 check_data_L2 <- function(data_L2) {
-  if (sum(colnames(data_L2) %in% c("series", "ts", "value", "version", "max",
-                                   "twd")) != 6) {
+  if (sum(colnames(data_L2) %in% c("series", "ts", "value", "max",
+                                   "twd", "version")) != 6) {
     stop("provide processed dendrometer data generated with 'proc_dendro_L2'.")
   }
 }
@@ -150,7 +366,7 @@ check_data_L2 <- function(data_L2) {
 
 #' Checks Input of Series
 #'
-#' \code{check_series} checks the input of the variabel series.
+#' \code{check_series} checks the input of the variable series.
 #'
 #' @param df input \code{data.frame}.
 #' @inheritParams corr_dendro_L3
