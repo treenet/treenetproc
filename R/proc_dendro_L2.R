@@ -33,6 +33,9 @@
 #' @param plot_mds logical, specify whether maxima and minima used for the
 #'   calculation of the maximum daily shrinkage (\code{mds}) should be
 #'   plotted.
+#' @param iter_clean numeric, specifies the number of times the cleaning
+#'   process is repeated. Can be used to check whether running the cleaning
+#'   process many times has an effect on the results.
 #' @inheritParams proc_L1
 #' @inheritParams plot_proc_L2
 #'
@@ -108,7 +111,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                            plot = TRUE, plot_period = "full",
                            plot_show = "all", plot_export = TRUE,
                            plot_name = "proc_L2_plot",
-                           plot_mds = FALSE, tz = "UTC") {
+                           plot_mds = FALSE, iter_clean = 1, tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
   check_logical(var = plot, var_name = "plot")
@@ -202,8 +205,6 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     df <- createfrostflag(df = df, tem = tem, lowtemp = lowtemp,
                           sample_temp = passobj("sample_temp"))
 
-    # data cleaning can be iterated with iter_clean > 1
-    iter_clean <- 1
     clean_list <- vector("list", length = iter_clean + 1)
     clean_list[[1]] <- df
     for (i in 1:iter_clean) {
@@ -263,6 +264,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                  print_vars = TRUE)
   }
 
+  # add package version number
   df <- df %>%
     dplyr::mutate(
       version = utils::packageDescription("treenetproc",

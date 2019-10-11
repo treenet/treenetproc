@@ -48,7 +48,8 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                          version = "L2", plot = TRUE, plot_period = "full",
                          plot_export = TRUE, plot_name = "proc_L2_plot",
                          plot_show = "all", plot_mds = FALSE,
-                         path_cred = NULL, year = "asis", tz = "Etc/GMT-1") {
+                         path_cred = NULL, year = "asis", iter_clean = 1,
+                         tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
   check_logical(var = plot, var_name = "plot")
@@ -78,7 +79,8 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                           frag_len = frag_len, plot = plot,
                           plot_period = plot_period, plot_show = plot_show,
                           plot_export = plot_export, plot_name = plot_name,
-                          plot_mds = plot_mds, tz = tz)
+                          plot_mds = plot_mds, iter_clean = iter_clean,
+                          tz = tz)
 
   print("Done!")
   return(df_L2)
