@@ -114,12 +114,9 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                            plot_mds = FALSE, iter_clean = 1, tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
-  check_logical(var = plot, var_name = "plot")
-  check_logical(var = plot_export, var_name = "plot_export")
+  list_inputs <- mget(ls())
+  check_input_variables(list = list_inputs)
 
-  if (!(plot_period %in% c("full", "yearly", "monthly"))) {
-    stop("plot_period needs to be either 'full', 'yearly' or 'monthly'.")
-  }
 
   # Save input variables for plotting -----------------------------------------
   passenv$tol_jump_plot <- tol_jump
@@ -127,6 +124,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
   passenv$frost_thr_plot <- frost_thr
   passenv$lowtemp_plot <- lowtemp
   passenv$tz_plot <- tz
+
 
   # Check input data ----------------------------------------------------------
   df <- dendro_data
@@ -249,7 +247,10 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       dplyr::mutate(twd = ifelse(is.na(value), NA, twd)) %>%
       dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
       dplyr::select(series, ts, value, max, twd, mds, gro_yr, gro_start,
-                    gro_end, frost, flags)
+                    gro_end, frost, flags) %>%
+      dplyr::mutate(
+        version = utils::packageDescription("treenetproc",
+                                            fields = "Version", drop = TRUE))
 
     list_L2[[s]] <- df
   }
@@ -263,12 +264,6 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                  plot_export = plot_export, plot_name = plot_name, tz = tz,
                  print_vars = TRUE)
   }
-
-  # add package version number
-  df <- df %>%
-    dplyr::mutate(
-      version = utils::packageDescription("treenetproc",
-                                          fields = "Version", drop = TRUE))
 
   return(df)
 }

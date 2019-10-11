@@ -52,10 +52,8 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                          tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
-  check_logical(var = plot, var_name = "plot")
-  if (!(version %in% c("L1", "L2"))) {
-    stop("'version' needs to be 'L1' or 'L2'.")
-  }
+  list_inputs <- mget(ls())
+  check_input_variables(list = list_inputs)
 
 
   # Process data to L2 --------------------------------------------------------

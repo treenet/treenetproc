@@ -28,17 +28,8 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
                              last = NULL, tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
-  if (!(data_format %in% c("L0", "L1", "L2"))) {
-    stop("'data_format' needs to be 'L0', 'L1' or 'L2'.")
-  }
-  if (!(server %in% c("treenet", "decentlab"))) {
-    stop("'server' needs to be 'treenet' or 'decentlab'.")
-  }
-  check_logical(var = export, var_name = "export")
-  check_logical(var = bind_df, var_name = "bind_df")
-  if (export && bind_df) {
-    stop("'export' and 'bind_df' cannot both be TRUE at the same time.")
-  }
+  list_inputs <- mget(ls())
+  check_input_variables(list = list_inputs)
 
 
   # Download data from server -------------------------------------------------

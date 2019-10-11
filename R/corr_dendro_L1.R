@@ -46,11 +46,15 @@ corr_dendro_L1 <- function(data_L1, delete, series = NULL, plot = TRUE,
 
 
   # Check input variables -----------------------------------------------------
+  list_inputs <- mget(ls())
+  check_input_variables(list = list_inputs)
+
+
+  # Check input data ----------------------------------------------------------
   check_data_L1(data_L1 = data_L1)
   delete <- check_datevec(datevec = delete, tz = tz)
   check_delete(delete = delete)
   check_date_period(datevec = delete, datevec_name = "delete", df = df)
-  check_logical(var = plot, var_name = "plot")
 
 
   # Remove dendrometer data in specified periods ------------------------------

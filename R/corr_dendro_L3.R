@@ -72,6 +72,11 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
 
 
   # Check input variables -----------------------------------------------------
+  list_inputs <- mget(ls())
+  check_input_variables(list = list_inputs)
+
+
+  # Check input data ----------------------------------------------------------
   if (length(remove) != 0) {
     if (!(is.numeric(remove))) {
       stop("'remove' needs to be numeric.")

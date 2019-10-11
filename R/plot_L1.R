@@ -22,11 +22,12 @@ plot_L1 <- function(data_L1, data_L1_orig = NULL, plot_period = "full",
                     tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
+  list_inputs <- mget(ls())
+  check_input_variables(list = list_inputs)
+
+
+  # Check input data ----------------------------------------------------------
   check_data_L1(data_L1 = data_L1)
-  if (!(plot_period %in% c("full", "yearly", "monthly"))) {
-    stop("plot_period needs to be either 'full', 'yearly' or 'monthly'.")
-  }
-  check_logical(var = plot_export, var_name = "plot_export")
 
 
   # Plot L1 data --------------------------------------------------------------

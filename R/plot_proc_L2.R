@@ -45,14 +45,11 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
                          print_vars = FALSE) {
 
   # Check input variables -----------------------------------------------------
-  if (!(plot_period %in% c("full", "yearly", "monthly"))) {
-    stop("plot_period needs to be either 'full', 'yearly' or 'monthly'.")
-  }
-  if (!(plot_show %in% c("all", "diff", "diff_corr"))) {
-    stop("plot_show needs to be either 'all' or 'diff'.")
-  }
-  check_logical(var = plot_export, var_name = "plot_export")
-  check_logical(var = print_vars, var_name = "print_vars")
+  list_inputs <- mget(ls())
+  check_input_variables(list = list_inputs)
+
+
+  # Check input data -----------------------------------------------------
   check_data_L1(data_L1 = data_L1)
   check_data_L2(data_L2 = data_L2)
 

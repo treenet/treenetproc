@@ -62,46 +62,8 @@ select_data <- function(site = NULL, sensor_class = NULL, sensor_name = NULL,
                         server = "treenet", reso = 10, tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
-  if (!(data_format %in% c("L0", "L1", "L2"))) {
-    stop("'data_format' needs to be 'L0', 'L1' or 'L2'.")
-  }
-  if (length(data_format) > 1) {
-    stop("You cannot download multiple 'data_formats' at once.")
-  }
-  if (length(site) == 0 & length(sensor_name) == 0) {
-    stop(paste0("Specify at least one of the following: site, ",
-                " sensor_name."))
-  }
-  if (length(site) > 1) {
-    stop("You can only specify one site at a time.")
-  }
-  if (length(site) != 0 & length(sensor_name) != 0) {
-    if (!grepl(site, sensor_name, ignore.case = TRUE)) {
-      stop("Site and sensor_name need to correspond.")
-    }
-  }
-  if (length(from) != 0) {
-    if (is.na(as.Date(from, format = "%Y-%m-%d"))) {
-      stop("Provide 'from' in date format. Format needs to be 'YYYY-MM-DD'.")
-    }
-  }
-  if (length(to) != 0) {
-    if (is.na(as.Date(to, format = "%Y-%m-%d"))) {
-      stop("Provide 'to' in date format. Format needs to be 'YYYY-MM-DD'.")
-    }
-  }
-  if (length(temp_name) > 1) {
-    stop("Provide single temperature dataset with 'temp_name'.")
-  }
-  check_logical(var = export, var_name = "export")
-  check_logical(var = bind_df, var_name = "bind_df")
-  if (!(server %in% c("treenet", "decentlab"))) {
-    stop("server needs to be either 'treenet' or 'decentlab'.")
-  }
-  if (server == "decentlab" & data_format != "L0") {
-    stop(paste("only 'L0' data can be downloaded from the decentlab server.",
-               "Change 'data_format' to 'L0'."))
-  }
+  list_inputs <- mget(ls())
+  check_input_variables(list = list_inputs)
 
 
   # Database credentials ------------------------------------------------------
