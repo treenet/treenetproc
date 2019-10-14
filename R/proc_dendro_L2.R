@@ -41,7 +41,7 @@
 #'
 #' @details \code{temp_data} is used to define periods in which frost shrinkage
 #'   is probable, i.e. when temperature is <5°C. Without temperature data,
-#'   frost shrinkage may be classified as outliers.
+#'   shrinkages due to frost may be classified as outliers.
 #'
 #'   \code{temp_data} can also contain other climate data. In this case, the
 #'   \code{series} name of temperature data has to contain the string
