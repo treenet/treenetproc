@@ -25,13 +25,6 @@ check_input_variables <- function(list) {
     }
   }
 
-  # site
-  if ("site" %in% var_names) {
-    if (length(list$site) > 1) {
-      stop("You can only specify one 'site' at a time.")
-    }
-  }
-
   # site and sensor_name
   if ("site" %in% var_names & "sensor_name" %in% var_names) {
     if (length(list$site) == 0 & length(list$sensor_name) == 0) {
