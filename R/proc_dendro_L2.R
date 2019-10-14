@@ -119,11 +119,13 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
 
 
   # Save input variables for plotting -----------------------------------------
-  passenv$tol_jump_plot <- tol_jump
-  passenv$tol_out_plot <- tol_out
-  passenv$frost_thr_plot <- frost_thr
-  passenv$lowtemp_plot <- lowtemp
-  passenv$tz_plot <- tz
+  if (plot) {
+    passenv$tol_jump_plot <- tol_jump
+    passenv$tol_out_plot <- tol_out
+    passenv$frost_thr_plot <- frost_thr
+    passenv$lowtemp_plot <- lowtemp
+    passenv$tz_plot <- tz
+  }
 
 
   # Check input data ----------------------------------------------------------
