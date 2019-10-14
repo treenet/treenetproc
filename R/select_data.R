@@ -131,8 +131,31 @@ select_data <- function(site = NULL, sensor_class = NULL, sensor_name = NULL,
   if (!is.null(sensor_class)) {
     meta_select <- vector()
     for (t in 1:length(sensor_class)) {
+      lookup <-
+        c(Dendrometer = "dendrometer",
+          Temp = "airtemperature",
+          Precipitation = "precipitation",
+          Rad = "radiation",
+          RelH = "relativeairhumidity_relh",
+          Soil_temp = "soiltemperatrue",
+          Soil_WP = "soilwaterpotential_soilwp",
+          Wind_speed = "windspeed",
+          Dendrometer_X = "dendrometer",
+          Sapflow = "sapflow",
+          StemCO2 = "stemco2",
+          Soil_Temp = "soiltemperature",
+          Soil_VWC = "soilvolumetricwatercontent_soilvwc",
+          Air_pressure = "airpressure",
+          PAR = "radiation_par",
+          StemCO2_soil = "soilstemco2",
+          Soil_WC = "soilwatercontent_soilwc",
+          Stem_temp = "stemtemperature",
+          Ozone = "ozone",
+          Precipitation_Invervall = "precipitationinterval")
+
       meta_sensor <- meta %>%
         dplyr::filter(Seriesname %in% meta_filter) %>%
+        dplyr::mutate(Sensor_query = unname(lookup[Sensor_class])) %>%
         dplyr::filter(grepl(paste0(sensor_class[t]), Sensor_query,
                             ignore.case = TRUE))
 
