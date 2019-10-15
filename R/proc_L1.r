@@ -52,12 +52,8 @@ proc_L1 <- function(data, reso = 10, year = "asis", input = "long",
                     date_format = "%Y-%m-%d %H:%M:%S", tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
-  if (!(year %in% c("asis", "full"))) {
-    stop("year needs to be either 'asis' or 'full'.")
-  }
-  if (!(input %in% c("long", "wide"))) {
-    stop("input needs to be either 'long' or 'wide'.")
-  }
+  list_inputs <- mget(ls())
+  check_input_variables(list = list_inputs)
   passenv$reso <- reso
 
   # Check input data ----------------------------------------------------------
@@ -86,8 +82,7 @@ proc_L1 <- function(data, reso = 10, year = "asis", input = "long",
       dplyr::mutate(
         version =
           utils::packageDescription("treenetproc",
-                                    fields = "Version", drop = TRUE)) %>%
-      dplyr::select(series, ts, value, version)
+                                    fields = "Version", drop = TRUE))
     list_L1[[s]] <- df
   }
 
