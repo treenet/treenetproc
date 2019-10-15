@@ -6,7 +6,8 @@
 #'
 #' @param version character, specify to which level the data should be
 #'   processed. Can be one of \code{L0, L1} or \code{L2}.
-#' @inheritParams select_data
+#' @inheritParams select_series
+#' @inheritParams download_series
 #' @inheritParams proc_L1
 #' @inheritParams proc_dendro_L2
 #' @inheritParams plot_proc_L2
@@ -41,8 +42,8 @@
 #'                              "Bachtel-2.dendrometer.ch0"))
 #' }
 proc_treenet <- function(site = NULL, sensor_name = NULL,
-                         from = NULL, to = NULL, reso = 10,
-                         temp_name = NULL, frost_thr = 5, lowtemp = 5,
+                         from = NULL, to = NULL, last = NULL, reso = 10,
+                         frost_thr = 5, lowtemp = 5,
                          tol_jump = 50, tol_out = 10,
                          interpol = NULL, frag_len = NULL,
                          version = "L2", plot = TRUE, plot_period = "full",
@@ -56,29 +57,49 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
   check_input_variables(list = list_inputs)
 
 
-  # Process data to L2 --------------------------------------------------------
+  # Download L0 data from server ----------------------------------------------
   print("download data from server...")
-  df_L0 <- select_data(site = site, sensor_name = sensor_name,
-                       from = from, to = to, path_cred = path_cred,
-                       temp_name = temp_name, sensor_class = "dendrometer",
-                       select_temp = TRUE, data_format = "L0", bind_df = TRUE,
-                       server = "treenet")
 
+  # load credentials
+  path_cred <- load_credentials(path_cred = path_cred)
+
+  # select series and reference temperature for download
+  meta_series <- select_series(site = site, sensor_class = "dendrometer",
+                               sensor_name = sensor_name,
+                               path_cred = path_cred)
+
+  # download selected series
+  df_L0 <- download_series(meta_series = meta_series,
+                           data_format = "L0", from = from, to = to,
+                           last = last, bind_df = TRUE, reso = reso,
+                           path_cred = path_cred, server = "treenet",
+                           tz = tz)
+
+
+  # Process data to L1 --------------------------------------------------------
   print("process data to L1 (time-aligned data)...")
-  df_L1 <- proc_L1(data = df_L0, reso = reso, year = year, tz = tz)
+  df_L1 <- proc_L1(data = df_L0, reso = reso, year = year, input = "long",
+                   date_format = "%Y-%m-%d %H:%M:%S", tz = tz)
   if (version == "L1") {
     return(df_L1)
   }
 
+
+  # Process data to L2 --------------------------------------------------------
   print("process data to L2...")
-  df_L2 <- proc_dendro_L2(dendro_data = df_L1, tol_jump = tol_jump,
-                          tol_out = tol_out, frost_thr = frost_thr,
-                          lowtemp = lowtemp, interpol = interpol,
-                          frag_len = frag_len, plot = plot,
-                          plot_period = plot_period, plot_show = plot_show,
-                          plot_export = plot_export, plot_name = plot_name,
-                          plot_mds = plot_mds, iter_clean = iter_clean,
-                          tz = tz)
+
+  # add reference temperature column
+  df_L1 <- df_L1 %>%
+    dplyr::left_join(., meta_series, by = "series")
+
+  df_L2 <- proc_dendro_L2(dendro_data = df_L1, temp_data = NULL,
+                          tol_jump = tol_jump, tol_out = tol_out,
+                          frost_thr = frost_thr, lowtemp = lowtemp,
+                          interpol = interpol, frag_len = frag_len,
+                          plot = plot, plot_period = plot_period,
+                          plot_show = plot_show, plot_export = plot_export,
+                          plot_name = plot_name, plot_mds = plot_mds,
+                          iter_clean = iter_clean, tz = tz)
 
   print("Done!")
   return(df_L2)
