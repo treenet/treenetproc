@@ -43,8 +43,8 @@
 #'   is probable, e.g. when the temperature is <5°C. Without temperature data,
 #'   shrinkages due to frost may be classified as outliers.
 #'
-#'   \code{temp_data} can also contain other climate data. In this case, the
-#'   \code{series} name of temperature data has to contain the string
+#'   \code{temp_data} can also be attached to dendrometer data. In this case,
+#'   the \code{series} name of temperature data has to contain the string
 #'   \code{temp}. In case no temperature dataset is specified, a sample
 #'   temperature dataset will be used with a warning. The sample temperature
 #'   dataset assumes probable frost shringkage in the months December, January
@@ -136,36 +136,49 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
     tem <- temp_data
     tem_series <- unique(tem$series)
 
-    if (length(grep("temp", tem_series, ignore.case = T)) == 0) {
-      message("check temperature data, series name does not contain 'temp'.")
-    }
     if (length(grep("temp", tem_series, ignore.case = T)) > 1) {
       stop("provide single temperature dataset.")
     }
     if (sum(colnames(tem) %in% c("series", "ts", "value", "version")) != 4) {
       stop("provide time-aligned temperature data generated with 'proc_L1'")
     }
+
+    # add column with temperature reference
+    df$temp_ref <- tem_series
   }
 
   passenv$sample_temp <- FALSE
   if (length(temp_data) == 0) {
     df_series <- unique(df$series)
 
-    if (length(grep("temp", df_series, ignore.case = T)) > 1) {
-      stop("provide single temperature dataset.")
-    }
-    if (length(grep("temp", df_series, ignore.case = T)) == 0) {
-      tem <- create_temp_dummy(df = df)
-      message("sample temperature dataset is used.")
-      passenv$sample_temp <- TRUE
-    }
-    if (length(grep("temp", df_series, ignore.case = T)) == 1) {
-      temp_series <- df_series[grep("temp", df_series, ignore.case = T)]
+    # for data from server
+    if ("temp_ref" %in% colnames(df)) {
+      temp_series <- stats::na.omit(unique(df$temp_ref))
       tem <- df %>%
-        dplyr::filter(series == temp_series)
+        dplyr::filter(series %in% temp_series)
       df <- df %>%
-        dplyr::filter(series != temp_series)
+        dplyr::filter(!(series %in% temp_series))
       dendro_data <- df
+    }
+    # for user-specified data
+    if (!("temp_ref" %in% colnames(df))) {
+      if (length(grep("temp", df_series, ignore.case = T)) > 1) {
+        stop("provide single temperature dataset.")
+      }
+      if (length(grep("temp", df_series, ignore.case = T)) == 0) {
+        tem <- create_temp_dummy(df = df)
+        message("sample temperature dataset is used.")
+        passenv$sample_temp <- TRUE
+      }
+      if (length(grep("temp", df_series, ignore.case = T)) == 1) {
+        temp_series <- df_series[grep("temp", df_series, ignore.case = T)]
+        tem <- df %>%
+          dplyr::filter(series == temp_series)
+        df <- df %>%
+          dplyr::filter(series != temp_series) %>%
+          dplyr::mutate(temp_ref = temp_series)
+        dendro_data <- df
+      }
     }
   }
 
