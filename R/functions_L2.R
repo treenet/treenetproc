@@ -157,26 +157,30 @@ calcdiff <- function(df, reso) {
 #' @keywords internal
 #'
 createfrostflag <- function(df, tem, lowtemp = 5, sample_temp) {
-  df <- tem %>%
+  temp_series <- df$temp_ref[1]
+
+  df_frost <- tem %>%
+    dplyr::filter(series == temp_series) %>%
     dplyr::mutate(frost = ifelse(value < lowtemp, TRUE, FALSE)) %>%
     dplyr::select(ts, frost) %>%
-    dplyr::left_join(df, ., by = "ts") %>%
+    dplyr::right_join(., df, by = "ts") %>%
     dplyr::arrange(ts)
 
   # print amount of missing temperature data (not if sample temperature
   # dataset is used)
   if (!passobj("sample_temp")) {
-    na_temp <- sum(is.na(df$frost))
-    na_perc <- round(na_temp / nrow(df) * 100, 1)
-    if (na_perc > 0.98) {
+    na_temp <- sum(is.na(df_frost$frost))
+    na_perc <- round(na_temp / nrow(df_frost) * 100, 2)
+    if (na_perc < 0.1) {
       message("No temperature data is missing.")
     } else {
       message(paste0(na_perc, "% of temperature data is missing."))
     }
   }
 
-  df <- df %>%
-    dplyr::mutate(frost = fill_na(frost))
+  df <- df_frost %>%
+    dplyr::mutate(frost = fill_na(frost)) %>%
+    dplyr::mutate(frost = fill_na_lead(frost))
 
   return(df)
 }
