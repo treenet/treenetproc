@@ -81,6 +81,21 @@ check_input_variables <- function(list) {
     }
   }
 
+  # year
+  if ("year" %in% var_names) {
+    if (!(list$year %in% c("asis", "full"))){
+      stop("Variable 'year' needs to be 'asis' or 'full'.")
+    }
+  }
+
+  # input
+  if ("input" %in% var_names) {
+    if (!(list$input %in% c("long", "wide"))) {
+      stop("Variable 'input' needs to be 'long' or 'wide'.")
+    }
+  }
+
+
   # Check date variables -------------------------------------------
   # from
   if ("from" %in% var_names) {
