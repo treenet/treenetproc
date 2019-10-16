@@ -14,6 +14,6 @@ for which changes should be made. Data of other series is left unchanged.
 Not needed if only a single series is provided.}
 }
 \description{
-\code{check_series} checks the input of the variabel series.
+\code{check_series} checks the input of the variable series.
 }
 \keyword{internal}
