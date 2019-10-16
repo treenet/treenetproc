@@ -169,6 +169,8 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
         tem <- create_temp_dummy(df = df)
         message("sample temperature dataset is used.")
         passenv$sample_temp <- TRUE
+        df <- df %>%
+          dplyr::mutate(temp_ref = "airtemperature")
       }
       if (length(grep("temp", df_series, ignore.case = T)) == 1) {
         temp_series <- df_series[grep("temp", df_series, ignore.case = T)]
@@ -261,6 +263,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       dplyr::mutate(mds = ifelse(is.na(value), NA, mds)) %>%
       dplyr::mutate(twd = ifelse(is.na(value), NA, twd)) %>%
       dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
+      dplyr::mutate(frost = ifelse(is.na(value), NA, frost)) %>%
       dplyr::select(series, ts, value, max, twd, mds, gro_yr, gro_start,
                     gro_end, frost, flags) %>%
       dplyr::mutate(
