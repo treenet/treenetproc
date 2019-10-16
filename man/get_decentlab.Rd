@@ -4,12 +4,15 @@
 \alias{get_decentlab}
 \title{Generate Query for Data from Decentlab Server}
 \usage{
-get_decentlab(meta_single, path_cred = NULL, tz)
+get_decentlab(series_single, path_cred = NULL, tz)
 }
 \arguments{
-\item{meta_single}{character, name of the sensor to download.}
+\item{series_single}{character, name of the sensor to download.}
 
-\item{path_cred}{character, path to the file with the credentials.}
+\item{path_cred}{optional argument to specify the full path to the
+file \code{config.yml} containing the database login data. File can
+also be copied to the main folder of the package for automatic
+recognition.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
