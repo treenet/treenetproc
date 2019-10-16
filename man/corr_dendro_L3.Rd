@@ -50,8 +50,7 @@ the gap in data is longer than the default (\code{n_days = 5}).}
 }
 \value{
 The function returns a \code{data.frame} with corrected \code{L2}
-  dendrometer data. The corrections are added to \code{flags} and the
-  version of the corrected \code{series} is changed to \code{version = 3}.
+  dendrometer data. The corrections are added to \code{flags}.
 }
 \description{
 \code{corr_dendro_L3} corrects errors in processed \code{L2} dendrometer
