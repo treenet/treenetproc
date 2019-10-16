@@ -73,7 +73,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                            data_format = "L0", from = from, to = to,
                            last = last, bind_df = TRUE, reso = reso,
                            path_cred = path_cred, server = "treenet",
-                           tz = tz)
+                           temp_ref = TRUE, tz = tz)
 
 
   # Process data to L1 --------------------------------------------------------
