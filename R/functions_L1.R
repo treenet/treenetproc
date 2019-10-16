@@ -16,7 +16,7 @@ tsalign <- function(df, reso, year, tz) {
 
   series <- unique(df$series)
 
-  out_generatets <- generatets(df, reso, year, tz)
+  out_generatets <- generatets(df = df, reso = reso, year = year, tz = tz)
   df <- out_generatets[[1]]
   ts_seq <- out_generatets[[2]]
 
@@ -35,7 +35,7 @@ tsalign <- function(df, reso, year, tz) {
 
   df <- df %>%
     dplyr::left_join(ts_seq, ., by = "ts") %>%
-    dplyr::arrange(ts) %>%
+    dplyr::arrange(series, ts) %>%
     dplyr::distinct()
 
   return(df)
