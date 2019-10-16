@@ -8,7 +8,7 @@ proc_dendro_L2(dendro_data, temp_data = NULL, tol_jump = 50,
   tol_out = 10, frost_thr = 5, lowtemp = 5, interpol = NULL,
   frag_len = NULL, plot = TRUE, plot_period = "full",
   plot_show = "all", plot_export = TRUE, plot_name = "proc_L2_plot",
-  plot_mds = FALSE, tz = "UTC")
+  plot_mds = FALSE, iter_clean = 1, tz = "UTC")
 }
 \arguments{
 \item{dendro_data}{\code{data.frame} with time-aligned dendrometer
@@ -65,6 +65,10 @@ saved.}
 calculation of the maximum daily shrinkage (\code{mds}) should be
 plotted.}
 
+\item{iter_clean}{numeric, specifies the number of times the cleaning
+process is repeated. Can be used to check whether running the cleaning
+process many times has an effect on the results.}
+
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \value{
@@ -92,7 +96,7 @@ The function returns a \code{data.frame} with processed dendrometer
    \item{flags}{character vector specifying the changes that occurred
      during the processing. For more details see the following vignette:
      \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
-   \item{version}{processing version.}
+   \item{version}{package version that was used.}
 }
 \description{
 \code{proc_dendro_L2} processes time-aligned (\code{L1}) dendrometer data
@@ -102,11 +106,11 @@ The function returns a \code{data.frame} with processed dendrometer
 }
 \details{
 \code{temp_data} is used to define periods in which frost shrinkage
-  is probable, i.e. when temperature is <5°C. Without temperature data,
-  frost shrinkage may be classified as outliers.
+  is probable, e.g. when the temperature is <5°C. Without temperature data,
+  shrinkages due to frost may be classified as outliers.
 
-  \code{temp_data} can also contain other climate data. In this case, the
-  \code{series} name of temperature data has to contain the string
+  \code{temp_data} can also be attached to dendrometer data. In this case,
+  the \code{series} name of temperature data has to contain the string
   \code{temp}. In case no temperature dataset is specified, a sample
   temperature dataset will be used with a warning. The sample temperature
   dataset assumes probable frost shringkage in the months December, January
