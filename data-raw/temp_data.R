@@ -16,8 +16,7 @@ data_L0 <- dendro_data_L0 %>%
 
 # add timestamp of dendrometer data
 temp_data_L0_1 <- temp_data_L0_1 %>%
-  slice(1:nrow(data_L0)) %>%
-  select(-version)
+  slice(1:nrow(data_L0))
 
 temp_data_L0_1$ts <- data_L0$ts
 

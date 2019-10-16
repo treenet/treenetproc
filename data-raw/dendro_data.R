@@ -66,8 +66,7 @@ frost_L0 <- download_treenet(sensor_name = "Jussy-1.dendrometer.ch1",
 
 ### merge L0 data
 dendro_data_L0 <- bind_rows(list(jump_L0, outlier_L0, shrink_L0, delete_L0,
-                                 shrink_2_L0, frost_L0)) %>%
-  select(-version)
+                                 shrink_2_L0, frost_L0))
 
 # create continous timestamp column for site-1_dendro-1 and site-1_dendro-3
 ts_dendro_1 <- download_treenet(sensor_name = "Beatenberg-0.dendrometer.ch1",
