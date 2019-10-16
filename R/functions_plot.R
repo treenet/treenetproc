@@ -146,15 +146,15 @@ plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
                  ylim = c(0, max(data_L2$gro_yr, na.rm = TRUE)), las = 1)
 
   years <- unique(data_L2_plot$year)
-  colors <- rainbow(length(years))
+  colors <- grDevices::rainbow(length(years))
   data_L2_year <- data_L2_plot %>%
     dplyr::group_by(year) %>%
     dplyr::group_split()
   for (y in 1:length(years)) {
-    lines(data = data_L2_year[[y]], gro_yr ~ doy, col = colors[y])
+    graphics::lines(data = data_L2_year[[y]], gro_yr ~ doy, col = colors[y])
   }
-  legend(x = "topleft", legend = years, col = colors, bty = "n",
-         lty = 1, seg.len = 0.8)
+  graphics::legend(x = "topleft", legend = years, col = colors, bty = "n",
+                   lty = 1, seg.len = 0.8)
 
 
   # print used variables and threshold values
