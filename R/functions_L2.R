@@ -951,7 +951,7 @@ calcgroperiods <- function(df, reso, tz) {
       dplyr::ungroup() %>%
       dplyr::filter(gro > 0) %>%
       dplyr::summarise(gro_max = round(max(gro, na.rm = TRUE), 2),
-                       gro_med = round(median(gro, na.rm = TRUE), 2),
+                       gro_med = round(stats::median(gro, na.rm = TRUE), 2),
                        gro_min = round(min(gro, na.rm = TRUE), 2)) %>%
       dplyr::ungroup() %>%
       dplyr::mutate(period = dplyr::last(list_cond[[l]]))
