@@ -33,7 +33,7 @@ The function returns a \code{data.frame} with processed dendrometer
    \item{flags}{character vector specifying the changes that occurred
      during the processing. For more details see the following vignette:
      \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
-   \item{version}{processing version.}
+   \item{version}{package version that was used.}
 }
 \description{
 A dataset containing processed (\code{L2}) dendrometer data.
