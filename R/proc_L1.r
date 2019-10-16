@@ -56,6 +56,7 @@ proc_L1 <- function(data, reso = 10, year = "asis", input = "long",
   check_input_variables(list = list_inputs)
   passenv$reso <- reso
 
+
   # Check input data ----------------------------------------------------------
   df <- data
   df <- check_ts(df = df, date_format = date_format, tz = tz)
@@ -86,7 +87,8 @@ proc_L1 <- function(data, reso = 10, year = "asis", input = "long",
     list_L1[[s]] <- df
   }
 
-  df <- dplyr::bind_rows(list_L1)
+  df <- dplyr::bind_rows(list_L1) %>%
+    dplyr::arrange(series, ts)
 
   return(df)
 }
