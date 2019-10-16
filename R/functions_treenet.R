@@ -50,6 +50,12 @@ load_credentials <- function(path_cred = NULL) {
 #'
 select_series <- function(site, sensor_class, sensor_name, path_cred) {
 
+  # Check availability of packages --------------------------------------------
+  check_package(pck_name = "config")
+  check_package(pck_name = "googlesheets4")
+  check_package(pck_name = "googledrive")
+
+
   # Select series for download via metadata file ------------------------------
   # load credentials
   path_cred <- load_credentials(path_cred = path_cred)
@@ -198,12 +204,23 @@ select_temp_data <- function(meta_list) {
 #'   \code{bind_df = FALSE}.
 #' @param server character, specify server from which data is downloaded.
 #'   Can be either \code{treenet} or \code{decentlab}.
+#' @param temp_ref logical, specify whether the reference temperature
+#'   dataset(s) should be downloaded along with specified data.
 #' @inheritParams select_series
+#' @inheritParams proc_L1
 #'
 #' @keywords internal, treenet
 #'
 download_series <- function(meta_series, data_format, from, to, last, bind_df,
-                            reso, path_cred, server, tz) {
+                            reso, path_cred, server, temp_ref, tz) {
+
+  # Check availability of packages --------------------------------------------
+  check_package(pck_name = "sqldf")
+  check_package(pck_name = "RPostgres")
+  check_package(pck_name = "config")
+  check_package(pck_name = "DBI")
+  check_package(pck_name = "httr")
+
 
   # Load functions ------------------------------------------------------------
   Sys.setenv(TZ = tz)
@@ -250,9 +267,15 @@ download_series <- function(meta_series, data_format, from, to, last, bind_df,
 
   # download series
   options(warn = -1)
-  n_temp_ref <- length(unique(meta_series$temp_ref))
-  n_series <- nrow(meta_series) + n_temp_ref
-  series <- c(meta_series$series, unique(meta_series$temp_ref))
+  if (temp_ref) {
+    n_temp_ref <- length(unique(meta_series$temp_ref))
+    n_series <- nrow(meta_series) + n_temp_ref
+    series <- c(meta_series$series, unique(meta_series$temp_ref))
+  }
+  if (!temp_ref) {
+    n_series <- nrow(meta_series)
+    series <- meta_series$series
+  }
   server_data <- vector("list", length = n_series)
   for (i in 1:n_series) {
     if (server == "treenet") {
@@ -336,7 +359,8 @@ download_series <- function(meta_series, data_format, from, to, last, bind_df,
 #'   back in time.
 #'
 #' @param df input \code{data.frame}.
-#' @inheritParams select_data
+#' @inheritParams download_series
+#' @inheritParams proc_L1
 #'
 #' @keywords internal, treenet
 #'
@@ -373,13 +397,13 @@ last_values <- function(df, last, reso, tz) {
 #' \code{get_decentlab} generates a query to download a specified
 #'   series from the decentlab servers.
 #'
-#' @param meta_single character, name of the sensor to download.
-#' @param path_cred character, path to the file with the credentials.
+#' @param series_single character, name of the sensor to download.
+#' @inheritParams select_series
 #' @inheritParams proc_L1
 #'
 #' @keywords internal, treenet
 #'
-get_decentlab <- function(meta_single, path_cred = NULL, tz) {
+get_decentlab <- function(series_single, path_cred = NULL, tz) {
 
   cred <- config::get("decentlab_cred", file = path_cred)
   domain <- cred$domain
@@ -411,7 +435,7 @@ get_decentlab <- function(meta_single, path_cred = NULL, tz) {
            " AND node =~ ", device,
            " AND sensor =~ ", sensor,
            " AND ((channel =~ ", channel, " OR channel !~ /.+/)",
-           " AND uqk =~ /", meta_single, "/",
+           " AND uqk =~ /", series_single, "/",
            if (includeNetworkSensors) ")" else " AND channel !~ /^link-/)")
 
   q <- paste(
