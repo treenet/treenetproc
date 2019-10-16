@@ -68,7 +68,8 @@ check_input_variables <- function(list) {
 
   # plot_show
   if ("plot_show" %in% var_names) {
-    if (!(list$plot_show %in% c("all", "diff"))) {
+    # diff_corr is used for function 'corr_dendro_L3'
+    if (!(list$plot_show %in% c("all", "diff", "diff_corr"))) {
       stop(paste0("Variable 'plot_show' needs to be ",
                   "'all' or 'diff'."))
     }
@@ -155,6 +156,12 @@ check_input_variables <- function(list) {
   if ("print_vars" %in% var_names) {
     check_logical(var = list$print_vars, var_name = "print_vars")
   }
+
+  # temp_ref
+  if ("temp_ref" %in% var_names) {
+    check_logical(var = list$temp_ref, var_name = "temp_ref")
+  }
+
 
   # Check numeric variables -------------------------------------------
   # tol_jump
@@ -334,6 +341,24 @@ check_date_period <- function(datevec, datevec_name, df) {
                   "measurement period."))
     }
   }
+}
+
+
+#' Check if Package is Installed
+#'
+#' \code{check_package} checks whether a suggested package that is needed
+#'   for a specific function is already installed.
+#'
+#' @param pck_name character, name of the required package.
+#'
+#' @keywords internal
+#'
+check_package <- function(pck_name) {
+
+      if (!requireNamespace(pck_name, quietly = TRUE)) {
+      stop(paste0("Package '", pck_name, "' is needed for this function to ",
+                  "work. Please install it."), call. = FALSE)
+    }
 }
 
 
