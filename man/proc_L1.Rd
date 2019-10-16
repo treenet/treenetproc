@@ -35,7 +35,7 @@ a \code{data.frame} with measurements aligned to regular time
    \item{series}{name of the series.}
    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
    \item{value}{dendrometer value.}
-   \item{version}{processing version.}
+   \item{version}{package version that was used.}
 }
 \description{
 \code{proc_L1} processes raw dendrometer and raw meteorological data to
