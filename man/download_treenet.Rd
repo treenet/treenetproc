@@ -4,10 +4,10 @@
 \alias{download_treenet}
 \title{Download Dendrometer Data from TreeNet or Decentlab Server}
 \usage{
-download_treenet(site = NULL, sensor_name = NULL, from = NULL,
-  to = NULL, server = "treenet", data_format = "L0",
-  path_cred = NULL, export = FALSE, bind_df = TRUE, last = NULL,
-  tz = "Etc/GMT-1")
+download_treenet(site = NULL, sensor_name = NULL,
+  sensor_class = NULL, from = NULL, to = NULL, server = "treenet",
+  data_format = "L0", path_cred = NULL, export = FALSE,
+  last = NULL, temp_ref = FALSE, tz = "Etc/GMT-1")
 }
 \arguments{
 \item{site}{character, specify the site. String is not case sensitive.}
@@ -15,6 +15,11 @@ download_treenet(site = NULL, sensor_name = NULL, from = NULL,
 \item{sensor_name}{character, specify the name of a single or
 multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}) of the
 same site.}
+
+\item{sensor_class}{charcter, specify a single or multiple sensor
+classes. String does not have to contain the full name of the sensor
+class, i.e. \code{"dendro"} works for \code{"dendrometer"}. String is not
+case sensitive.}
 
 \item{from}{character, optional argument to select data after a specific
 date (\code{"YYYY-MM-DD"}).}
@@ -38,13 +43,12 @@ recognition.}
 an \code{.RData}-file in the current working directory
 (\code{export = TRUE}) or will be returned to the console.}
 
-\item{bind_df}{logical, indicate whether data should be returned as a
-\code{data.frame} (\code{bind_df = TRUE}) or as a named list
-\code{bind_df = FALSE}.}
-
 \item{last}{numeric, optional argument to specify the number of latest
 values. If \code{last} is specified \code{from} and \code{to} need to
 be empty.}
+
+\item{temp_ref}{logical, specify whether the reference temperature
+dataset(s) should be downloaded along with specified data.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
