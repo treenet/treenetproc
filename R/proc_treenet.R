@@ -70,10 +70,10 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
 
   # download selected series
   df_L0 <- download_series(meta_series = meta_series,
-                           data_format = "L0", from = from, to = to,
-                           last = last, bind_df = TRUE, reso = reso,
-                           path_cred = path_cred, server = "treenet",
-                           temp_ref = TRUE, tz = tz)
+                           data_format = "L0", data_version = NULL,
+                           from = from, to = to, last = last, bind_df = TRUE,
+                           reso = reso, path_cred = path_cred,
+                           server = "treenet", temp_ref = TRUE, tz = tz)
 
 
   # Process data to L1 --------------------------------------------------------
