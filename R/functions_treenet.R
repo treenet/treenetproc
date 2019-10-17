@@ -67,7 +67,7 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
 
   suppressMessages(
     meta <- googledrive::drive_get("Metadata") %>%
-      googlesheets4::read_sheet()
+      googlesheets4::read_sheet("Metadata")
   )
 
   # select specified series from metadata file
@@ -215,8 +215,8 @@ select_temp_data <- function(meta_list) {
 #'
 #' @keywords internal, treenet
 #'
-download_series <- function(meta_series, data_format, data_version, from,
-                            to, last, bind_df, reso, path_cred, server,
+download_series <- function(meta_series, data_format, data_version = NULL,
+                            from, to, last, bind_df, reso, path_cred, server,
                             temp_ref, tz) {
 
   # Check availability of packages --------------------------------------------
@@ -227,11 +227,21 @@ download_series <- function(meta_series, data_format, data_version, from,
   check_package(pck_name = "httr")
 
 
-  # Check input variables -----------------------------------------------------
-  # set default data_version to current package version number
-  if (length(data_version) == 0) {
-    data_version <- utils::packageDescription("treenetproc",
-                                              fields = "Version", drop = TRUE)
+  # Set default data_version for L2 data --------------------------------------
+  # load credentials
+  path_cred <- load_credentials(path_cred = path_cred)
+
+  if (length(data_version) == 0 & data_format == "L2") {
+    auth <- config::get("googledrive_auth", file = path_cred)
+    googledrive::drive_auth(email = auth$email)
+    googlesheets4::sheets_auth(token = googledrive::drive_token())
+
+    suppressMessages(
+      data_version <- googledrive::drive_get("Metadata") %>%
+        googlesheets4::read_sheet("Ancillary") %>%
+        unname() %>%
+        unlist()
+    )
   }
 
 
@@ -250,9 +260,6 @@ download_series <- function(meta_series, data_format, data_version, from,
 
 
   # Download series -----------------------------------------------------------
-  # load credentials
-  path_cred <- load_credentials(path_cred = path_cred)
-
   # specify format
   if (server == "treenet") {
     if (data_format == "L0") {
