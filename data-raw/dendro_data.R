@@ -63,6 +63,18 @@ frost_L0 <- download_treenet(sensor_name = "Jussy-1.dendrometer.ch1",
                              tz = "UTC") %>%
   mutate(series = "site-1_dendro-4")
 
+# increase steepness of frost shrinkage
+frost_L0$value[frost_L0$ts >= "2013-03-16 02:00:00" &
+                 frost_L0$ts <= "2013-03-16 06:00:00"] <-
+  frost_L0$value[frost_L0$ts >= "2013-03-15 21:00:00" &
+                   frost_L0$ts <= "2013-03-16 01:00:00"]
+
+frost_L0$value[frost_L0$ts >= "2013-03-16 06:00:00" &
+                 frost_L0$ts <= "2013-03-16 06:30:00"] <- NA
+
+frost_L0 <- frost_L0 %>%
+  mutate(value = ifelse(is.na(value), approx(ts, value, ts)$y,
+                        value))
 
 ### merge L0 data
 dendro_data_L0 <- bind_rows(list(jump_L0, outlier_L0, shrink_L0, delete_L0,
