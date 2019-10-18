@@ -159,6 +159,11 @@ check_input_variables <- function(list) {
     check_logical(var = list$temp_ref, var_name = "temp_ref")
   }
 
+  # use_intl
+  if ("use_intl" %in% var_names) {
+    check_logical(var = list$use_intl, var_name = "use_intl")
+  }
+
 
   # Check numeric variables -------------------------------------------
   # tol_jump
