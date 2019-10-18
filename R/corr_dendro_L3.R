@@ -115,7 +115,7 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
   lead_trail_na <- na_list[[2]]
 
   if (length(remove) != 0) {
-    remove_list <- removejump(data_L1 = data_L1, data_L2 = df,
+    remove_list <- removecorr(data_L1 = data_L1, data_L2 = df,
                               remove = remove, tz = tz)
     df <- remove_list[[1]]
     diff_old <- remove_list[[2]]
