@@ -210,6 +210,9 @@ select_temp_data <- function(meta_list) {
 #'   Can be either \code{treenet} or \code{decentlab}.
 #' @param temp_ref logical, specify whether the reference temperature
 #'   dataset(s) should be downloaded along with specified data.
+#' @param use_intl logical, specify whether this function is used
+#'   internally on the server. Changes \code{stop()} error messages to
+#'   \code{message()} only.
 #' @inheritParams select_series
 #' @inheritParams proc_L1
 #'
@@ -217,7 +220,7 @@ select_temp_data <- function(meta_list) {
 #'
 download_series <- function(meta_series, data_format, data_version = NULL,
                             from, to, last, bind_df, reso, path_cred, server,
-                            temp_ref, tz) {
+                            temp_ref, tz, use_intl) {
 
   # Check availability of packages --------------------------------------------
   check_package(pck_name = "sqldf")
@@ -363,12 +366,23 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   # remove empty list elements
   server_data <- Filter(f = length, x = server_data)
 
+  # return error if no data is available
+  if (length(server_data) == 0) {
+    if (!use_intl) {
+      stop(paste("There is no data available for the specified sensor(s):",
+                 meta_series$series))
+    }
+    if (use_intl) {
+      message(paste("There is no data available for the specified sensor(s):",
+                    meta_series$series))
+    }
+  }
+
   if (!bind_df) {
     return(server_data)
   }
   if (bind_df) {
     df <- dplyr::bind_rows(server_data)
-
     return(df)
   }
 }
