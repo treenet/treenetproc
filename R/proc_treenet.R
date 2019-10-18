@@ -50,7 +50,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                          plot_export = TRUE, plot_name = "proc_L2_plot",
                          plot_show = "all", plot_mds = FALSE,
                          path_cred = NULL, year = "asis", iter_clean = 1,
-                         tz = "Etc/GMT-1") {
+                         tz = "Etc/GMT-1", use_intl = FALSE) {
 
   # Check input variables -----------------------------------------------------
   list_inputs <- mget(ls())
@@ -73,7 +73,8 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                            data_format = "L0", data_version = NULL,
                            from = from, to = to, last = last, bind_df = TRUE,
                            reso = reso, path_cred = path_cred,
-                           server = "treenet", temp_ref = TRUE, tz = tz)
+                           server = "treenet", temp_ref = TRUE, tz = tz,
+                           use_intl = use_intl)
 
 
   # Process data to L1 --------------------------------------------------------
