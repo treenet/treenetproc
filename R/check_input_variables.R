@@ -25,16 +25,13 @@ check_input_variables <- function(list) {
     }
   }
 
-  # site and sensor_name
-  if ("site" %in% var_names & "sensor_name" %in% var_names) {
-    if (length(list$site) == 0 & length(list$sensor_name) == 0) {
+  # site, sensor_name and sensor_class
+  if ("site" %in% var_names & "sensor_name" %in% var_names &
+      "sensor_class" %in% var_names) {
+    if (length(list$site) == 0 & length(list$sensor_name) == 0 &
+        length(list$sensor_class) == 0) {
       stop(paste0("Specify at least one of the following: site, ",
-                  " sensor_name."))
-    }
-    if (length(list$site) != 0 & length(list$sensor_name) != 0) {
-      if (!grepl(list$site, list$sensor_name, ignore.case = TRUE)) {
-        stop("Variables 'site' and 'sensor_name' need to correspond.")
-      }
+                  " sensor_name, sensor_class."))
     }
   }
 
