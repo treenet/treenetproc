@@ -1,13 +1,13 @@
-#' Removes Wrong Jump in Data
+#' Removes Wrong Corrections in Data
 #'
-#' \code{removejump} removes wrong corrections in the dendrometer data.
+#' \code{removecorr} removes wrong corrections in the dendrometer data.
 #'
 #' @inheritParams corr_dendro_L3
 #' @inheritParams plot_proc_L2
 #'
 #' @keywords internal
 #'
-removejump <- function(data_L1, data_L2, remove, tz) {
+removecorr <- function(data_L1, data_L2, remove, tz) {
 
   L1 <- data_L1 %>%
     dplyr::mutate(diff_L1 = c(NA, diff(value, lag = 1))) %>%
@@ -48,7 +48,7 @@ removejump <- function(data_L1, data_L2, remove, tz) {
 
   df <- data_L2 %>%
     dplyr::mutate(value = val) %>%
-    dplyr::mutate(flagremovejump = flag)
+    dplyr::mutate(flagremovecorr = flag)
 
   list_return <- list(df, diff_old)
 
@@ -153,7 +153,7 @@ summariseflagscorr <- function(df, remove = NULL, force = NULL,
   list_flags <- vector("list", length = 3)
 
   if (length(remove) != 0) {
-    list_flags[[1]] <- ifelse(df$flagremovejump, "rjump", NA)
+    list_flags[[1]] <- ifelse(df$flagremovecorr, "rem", NA)
   } else {
     list_flags[[1]] <- NA
   }
