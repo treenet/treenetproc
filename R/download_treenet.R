@@ -72,10 +72,10 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
       df <- tsalign(df = df, reso = 10, year = "asis", tz = tz) %>%
         dplyr::mutate(series = fill_na(series))
 
-    list_series[[s]] <- df
+      list_series[[s]] <- df
     }
 
-    df <- dplyr::bind_rows(list_series) %>%
+    df_server <- dplyr::bind_rows(list_series) %>%
       dplyr::arrange(series, ts)
   }
 
@@ -84,9 +84,9 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
   # export each series as a .RData file
   if (export) {
     print("export data...")
-    series_vec <- unique(df$series)
+    series_vec <- unique(df_server$series)
     for (s in 1:length(series_vec)) {
-      df_single <- df %>%
+      df_single <- df_server %>%
         dplyr::filter(series == series_vec[s])
       save(df_single, file = paste0(series_vec[s], "_", data_format,
                                     ".RData"), compress = "xz")
@@ -95,5 +95,5 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
   }
 
   print("Done!")
-  return(df)
+  return(df_server)
 }
