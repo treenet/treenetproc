@@ -56,7 +56,8 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
                                data_version = data_version, from = from,
                                to = to, last = last, bind_df = TRUE,
                                reso = 10, path_cred = path_cred,
-                               server = server, temp_ref = FALSE, tz = tz)
+                               server = server, temp_ref = FALSE, tz = tz,
+                               use_intl = FALSE)
 
 
   # Time-align downloaded data ------------------------------------------------
