@@ -30,7 +30,7 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
                              bind_df = TRUE, server = "treenet",
                              data_format = "L0", data_version = NULL,
                              path_cred = NULL, export = FALSE, last = NULL,
-                             tz = "Etc/GMT-1") {
+                             tz = "Etc/GMT-1", use_intl = FALSE) {
 
   # Check input variables -----------------------------------------------------
   list_inputs <- mget(ls())
@@ -58,7 +58,7 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
                                  to = to, last = last, bind_df = FALSE,
                                  reso = 10, path_cred = path_cred,
                                  server = server, temp_ref = FALSE, tz = tz,
-                                 use_intl = FALSE)
+                                 use_intl = use_intl)
 
 
   # Time-align downloaded data ------------------------------------------------
