@@ -4,17 +4,17 @@
 #'   the TreeNet or Decentlab server.
 #'
 #' @param export logical, indicate whether each sensor will be saved as
-#'   an \code{.RData}-file in the current working directory
+#'   an \code{.RData}-file to the current working directory
 #'   (\code{export = TRUE}) or will be returned to the console.
 #' @inheritParams select_series
 #' @inheritParams download_series
 #' @inheritParams proc_L1
 #'
-#' @return If \code{export = TRUE} data will be saved in a named list with
-#'   each list element containing one sensor.
-#'
-#'   If \code{export = FALSE} data will be saved in the console as a
-#'   \code{data.frame}.
+#' @return If \code{export = TRUE} each sensor is saved as an
+#'   \code{.RData}-file to the current working directory. Else,
+#'   \code{export = FALSE} data will be retured to the console either as a
+#'   \code{data.frame} (\code{bind_df = TRUE}), or as a \code{list} with each
+#'   sensor as a list element (\code{bind_df = FALSE}).
 #'
 #' @export
 #'
