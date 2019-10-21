@@ -27,9 +27,10 @@
 #' }
 download_treenet <- function(site = NULL, sensor_name = NULL,
                              sensor_class = NULL, from = NULL, to = NULL,
-                             server = "treenet", data_format = "L0",
-                             data_version = NULL, path_cred = NULL,
-                             export = FALSE, last = NULL, tz = "Etc/GMT-1") {
+                             bind_df = TRUE, server = "treenet",
+                             data_format = "L0", data_version = NULL,
+                             path_cred = NULL, export = FALSE, last = NULL,
+                             tz = "Etc/GMT-1") {
 
   # Check input variables -----------------------------------------------------
   list_inputs <- mget(ls())
@@ -51,32 +52,28 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
                                path_cred = path_cred)
 
   # download selected series
-  df_server <- download_series(meta_series = meta_series,
-                               data_format = data_format,
-                               data_version = data_version, from = from,
-                               to = to, last = last, bind_df = TRUE,
-                               reso = 10, path_cred = path_cred,
-                               server = server, temp_ref = FALSE, tz = tz,
-                               use_intl = FALSE)
+  list_server <- download_series(meta_series = meta_series,
+                                 data_format = data_format,
+                                 data_version = data_version, from = from,
+                                 to = to, last = last, bind_df = FALSE,
+                                 reso = 10, path_cred = path_cred,
+                                 server = server, temp_ref = FALSE, tz = tz,
+                                 use_intl = FALSE)
 
 
   # Time-align downloaded data ------------------------------------------------
   if (data_format %in% c("L1", "L2")) {
-    series_vec <- unique(df_server$series)
-    list_series <- vector("list", length = length(series_vec))
+    list_align <- vector("list", length = length(list_server))
     passenv$reso <- 10 # needed for fillintergaps in tsalign
-    for (s in 1:length(series_vec)) {
-      df <- df_server %>%
-        dplyr::filter(series == series_vec[s])
+    for (s in 1:length(list_align)) {
+      df <- list_server[[s]]
 
       df <- tsalign(df = df, reso = 10, year = "asis", tz = tz) %>%
         dplyr::mutate(series = fill_na(series))
 
-      list_series[[s]] <- df
+      list_align[[s]] <- df
     }
-
-    df_server <- dplyr::bind_rows(list_series) %>%
-      dplyr::arrange(series, ts)
+    list_server <- list_align
   }
 
 
@@ -84,16 +81,24 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
   # export each series as a .RData file
   if (export) {
     print("export data...")
-    series_vec <- unique(df_server$series)
-    for (s in 1:length(series_vec)) {
-      df_single <- df_server %>%
-        dplyr::filter(series == series_vec[s])
-      save(df_single, file = paste0(series_vec[s], "_", data_format,
-                                    ".RData"), compress = "xz")
+    series_vec <- names(list_server)
+    for (s in 1:length(list_server)) {
+      df <- list_server[[s]]
+      save(df, file = paste0(series_vec[s], "_", data_format,
+                             ".RData"), compress = "xz")
     }
     print("Done!")
   }
 
-  print("Done!")
-  return(df_server)
+  if (bind_df) {
+    df_out <- dplyr::bind_rows(list_server) %>%
+      dplyr::arrange(series, ts)
+
+    print("Done!")
+    return(df_out)
+  }
+
+  if (!bind_df) {
+    return(list_server)
+  }
 }
