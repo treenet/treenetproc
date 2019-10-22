@@ -43,7 +43,7 @@ check_format <- function(df, input) {
 check_ts <- function(df, date_format, tz) {
 
   if (!("ts" %in% colnames(df))) {
-    stop("column with time stamps (named 'ts') missing.")
+    stop("column with time stamps (named 'ts') is missing.")
   }
 
   ts <- as.character(df$ts)
@@ -145,15 +145,46 @@ check_missing <- function(df) {
 }
 
 
-#' Check Time Resolution of Input Data
+#' Check Time Resolution of L0 Input Data
 #'
-#' \code{reso_check} checks time resolution of input \code{data.frame}.
+#' \code{reso_check} extracts the median time resolution of \code{L0} data
+#'   and compares it to the user-specified \code{reso}. If \code{2.1 * reso}
+#'   is smaller than the median time resolution, a warning message is printed.
+#'
+#' @param df input \code{data.frame}.
+#' @inheritParams proc_L1
+#'
+#' @keywords internal
+#'
+reso_check_L0 <- function(df, reso) {
+
+  # calculate median resolution of input data
+  reso_med <- df %>%
+    dplyr::mutate(reso = as.numeric(difftime(ts, dplyr::lag(ts, 1),
+                                             units = "mins"))) %>%
+    dplyr::summarise(reso_med = median(reso, na.rm = TRUE)) %>%
+    dplyr::select(reso_med) %>%
+    unlist(use.names = FALSE)
+
+  if (2.1 * reso < reso_med) {
+    message(paste("The specified 'reso' is very small compared to the",
+                  "median time resolution of the input data. The",
+                  "time-alignement may therefore not work properly.",
+                  "Please increase the value of 'reso'."))
+  }
+}
+
+
+#' Check Time Resolution of L1 Input Data
+#'
+#' \code{reso_check} checks time resolution of \code{L1} input
+#'   \code{data.frame}.
 #'
 #' @param df input \code{data.frame}.
 #'
 #' @keywords internal
 #'
-reso_check <- function(df) {
+reso_check_L1 <- function(df) {
   reso_check <- df %>%
     dplyr::group_by(series) %>%
     dplyr::mutate(reso_check = as.numeric(difftime(ts, dplyr::lag(ts, 1),
