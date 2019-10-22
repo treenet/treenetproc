@@ -31,8 +31,12 @@
 #'
 #'   To align data at regular time intervals defined in \code{reso}, the data
 #'   is linearly interpolated between the two values measured closest to the
-#'   regular time intervals. If data is already provided at regular time steps,
-#'   the corresponding values are selected.
+#'   regular time intervals. The linear interpolation is restricted to gaps
+#'   that are smaller than \code{2.1 * reso}. If data is already provided at
+#'   regular time steps, the corresponding values are selected. For more
+#'   information see the following vignette: For more details see the
+#'   following vignette:
+#'   \href{../doc/Functionality-of-treenetproc.html}{\code{vignette("Functionality-of-treenetproc", package = "treenetproc")}}
 #'
 #' @return a \code{data.frame} with measurements aligned to regular time
 #'   intervals (interval specified in \code{reso}) containing the following
@@ -61,6 +65,7 @@ proc_L1 <- function(data, reso = 10, year = "asis", input = "long",
   df <- data
   df <- check_ts(df = df, date_format = date_format, tz = tz)
   check_format(df = df, input = input)
+  reso_check_L0(df = df, reso = reso)
 
 
   # Format input data ---------------------------------------------------------
