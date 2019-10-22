@@ -130,7 +130,7 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
   df <- calcmax(df = df)
   df <- calctwdgro(df = df, tz = tz)
   df <- grostartend(df = df, tol = 0.05, tz = tz)
-  passenv$reso <- reso_check(df = df)
+  passenv$reso <- reso_check_L1(df = df)
   df <- calcmds(df = df, reso = passobj("reso"), tz = tz,
                 plot_mds = FALSE)
   df <- summariseflagscorr(df = df, remove = remove, force = force,
