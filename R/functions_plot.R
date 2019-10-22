@@ -135,7 +135,7 @@ plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
                    widths = 1)
 
   # plot yearly growth curves
-  graphics::par(mar = c(0, 5, 4.1, 2.1))
+  graphics::par(mar = c(5.1, 5.1, 4.1, 2.1))
 
   data_L2_plot <- data_L2 %>%
     dplyr::mutate(doy = as.numeric(strftime(ts, format = "%j", tz = tz)) - 1)
@@ -151,10 +151,11 @@ plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
     dplyr::group_by(year) %>%
     dplyr::group_split()
   for (y in 1:length(years)) {
-    graphics::lines(data = data_L2_year[[y]], gro_yr ~ doy, col = colors[y])
+    graphics::lines(data = data_L2_year[[y]], gro_yr ~ doy, col = colors[y],
+                    lty = ifelse(y == 1, 2, 1))
   }
   graphics::legend(x = "topleft", legend = years, col = colors, bty = "n",
-                   lty = 1, seg.len = 0.8)
+                   lty = c(2, rep(1, length(years))), seg.len = 0.8)
 
 
   # print used variables and threshold values
