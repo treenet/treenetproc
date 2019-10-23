@@ -334,13 +334,14 @@ check_datevec <- function(datevec, tz) {
 #'
 check_date_period <- function(datevec, datevec_name, df) {
 
-  start <- df$ts[1]
-  end <- df$ts[nrow(df)]
+  # round to day
+  start <- as.POSIXct(trunc(df$ts[1], "days"))
+  end <- as.POSIXct(trunc(df$ts[nrow(df)], "days") + 86400)
 
   for (i in 1:length(datevec)) {
     if (datevec[i] < start | datevec[i] > end) {
-      stop(paste0(datevec[i], " in '", datevec_name, "' is not part of the ",
-                  "measurement period."))
+      stop(paste0("The date '", datevec[i], "' in '", datevec_name,
+                  "' is not part of the measurement period."))
     }
   }
 }
