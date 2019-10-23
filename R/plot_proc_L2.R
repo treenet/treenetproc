@@ -49,7 +49,7 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
   check_input_variables(list = list_inputs)
 
 
-  # Check input data -----------------------------------------------------
+  # Check input data ----------------------------------------------------------
   check_data_L1(data_L1 = data_L1)
   check_data_L2(data_L2 = data_L2)
 
@@ -80,10 +80,13 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
     dplyr::mutate(value_L2 = value) %>%
     dplyr::ungroup()
   deleted <- data_L2 %>%
-    dplyr::select(ts, value_L2) %>%
-    dplyr::left_join(., data_L1, by = "ts") %>%
+    dplyr::select(series, ts, value_L2) %>%
+    dplyr::left_join(., data_L1, by = c("series", "ts")) %>%
+    dplyr::group_by(series) %>%
     dplyr::mutate(deleted = ifelse(!is.na(value_L1) & is.na(value_L2),
                                    100, NA)) %>%
+    dplyr::ungroup() %>%
+    dplyr::arrange(series, ts) %>%
     dplyr::select(ts, year, month, series, deleted)
 
   sensors <- unique(data_L1$series)
