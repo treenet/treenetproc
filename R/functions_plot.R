@@ -131,11 +131,11 @@ axis_labels_period <- function(df, plot_period, tz) {
 #'
 plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
 
-  graphics::layout(mat = matrix(c(1, 2), nrow = 2), heights = c(2, 4.6),
+  graphics::layout(mat = matrix(c(1, 2), nrow = 2), heights = c(2, 4),
                    widths = 1)
 
   # plot yearly growth curves
-  graphics::par(mar = c(5.1, 5.1, 4.1, 2.1))
+  graphics::par(mar = c(5.1, 4.1, 4.1, 2.1))
 
   data_L2_plot <- data_L2 %>%
     dplyr::mutate(doy = as.numeric(strftime(ts, format = "%j", tz = tz)) - 1)
@@ -160,7 +160,7 @@ plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
 
   # print used variables and threshold values
   if (print_vars) {
-    graphics::par(mar = c(5.1, 5.1, 4.1, 2.1))
+    graphics::par(mar = c(5.1, 4.1, 4.1, 2.1))
 
     graphics::plot(x = c(0, 1), y = c(0, 1), ann = FALSE, bty = "n",
                    type = "n", xaxt = "n", yaxt = "n")
