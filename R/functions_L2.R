@@ -1006,9 +1006,7 @@ summariseflags <- function(df) {
   }
 
   flags <- do.call("paste", c(list_flags, sep = ", "))
-  flags <- gsub(", NA", "", flags)
-  flags <- gsub("NA, ", "", flags)
-  flags <- gsub(", $", "", flags)
+  flags <- gsub(", NA|NA, |, $", "", flags)
   flags <- ifelse(flags == "NA", NA, flags)
 
   df$flags <- flags
