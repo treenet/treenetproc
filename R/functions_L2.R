@@ -832,8 +832,16 @@ calcmds <- function(df, reso, tz, plot_mds = FALSE, plot_export) {
 #'
 grostartend <- function(df, tol = 0.05, tz) {
 
-  nc <- ncol(df)
+  if ("gro_start" %in% colnames(df)) {
+    df <- df %>%
+      dplyr::select(-gro_start)
+  }
+  if ("gro_end" %in% colnames(df)) {
+    df <- df %>%
+      dplyr::select(-gro_end)
+  }
 
+  nc <- ncol(df)
   df <- df %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::group_by(year) %>%
@@ -875,9 +883,9 @@ calcmissing <- function(data_L1, data_L2) {
     dplyr::slice(grep("fill", flags))
   interpol_perc <- round(nrow(interpol_L2) / len * 100, 2)
 
+  val_L1 <- data_L1$value_L1
   deleted_L2 <- data_L2 %>%
-    dplyr::select(value_L2 = value) %>%
-    dplyr::mutate(value_L1 = data_L1$value) %>%
+    dplyr::mutate(value_L1 = val_L1) %>%
     dplyr::mutate(deleted = ifelse(!is.na(value_L1) & is.na(value_L2),
                                    1, 0)) %>%
     dplyr::summarise(deleted = sum(deleted)) %>%
@@ -885,8 +893,7 @@ calcmissing <- function(data_L1, data_L2) {
   deleted_perc <- round(deleted_L2 / len * 100, 2)
 
   missing_L2 <- data_L2 %>%
-    dplyr::select(value_L2 = value) %>%
-    dplyr::mutate(value_L1 = data_L1$value) %>%
+    dplyr::mutate(value_L1 = val_L1) %>%
     dplyr::mutate(missing = ifelse(is.na(value_L1) & is.na(value_L2),
                                    1, 0)) %>%
     dplyr::summarise(missing = sum(missing)) %>%
