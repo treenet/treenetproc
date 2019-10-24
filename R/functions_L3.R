@@ -186,8 +186,15 @@ summariseflagscorr <- function(df, remove = NULL, force = NULL,
   flags <- do.call("paste", c(list_flags, sep = ", "))
   list_all <- list(df$flags, flags)
   flags <- do.call("paste", c(list_all, sep = ", "))
-  flags <- gsub(", NA", "", flags)
-  flags <- gsub("NA, ", "", flags)
+  # remove flags of changes that were removed
+  flags <- ifelse(grepl("(.*out|.*fill|.*jump)(.*rem)", flags, perl = TRUE),
+                  gsub(".*out[[:digit:]]*|.*fill|.*jump[[:digit:]]*", "",
+                       flags),
+                  flags)
+  # remove all other flags if value was deleted
+  flags <- gsub(".*del", "del", flags)
+  # remove NA's and single commas
+  flags <- gsub(", NA|NA, |^, ", "", flags)
   flags <- ifelse(flags == "NA", NA, flags)
 
   df$flags <- flags
