@@ -9,7 +9,7 @@
 #'
 #' @keywords internal
 #'
-plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
+plotting_proc_L2 <- function(data_L1, data_L2, diff,
                              plot_period, plot_add = TRUE,
                              plot_frost = TRUE, plot_interpol = TRUE, tz) {
 
@@ -23,23 +23,23 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
 
   # plot data_L1
   graphics::par(mar = c(0, 5, 4.1, 2.1))
-  graphics::plot(data = data_L1, value ~ ts, type = "l", xaxt = "n", ylab = "",
-                 las = 1, main = passobj("sensor_label"))
+  graphics::plot(data = data_L1, value_L1 ~ ts, type = "l", xaxt = "n",
+                 ylab = "", las = 1, main = passobj("sensor_label"))
   graphics::title(ylab = "L1", mgp = c(3.5, 1, 0))
 
   # plot data_L2
   graphics::par(mar = c(0, 5, 0, 2.1))
-  graphics::plot(data = data_L2, value ~ ts, type = "n", xaxt = "n", ylab = "",
-                 las = 1)
+  graphics::plot(data = data_L2, value_L2 ~ ts, type = "n", xaxt = "n",
+                 ylab = "", las = 1)
   if (plot_frost) {
     if (plot_period %in% c("yearly", "monthly")) {
       plot_frost_period(data_L2 = data_L2)
     }
   }
   if (plot_add) {
-    graphics::lines(data = data_L1, value ~ ts, col = "grey70")
+    graphics::lines(data = data_L1, value_L1 ~ ts, col = "grey70")
   }
-  graphics::lines(data = data_L2, value ~ ts, col = "#08519c")
+  graphics::lines(data = data_L2, value_L2 ~ ts, col = "#08519c")
   if (plot_interpol) {
     if (plot_period %in% c("yearly", "monthly")) {
       plot_interpol_points(data_L2 = data_L2)
@@ -50,20 +50,20 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff, deleted,
   # plot diff
   graphics::par(mar = c(0, 5, 0, 2.1))
   options(warn = -1)
-  graphics::plot(data = data_L2, value ~ ts, type = "n", xlab = "", log = "y",
+  graphics::plot(data = data_L2, value_L2 ~ ts, type = "n", xlab = "", log = "y",
                  yaxt = "n", xaxt = "n", ylab = "", ylim = c(0.1, 1200),
                  las = 1)
   graphics::abline(h = c(0.1, 1, 10, 100, 1000), col = "grey70")
-  graphics::lines(data = deleted, deleted ~ ts, type = "h", lwd = 1,
-                  col = "#fcdcd9")
-  graphics::lines(data = diff, diff_old ~ ts, type = "h", lwd = 2,
+  graphics::lines(data = diff, diff_old ~ ts, type = "h", lwd = 1.5,
                   col = "grey70")
+  graphics::lines(data = diff, deleted ~ ts, type = "h", lwd = 2,
+                  col = "#fcdcd9")
   graphics::lines(data = diff, diff_plot ~ ts, type = "h", lwd = 2,
                   col = "#ef3b2c")
   if (plot_period == "monthly") {
     graphics::text(x = diff$ts,
                    y = rep(c(10, 3, 1, 0.3), length.out = nrow(diff)),
-                   labels = diff$diff_nr_old, font = 2, col = "grey40")
+                   labels = diff$diff_nr_old, col = "grey40", font = 1)
     graphics::text(x = diff$ts,
                    y = rep(c(0.3, 1, 3, 10), length.out = nrow(diff)),
                    labels = diff$diff_nr, font = 2)
@@ -270,8 +270,9 @@ plot_frost_period <- function(data_L2) {
       dplyr::select(ts)
     x1 <- x1$ts
 
-    y0 <- min(data_L2$value, na.rm = TRUE) + 0.02 *
-      (max(data_L2$value, na.rm = TRUE) - min(data_L2$value, na.rm = TRUE))
+    y0 <- min(data_L2$value_L2, na.rm = TRUE) + 0.02 *
+      (max(data_L2$value_L2, na.rm = TRUE) - min(data_L2$value_L2,
+                                                 na.rm = TRUE))
 
     for (s in 1:length(x0)) {
       graphics::segments(x0 = x0[s], y0, x1 = x1[s], y1 = y0, col = "#1ac4c4")
@@ -293,7 +294,7 @@ plot_interpol_points <- function(data_L2) {
 
   interpol <- grep("fill", data_L2$flags)
   if (length(interpol) > 0) {
-    graphics::points(x = data_L2$ts[interpol], y = data_L2$value[interpol],
+    graphics::points(x = data_L2$ts[interpol], y = data_L2$value_L2[interpol],
                      col = "#08519c", pch = 1, cex = 1.2)
   }
 }
