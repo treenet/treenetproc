@@ -70,15 +70,15 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
     dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
     dplyr::group_by(series) %>%
     dplyr::mutate(diff_L1 = c(NA, diff(value, lag = 1))) %>%
-    dplyr::mutate(value_L1 = value) %>%
-    dplyr::ungroup()
+    dplyr::ungroup() %>%
+    dplyr::rename(value_L1 = value)
   data_L2 <- data_L2 %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
     dplyr::group_by(series) %>%
     dplyr::mutate(diff_L2 = c(NA, diff(value, lag = 1))) %>%
-    dplyr::mutate(value_L2 = value) %>%
-    dplyr::ungroup()
+    dplyr::ungroup() %>%
+    dplyr::rename(value_L2 = value)
   deleted <- data_L2 %>%
     dplyr::select(series, ts, value_L2) %>%
     dplyr::left_join(., data_L1, by = c("series", "ts")) %>%
@@ -109,7 +109,9 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
       dplyr::select(series, ts, value_L1, diff_L1, diff_old, diff_nr_old,
                     month_plot) %>%
       dplyr::full_join(., data_L2_sensor, by = c("series", "ts")) %>%
-      dplyr::select(series, ts, value_L1, value_L2, diff_L1, diff_L2,
+      dplyr::full_join(., deleted_sensor,
+                       by = c("series", "ts", "year", "month")) %>%
+      dplyr::select(series, ts, value_L1, value_L2, diff_L1, diff_L2, deleted,
                     diff_old, diff_nr_old, month_plot, year, month) %>%
       dplyr::mutate(diff = diff_L1 - diff_L2) %>%
       dplyr::mutate(diff = ifelse(abs(diff) <= 0.1, 0, diff)) %>%
@@ -117,8 +119,9 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
       dplyr::mutate(diff_plot = abs(diff)) %>%
       dplyr::mutate(diff_nr = 0) %>%
       dplyr::mutate(diff_nr = ifelse(diff != 0, 1, 0)) %>%
+      dplyr::mutate(diff_nr = ifelse(!is.na(deleted), 1, diff_nr)) %>%
       dplyr::mutate(diff_nr = cumsum(diff_nr)) %>%
-      dplyr::mutate(diff_nr = ifelse(diff == 0, NA, diff_nr))
+      dplyr::mutate(diff_nr = ifelse(diff == 0 & is.na(deleted), NA, diff_nr))
 
 
     # Plot L1, L2 and daily diff ----------------------------------------------
@@ -131,25 +134,23 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
           dplyr::filter(year == year_label)
         data_L2_year <- data_L2_sensor %>%
           dplyr::filter(year == year_label)
-        deleted_year <- deleted_sensor %>%
-          dplyr::filter(year == year_label)
         diff_L1_L2 <-
-          data_L1_year$value[which(!is.na(data_L1_year$value))[1]] -
-          data_L2_year$value[which(!is.na(data_L2_year$value))[1]]
-        data_L2_year$value <- data_L2_year$value + diff_L1_L2
+          data_L1_year$value_L1[which(!is.na(data_L1_year$value_L1))[1]] -
+          data_L2_year$value_L2[which(!is.na(data_L2_year$value_L2))[1]]
+        data_L2_year$value_L2 <- data_L2_year$value_L2 + diff_L1_L2
         diff_year <- diff_sensor %>%
           dplyr::filter(year == year_label)
 
         if (plot_period == "yearly") {
-          if (sum(!is.na(data_L1_year$value)) != 0 &
-              sum(!is.na(data_L2_year$value)) != 0) {
+          if (sum(!is.na(data_L1_year$value_L1)) != 0 &
+              sum(!is.na(data_L2_year$value_L2)) != 0) {
             if (plot_show == "diff" &
                 max(abs(diff_year$diff), na.rm = TRUE) < 0.1) {
               next
             }
             plotting_proc_L2(data_L1 = data_L1_year, data_L2 = data_L2_year,
-                             diff = diff_year, deleted = deleted_year,
-                             plot_period = plot_period, tz = tz)
+                             diff = diff_year,  plot_period = plot_period,
+                             tz = tz)
           } else {
             next
           }
@@ -166,12 +167,10 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
               dplyr::filter(month == month_label)
             data_L2_month <- data_L2_year %>%
               dplyr::filter(month == month_label)
-            deleted_month <- deleted_year %>%
-              dplyr::filter(month == month_label)
             diff_L1_L2 <-
-              data_L1_month$value[which(!is.na(data_L1_month$value))[1]] -
-              data_L2_month$value[which(!is.na(data_L2_month$value))[1]]
-            data_L2_month$value <- data_L2_month$value + diff_L1_L2
+              data_L1_month$value_L1[which(!is.na(data_L1_month$value_L1))[1]] -
+              data_L2_month$value_L2[which(!is.na(data_L2_month$value_L2))[1]]
+            data_L2_month$value_L2 <- data_L2_month$value_L2 + diff_L1_L2
             diff_month <- diff_year %>%
               dplyr::filter(month == month_label)
 
@@ -197,18 +196,18 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
                                               diff_nr_old_last),
                                        as.character(diff_nr_old_first))) %>%
                 dplyr::ungroup() %>%
-                dplyr::filter(diff != 0 & !is.na(diff_nr) |
+                dplyr::filter((diff != 0 | !is.na(deleted)) & !is.na(diff_nr) |
                                 diff_old != 0 & !is.na(diff_nr_old)) %>%
                 # select middle value for positioning label in plot
                 dplyr::group_by(year, month, day) %>%
                 dplyr::slice(ceiling(dplyr::n() / 2)) %>%
                 dplyr::ungroup() %>%
-                dplyr::select(ts, diff_nr, diff_plot, diff_nr_old, diff_old,
-                              month_plot)
+                dplyr::select(ts, diff_nr, diff_plot, deleted, diff_nr_old,
+                              diff_old, month_plot)
             }
 
-            if (sum(!is.na(data_L1_month$value)) != 0 &
-                sum(!is.na(data_L2_month$value)) != 0) {
+            if (sum(!is.na(data_L1_month$value_L1)) != 0 &
+                sum(!is.na(data_L2_month$value_L2)) != 0) {
               if (plot_show == "diff" &
                   sum(!is.na(diff_month$diff_nr)) == 0) {
                 next
@@ -223,7 +222,6 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
               plotting_proc_L2(data_L1 = data_L1_month,
                                data_L2 = data_L2_month,
                                diff = diff_month,
-                               deleted = deleted_month,
                                plot_period = plot_period, tz = tz)
             } else {
               next
@@ -237,11 +235,11 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
       year_label <- paste0(years[1], "-", years[length(years)])
       passenv$year_label <- year_label
 
-      if (sum(!is.na(data_L1_sensor$value)) != 0 &
-          sum(!is.na(data_L2_sensor$value)) != 0) {
+      if (sum(!is.na(data_L1_sensor$value_L1)) != 0 &
+          sum(!is.na(data_L2_sensor$value_L2)) != 0) {
         plotting_proc_L2(data_L1 = data_L1_sensor, data_L2 = data_L2_sensor,
-                         diff = diff_sensor, deleted = deleted_sensor,
-                         plot_period = plot_period, tz = tz)
+                         diff = diff_sensor, plot_period = plot_period,
+                         tz = tz)
       } else {
         next
       }
