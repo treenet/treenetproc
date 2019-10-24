@@ -101,7 +101,6 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
     stop("you need to provide 'data_L1' along with 'remove'.")
   }
   check_data_L2(data_L2 = data_L2)
-  check_logical(var = plot, var_name = "plot")
   if (plot & length(data_L1) == 0) {
     stop("'data_L1' needed for plotting. Set 'plot = FALSE' or provide ",
          "'data_L1'.")
@@ -152,7 +151,7 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
 
   if (plot) {
     data_L1 <- data_L1 %>%
-      # add diff old to plot removed differences
+      # add diff_old to plot removed changes
       dplyr::left_join(., diff_old, by = "ts") %>%
       dplyr::mutate(month_plot = 0) %>%
       dplyr::mutate(month = paste0(substr(ts, 1, 7), "-01"))
