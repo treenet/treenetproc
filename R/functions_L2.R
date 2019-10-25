@@ -883,15 +883,11 @@ calcmissing <- function(data_L1, data_L2) {
     dplyr::slice(grep("fill", flags))
   interpol_perc <- round(nrow(interpol_L2) / len * 100, 2)
 
-  val_L1 <- data_L1$value_L1
   deleted_L2 <- data_L2 %>%
-    dplyr::mutate(value_L1 = val_L1) %>%
-    dplyr::mutate(deleted = ifelse(!is.na(value_L1) & is.na(value_L2),
-                                   1, 0)) %>%
-    dplyr::summarise(deleted = sum(deleted)) %>%
-    unlist(., use.names = FALSE)
-  deleted_perc <- round(deleted_L2 / len * 100, 2)
+    dplyr::slice(grep("out", flags))
+  deleted_perc <- round(nrow(deleted_L2) / len * 100, 2)
 
+  val_L1 <- data_L1$value_L1
   missing_L2 <- data_L2 %>%
     dplyr::mutate(value_L1 = val_L1) %>%
     dplyr::mutate(missing = ifelse(is.na(value_L1) & is.na(value_L2),
