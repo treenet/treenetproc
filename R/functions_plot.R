@@ -3,18 +3,19 @@
 #' \code{plotting_proc_L2} contains the code necessary to plot \code{L2}
 #'   dendrometer data.
 #'
+#' @param data_plot input \code{data.frame} containing both \code{L1} and
+#'   \code{L2} data as well as changes in \code{L2} for plotting.
 #' @param plot_add logical, specify whether \code{L1} data should be plotted
 #'   along with \code{L2} data in the second panel of the plot.
 #' @inheritParams plot_proc_L2
 #'
 #' @keywords internal
 #'
-plotting_proc_L2 <- function(data_L1, data_L2, diff,
-                             plot_period, plot_add = TRUE,
+plotting_proc_L2 <- function(data_plot, plot_period, plot_add = TRUE,
                              plot_frost = TRUE, plot_interpol = TRUE, tz) {
 
   # define axis labels
-  axis_labs <- axis_labels_period(df = data_L2, plot_period = plot_period,
+  axis_labs <- axis_labels_period(df = data_plot, plot_period = plot_period,
                                   tz = tz)
 
   # plot ----------------------------------------------------------------------
@@ -23,26 +24,26 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff,
 
   # plot data_L1
   graphics::par(mar = c(0, 5, 4.1, 2.1))
-  graphics::plot(data = data_L1, value_L1 ~ ts, type = "l", xaxt = "n",
+  graphics::plot(data = data_plot, value_L1 ~ ts, type = "l", xaxt = "n",
                  ylab = "", las = 1, main = passobj("sensor_label"))
   graphics::title(ylab = "L1", mgp = c(3.5, 1, 0))
 
   # plot data_L2
   graphics::par(mar = c(0, 5, 0, 2.1))
-  graphics::plot(data = data_L2, value_L2 ~ ts, type = "n", xaxt = "n",
+  graphics::plot(data = data_plot, value_L2 ~ ts, type = "n", xaxt = "n",
                  ylab = "", las = 1)
   if (plot_frost) {
     if (plot_period %in% c("yearly", "monthly")) {
-      plot_frost_period(data_L2 = data_L2)
+      plot_frost_period(df = data_plot)
     }
   }
   if (plot_add) {
-    graphics::lines(data = data_L1, value_L1 ~ ts, col = "grey70")
+    graphics::lines(data = data_plot, value_L1 ~ ts, col = "grey70")
   }
-  graphics::lines(data = data_L2, value_L2 ~ ts, col = "#08519c")
+  graphics::lines(data = data_plot, value_L2 ~ ts, col = "#08519c")
   if (plot_interpol) {
     if (plot_period %in% c("yearly", "monthly")) {
-      plot_interpol_points(data_L2 = data_L2)
+      plot_interpol_points(df = data_plot)
     }
   }
   graphics::title(ylab = "L2", mgp = c(3.5, 1, 0))
@@ -50,23 +51,25 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff,
   # plot diff
   graphics::par(mar = c(0, 5, 0, 2.1))
   options(warn = -1)
-  graphics::plot(data = data_L2, value_L2 ~ ts, type = "n", xlab = "", log = "y",
+  graphics::plot(data = data_plot, value_L2 ~ ts, type = "n", xlab = "", log = "y",
                  yaxt = "n", xaxt = "n", ylab = "", ylim = c(0.1, 1200),
                  las = 1)
   graphics::abline(h = c(0.1, 1, 10, 100, 1000), col = "grey70")
-  graphics::lines(data = diff, diff_old ~ ts, type = "h", lwd = 1.5,
+  graphics::lines(data = data_plot, diff_old ~ ts, type = "h", lwd = 1.5,
                   col = "grey70")
-  graphics::lines(data = diff, deleted ~ ts, type = "h", lwd = 2,
-                  col = "#fcdcd9")
-  graphics::lines(data = diff, diff_plot ~ ts, type = "h", lwd = 2,
-                  col = "#ef3b2c")
+  # different colors for deleted outliers and changes in values
+  graphics::lines(data = data_plot, diff_plot ~ ts, type = "h", lwd = 2,
+                  col = ifelse(grepl("out", data_plot$flags),
+                               "#fcdcd9", "#ef3b2c"))
   if (plot_period == "monthly") {
-    graphics::text(x = diff$ts,
-                   y = rep(c(10, 3, 1, 0.3), length.out = nrow(diff)),
-                   labels = diff$diff_nr_old, col = "grey40", font = 1)
-    graphics::text(x = diff$ts,
-                   y = rep(c(0.3, 1, 3, 10), length.out = nrow(diff)),
-                   labels = diff$diff_nr, font = 2)
+    graphics::text(x = data_plot$ts,
+                   y = rep(c(10, 3, 1, 0.3), length.out = nrow(data_plot)),
+                   labels = data_plot$diff_nr_old, col = "grey40", font = 1)
+    graphics::text(x = data_plot$ts,
+                   y = rep(c(0.3, 1, 3, 10), length.out = nrow(data_plot)),
+                   labels = data_plot$diff_nr, font = 2,
+                   col = ifelse(grepl("out", data_plot$flags),
+                                "#594f4f", "#802018"))
   }
   graphics::axis(2, at = c(0.1, 1, 10, 100, 1000),
                  labels = c(0, 1, 10, 100, 1000), las = 1)
@@ -75,7 +78,7 @@ plotting_proc_L2 <- function(data_L1, data_L2, diff,
 
   # plot twd
   graphics::par(mar = c(4.1, 5, 0, 2.1))
-  graphics::plot(data = data_L2, twd ~ ts, type = "l", xaxt = "n",
+  graphics::plot(data = data_plot, twd ~ ts, type = "l", xaxt = "n",
                  xlab = passobj("year_label"),  ylab = "", las = 1,
                  col = "#7a0177")
   graphics::axis(1, at = axis_labs[[1]], labels = axis_labs[[2]])
@@ -129,7 +132,7 @@ axis_labels_period <- function(df, plot_period, tz) {
 #'
 #' @keywords internal
 #'
-plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
+plot_gro_yr_print_vars <- function(data_plot, print_vars, tz) {
 
   graphics::layout(mat = matrix(c(1, 2), nrow = 2), heights = c(2, 4),
                    widths = 1)
@@ -137,21 +140,21 @@ plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
   # plot yearly growth curves
   graphics::par(mar = c(5.1, 4.1, 4.1, 2.1))
 
-  data_L2_plot <- data_L2 %>%
+  data_plot <- data_plot %>%
     dplyr::mutate(doy = as.numeric(strftime(ts, format = "%j", tz = tz)) - 1)
 
-  graphics::plot(data = data_L2_plot, gro_yr ~ doy, type = "n",
+  graphics::plot(data = data_plot, gro_yr ~ doy, type = "n",
                  main = passobj("sensor_label"), ylab = "gro_yr",
                  xlab = "day of year", xlim = c(0, 365),
-                 ylim = c(0, max(data_L2$gro_yr, na.rm = TRUE)), las = 1)
+                 ylim = c(0, max(data_plot$gro_yr, na.rm = TRUE)), las = 1)
 
-  years <- unique(data_L2_plot$year)
+  years <- unique(data_plot$year)
   colors <- grDevices::rainbow(length(years))
-  data_L2_year <- data_L2_plot %>%
+  data_year <- data_plot %>%
     dplyr::group_by(year) %>%
     dplyr::group_split()
   for (y in 1:length(years)) {
-    graphics::lines(data = data_L2_year[[y]], gro_yr ~ doy, col = colors[y],
+    graphics::lines(data = data_year[[y]], gro_yr ~ doy, col = colors[y],
                     lty = ifelse(y == 1, 2, 1))
   }
   graphics::legend(x = "topleft", legend = years, col = colors, bty = "n",
@@ -207,7 +210,7 @@ plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
                                    "frag_len = ",
                                    passobj("frag_len_plot"), " min\n"))
     # print amount of missing, deleted and interpolated data
-    list_missing <- calcmissing(data_L1 = data_L1, data_L2 = data_L2)
+    list_missing <- calcmissing(data_plot = data_plot)
     graphics::text(x = 0.8, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
                    labels = "changes in data")
     graphics::text(x = 0.8, y = 0.97, adj = c(0, 1), cex = 0.8,
@@ -215,7 +218,7 @@ plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
                                    "deleted: ", list_missing[[2]], "%\n",
                                    "missing: ", list_missing[[3]], "%"))
     # print growth values for different periods
-    gro_period <- calcgroperiods(df = data_L2, reso = passobj("reso"),
+    gro_period <- calcgroperiods(df = data_plot, reso = passobj("reso"),
                                  tz = tz)
     if (length(gro_period) > 0) {
       graphics::text(x = 0, y = 0.7, adj = c(0, 1), font = 2, cex = 0.8,
@@ -244,15 +247,15 @@ plot_gro_yr_print_vars <- function(data_L1, data_L2, tz, print_vars) {
 #'   frost, i.e. when the temperature < \code{lowtemp}.
 #'   This function is exported for its use in vignettes only.
 #'
-#' @inheritParams plot_proc_L2
+#' @param df input \code{data.frame}
 #'
 #' @export
 #' @keywords internal
 #'
-plot_frost_period <- function(data_L2) {
+plot_frost_period <- function(df) {
 
-  if (sum(data_L2$frost, na.rm = TRUE) > 0) {
-    x0 <- data_L2 %>%
+  if (sum(df$frost, na.rm = TRUE) > 0) {
+    x0 <- df %>%
       dplyr::mutate(frost_group = cumsum(frost)) %>%
       dplyr::filter(frost == TRUE) %>%
       dplyr::group_by(frost_group) %>%
@@ -261,7 +264,7 @@ plot_frost_period <- function(data_L2) {
       dplyr::select(ts)
     x0 <- x0$ts
 
-    x1 <- data_L2 %>%
+    x1 <- df %>%
       dplyr::mutate(frost_group = cumsum(frost)) %>%
       dplyr::filter(frost == TRUE) %>%
       dplyr::group_by(frost_group) %>%
@@ -270,8 +273,8 @@ plot_frost_period <- function(data_L2) {
       dplyr::select(ts)
     x1 <- x1$ts
 
-    y0 <- min(data_L2$value_L2, na.rm = TRUE) + 0.02 *
-      (max(data_L2$value_L2, na.rm = TRUE) - min(data_L2$value_L2,
+    y0 <- min(df$value_L2, na.rm = TRUE) + 0.02 *
+      (max(df$value_L2, na.rm = TRUE) - min(df$value_L2,
                                                  na.rm = TRUE))
 
     for (s in 1:length(x0)) {
@@ -286,15 +289,15 @@ plot_frost_period <- function(data_L2) {
 #' \code{plot_interpol_points} adds points on top of line graph to show
 #'   points that were interpolated.
 #'
-#' @inheritParams plot_proc_L2
+#' @param df input \code{data.frame}
 #'
 #' @keywords internal
 #'
-plot_interpol_points <- function(data_L2) {
+plot_interpol_points <- function(df) {
 
-  interpol <- grep("fill", data_L2$flags)
+  interpol <- grep("fill", df$flags)
   if (length(interpol) > 0) {
-    graphics::points(x = data_L2$ts[interpol], y = data_L2$value_L2[interpol],
+    graphics::points(x = df$ts[interpol], y = df$value_L2[interpol],
                      col = "#08519c", pch = 1, cex = 1.2)
   }
 }
