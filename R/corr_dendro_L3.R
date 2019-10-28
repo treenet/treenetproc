@@ -40,8 +40,8 @@
 #'
 #' @examples
 #' corr_dendro_L3(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
-#'                remove = c(1:4, 6), force = "2013-08-12",
-#'                delete = c("2013-08-01", "2013-08-05"),
+#'                remove = 74, force = "2013-08-12",
+#'                delete = c("2013-08-01", "2013-08-06"),
 #'                series = "site-1_dendro-3", plot_export = FALSE)
 #'
 corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
