@@ -65,32 +65,25 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
   if (!("month_plot" %in% colnames(data_L1))) {
     data_L1$month_plot <- 0
   }
-  data_L1 <- data_L1 %>%
+  df_L1 <- data_L1 %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
     dplyr::group_by(series) %>%
     dplyr::mutate(diff_L1 = c(NA, diff(value, lag = 1))) %>%
     dplyr::ungroup() %>%
     dplyr::rename(value_L1 = value)
-  data_L2 <- data_L2 %>%
+  df_L2 <- data_L2 %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
     dplyr::group_by(series) %>%
     dplyr::mutate(diff_L2 = c(NA, diff(value, lag = 1))) %>%
     dplyr::ungroup() %>%
     dplyr::rename(value_L2 = value)
-  deleted <- data_L2 %>%
-    dplyr::select(series, ts, value_L2) %>%
-    dplyr::left_join(., data_L1, by = c("series", "ts")) %>%
-    dplyr::group_by(series) %>%
-    dplyr::mutate(deleted = ifelse(!is.na(value_L1) & is.na(value_L2),
-                                   100, NA)) %>%
-    dplyr::ungroup() %>%
-    dplyr::arrange(series, ts) %>%
-    dplyr::select(ts, year, month, series, deleted)
+  df <- dplyr::full_join(df_L1, df_L2, by = c("ts", "series", "version",
+                                              "year", "month"))
 
-  sensors <- unique(data_L1$series)
-  years <- unique(data_L1$year)
+  sensors <- unique(df$series)
+  years <- unique(df$year)
 
   if (plot_export) {
     grDevices::pdf(paste0(plot_name, ".pdf"), width = 8.3, height = 11.7)
@@ -98,30 +91,21 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
   for (s in 1:length(sensors)) {
     sensor_label <- sensors[s]
     passenv$sensor_label <- sensor_label
-    data_L1_sensor <- data_L1 %>%
-      dplyr::filter(series == sensor_label)
-    data_L2_sensor <- data_L2 %>%
-      dplyr::filter(series == sensor_label)
-    deleted_sensor <- deleted %>%
+    df_sensor <- df %>%
       dplyr::filter(series == sensor_label)
 
-    diff_sensor <- data_L1_sensor %>%
-      dplyr::select(series, ts, value_L1, diff_L1, diff_old, diff_nr_old,
-                    month_plot) %>%
-      dplyr::full_join(., data_L2_sensor, by = c("series", "ts")) %>%
-      dplyr::full_join(., deleted_sensor,
-                       by = c("series", "ts", "year", "month")) %>%
-      dplyr::select(series, ts, value_L1, value_L2, diff_L1, diff_L2, deleted,
-                    diff_old, diff_nr_old, month_plot, year, month) %>%
+    diff_sensor <- df_sensor %>%
       dplyr::mutate(diff = diff_L1 - diff_L2) %>%
       dplyr::mutate(diff = ifelse(abs(diff) <= 0.1, 0, diff)) %>%
       dplyr::mutate(diff = ifelse(is.na(diff), 0, diff)) %>%
+      # add diff = 100 for removed outliers (flag = "out")
+      dplyr::mutate(diff = ifelse(grepl("out", flags), 100, diff)) %>%
       dplyr::mutate(diff_plot = abs(diff)) %>%
       dplyr::mutate(diff_nr = 0) %>%
-      dplyr::mutate(diff_nr = ifelse(diff != 0, 1, 0)) %>%
-      dplyr::mutate(diff_nr = ifelse(!is.na(deleted), 1, diff_nr)) %>%
+      dplyr::mutate(diff_nr = ifelse(grepl(".*out|.*jump", flags), 1, 0)) %>%
       dplyr::mutate(diff_nr = cumsum(diff_nr)) %>%
-      dplyr::mutate(diff_nr = ifelse(diff == 0 & is.na(deleted), NA, diff_nr))
+      dplyr::mutate(diff_nr = ifelse(grepl(".*out|.*jump", flags),
+                                     diff_nr, NA))
 
 
     # Plot L1, L2 and daily diff ----------------------------------------------
@@ -130,26 +114,21 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
       for (y in 1:length(years)) {
         year_label <- years[y]
         passenv$year_label <- year_label
-        data_L1_year <- data_L1_sensor %>%
-          dplyr::filter(year == year_label)
-        data_L2_year <- data_L2_sensor %>%
-          dplyr::filter(year == year_label)
-        diff_L1_L2 <-
-          data_L1_year$value_L1[which(!is.na(data_L1_year$value_L1))[1]] -
-          data_L2_year$value_L2[which(!is.na(data_L2_year$value_L2))[1]]
-        data_L2_year$value_L2 <- data_L2_year$value_L2 + diff_L1_L2
-        diff_year <- diff_sensor %>%
-          dplyr::filter(year == year_label)
+        df_year <- diff_sensor %>%
+          dplyr::filter(year == year_label) %>%
+          # set value_L1 and value_L2 to same value at beginning of year
+          dplyr::mutate(value_L2 = value_L2 +
+                          (value_L1[which(!is.na(value_L1))[1]] -
+                             value_L2[which(!is.na(value_L2))[1]]))
 
         if (plot_period == "yearly") {
-          if (sum(!is.na(data_L1_year$value_L1)) != 0 &
-              sum(!is.na(data_L2_year$value_L2)) != 0) {
+          if (sum(!is.na(df_year$value_L1)) != 0 &
+              sum(!is.na(df_year$value_L2)) != 0) {
             if (plot_show == "diff" &
-                max(abs(diff_year$diff), na.rm = TRUE) < 0.1) {
+                max(df_year$diff_plot) < 0.1) {
               next
             }
-            plotting_proc_L2(data_L1 = data_L1_year, data_L2 = data_L2_year,
-                             diff = diff_year,  plot_period = plot_period,
+            plotting_proc_L2(data_plot = df_year, plot_period = plot_period,
                              tz = tz)
           } else {
             next
@@ -157,27 +136,23 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
         }
 
         if (plot_period == "monthly") {
-          months <- unique(data_L1_year$month)
+          months <- unique(df_year$month)
 
           for (m in 1:length(months)) {
             month_label <- months[m]
             year_label <- paste0(years[y], "-", months[m])
             passenv$year_label <- year_label
-            data_L1_month <- data_L1_year %>%
-              dplyr::filter(month == month_label)
-            data_L2_month <- data_L2_year %>%
-              dplyr::filter(month == month_label)
-            diff_L1_L2 <-
-              data_L1_month$value_L1[which(!is.na(data_L1_month$value_L1))[1]] -
-              data_L2_month$value_L2[which(!is.na(data_L2_month$value_L2))[1]]
-            data_L2_month$value_L2 <- data_L2_month$value_L2 + diff_L1_L2
-            diff_month <- diff_year %>%
-              dplyr::filter(month == month_label)
+            df_month <- df_year %>%
+              dplyr::filter(month == month_label) %>%
+              # set value_L1 and value_L2 to same value at beginning of month
+              dplyr::mutate(value_L2 = value_L2 +
+                              (value_L1[which(!is.na(value_L1))[1]] -
+                                 value_L2[which(!is.na(value_L2))[1]]))
 
-            if (sum(!is.na(diff_month$diff_nr)) != 0 |
-                sum(!is.na(diff_month$diff_nr_old)) != 0) {
+            if (sum(!is.na(df_month$diff_nr)) != 0 |
+                sum(!is.na(df_month$diff_nr_old)) != 0) {
 
-              diff_month <- diff_month %>%
+              diff_month <- df_month %>%
                 dplyr::mutate(day = strftime(ts, format = "%d", tz = tz)) %>%
                 dplyr::group_by(year, month, day) %>%
                 dplyr::mutate(
@@ -196,32 +171,33 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
                                               diff_nr_old_last),
                                        as.character(diff_nr_old_first))) %>%
                 dplyr::ungroup() %>%
-                dplyr::filter((diff != 0 | !is.na(deleted)) & !is.na(diff_nr) |
-                                diff_old != 0 & !is.na(diff_nr_old)) %>%
+                dplyr::filter((diff != 0 & !is.na(diff_nr)) |
+                                (diff_old != 0 & !is.na(diff_nr_old))) %>%
                 # select middle value for positioning label in plot
                 dplyr::group_by(year, month, day) %>%
                 dplyr::slice(ceiling(dplyr::n() / 2)) %>%
                 dplyr::ungroup() %>%
-                dplyr::select(ts, diff_nr, diff_plot, deleted, diff_nr_old,
-                              diff_old, month_plot)
+                dplyr::select(series, ts, diff_nr, diff_nr_old)
+
+              df_month <- df_month %>%
+                dplyr::select(-diff_nr, -diff_nr_old) %>%
+                dplyr::full_join(., diff_month, by = c("series", "ts"))
             }
 
-            if (sum(!is.na(data_L1_month$value_L1)) != 0 &
-                sum(!is.na(data_L2_month$value_L2)) != 0) {
+            if (sum(!is.na(df_month$value_L1)) != 0 &
+                sum(!is.na(df_month$value_L2)) != 0) {
               if (plot_show == "diff" &
-                  sum(!is.na(diff_month$diff_nr)) == 0) {
+                  sum(!is.na(df_month$diff_nr)) == 0) {
                 next
               }
               if (plot_show == "diff_corr") {
-                if (sum(!is.na(diff_month$diff_nr_old)) == 0 &
-                    !(1 %in% diff_month$month_plot)) {
+                if (sum(!is.na(df_month$diff_nr_old)) == 0 &
+                    !(1 %in% df_month$month_plot)) {
                   next
                 }
               }
 
-              plotting_proc_L2(data_L1 = data_L1_month,
-                               data_L2 = data_L2_month,
-                               diff = diff_month,
+              plotting_proc_L2(data_plot = df_month,
                                plot_period = plot_period, tz = tz)
             } else {
               next
@@ -235,10 +211,9 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
       year_label <- paste0(years[1], "-", years[length(years)])
       passenv$year_label <- year_label
 
-      if (sum(!is.na(data_L1_sensor$value_L1)) != 0 &
-          sum(!is.na(data_L2_sensor$value_L2)) != 0) {
-        plotting_proc_L2(data_L1 = data_L1_sensor, data_L2 = data_L2_sensor,
-                         diff = diff_sensor, plot_period = plot_period,
+      if (sum(!is.na(diff_sensor$value_L1)) != 0 &
+          sum(!is.na(diff_sensor$value_L2)) != 0) {
+        plotting_proc_L2(data_plot = diff_sensor, plot_period = plot_period,
                          tz = tz)
       } else {
         next
@@ -246,8 +221,8 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
     }
 
     # Plot yearly growth and print variables  ---------------------------------
-    plot_gro_yr_print_vars(data_L1 = data_L1_sensor, data_L2 = data_L2_sensor,
-                           tz = tz, print_vars = print_vars)
+    plot_gro_yr_print_vars(data_plot = diff_sensor, print_vars = print_vars,
+                           tz = tz)
   }
   if (plot_export) {
     grDevices::dev.off()
