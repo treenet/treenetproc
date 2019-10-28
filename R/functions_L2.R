@@ -869,32 +869,30 @@ grostartend <- function(df, tol = 0.05, tz) {
 #' \code{calcmissing} calculates the percentage of interpolated, deleted and
 #'   missing data.
 #'
-#' @inheritParams plot_proc_L2
+#' @inheritParams plotting_proc_L2
 #'
 #' @return a list of length = 3 with percentages of interpolated, deleted,
 #'   and missing data.
 #'
 #' @keywords internal
 #'
-calcmissing <- function(data_L1, data_L2) {
+calcmissing <- function(data_plot) {
 
-  len <- nrow(data_L2)
-  interpol_L2 <- data_L2 %>%
+  len <- nrow(data_plot)
+  interpol <- data_plot %>%
     dplyr::slice(grep("fill", flags))
-  interpol_perc <- round(nrow(interpol_L2) / len * 100, 2)
+  interpol_perc <- round(nrow(interpol) / len * 100, 2)
 
-  deleted_L2 <- data_L2 %>%
+  deleted <- data_plot %>%
     dplyr::slice(grep("out", flags))
-  deleted_perc <- round(nrow(deleted_L2) / len * 100, 2)
+  deleted_perc <- round(nrow(deleted) / len * 100, 2)
 
-  val_L1 <- data_L1$value_L1
-  missing_L2 <- data_L2 %>%
-    dplyr::mutate(value_L1 = val_L1) %>%
+  missing <- data_plot %>%
     dplyr::mutate(missing = ifelse(is.na(value_L1) & is.na(value_L2),
                                    1, 0)) %>%
     dplyr::summarise(missing = sum(missing)) %>%
     unlist(., use.names = FALSE)
-  missing_perc <- round(missing_L2 / len * 100, 2)
+  missing_perc <- round(missing / len * 100, 2)
 
   list_missing <- list(interpol_perc, deleted_perc, missing_perc)
 
