@@ -11,42 +11,45 @@ removecorr <- function(data_L1, data_L2, remove, tz) {
 
   L1 <- data_L1 %>%
     dplyr::mutate(diff_L1 = c(NA, diff(value, lag = 1))) %>%
-    dplyr::mutate(value_L1 = value) %>%
+    dplyr::rename(value_L1 = value) %>%
     dplyr::select(series, ts, value_L1, diff_L1)
 
   df <- data_L2 %>%
     dplyr::mutate(diff_L2 = c(NA, diff(value, lag = 1))) %>%
+    dplyr::rename(value_L2 = value) %>%
     dplyr::left_join(., L1, by = c("series", "ts")) %>%
-    dplyr::mutate(deleted = ifelse(!is.na(value_L1) & is.na(value),
-                                   100, NA)) %>%
     dplyr::mutate(diff = diff_L1 - diff_L2) %>%
     dplyr::mutate(diff = ifelse(abs(diff) <= 0.1, 0, diff)) %>%
     dplyr::mutate(diff = ifelse(is.na(diff), 0, diff)) %>%
+    # add diff = 100 for removed outliers (flag = "out")
+    dplyr::mutate(diff = ifelse(grepl("out", flags), 100, diff)) %>%
+    dplyr::mutate(diff_plot = abs(diff)) %>%
     dplyr::mutate(diff_nr = 0) %>%
-    dplyr::mutate(diff_nr = ifelse(diff != 0, 1, 0)) %>%
-    dplyr::mutate(diff_nr = ifelse(!is.na(deleted), 1, diff_nr)) %>%
+    dplyr::mutate(diff_nr = ifelse(grepl(".*out|.*jump", flags), 1, 0)) %>%
     dplyr::mutate(diff_nr = cumsum(diff_nr)) %>%
-    dplyr::mutate(diff_nr = ifelse(diff == 0 & is.na(deleted), NA, diff_nr))
+    dplyr::mutate(diff_nr = ifelse(grepl(".*out|.*jump", flags),
+                                   diff_nr, NA))
 
   diff_L1 <- df$diff_L1
-  val <- df$value
+  val <- df$value_L2
   diff <- df$diff
   ts <- df$ts
   remove_row <- which(df$diff_nr %in% remove)
   ts_rem <- df$ts[remove_row]
   ts_rem <- as.POSIXct(paste(substr(as.character(ts_rem), 1, 10), "00:00:00"),
                        format = "%Y-%m-%d %H:%M:%S", tz = tz)
+  flag_old <- df$flags
   flag <- as.vector(rep(FALSE, nrow(df)), mode = "logical")
   for (r in 1:length(remove_row)) {
     rem <- remove_row[r]
     val_diff <- diff[rem]
 
     # remove differences
-    if (val_diff != 0) {
+    if (grepl("jump", flag_old[rem])) {
       val[rem:length(val)] <- val[rem:length(val)] + val_diff
     }
     # restore deleted values
-    if (val_diff == 0) {
+    if (grepl("out", flag_old[rem])) {
       val[rem] <- val[rem - 1] + diff_L1[rem]
     }
 
@@ -56,9 +59,8 @@ removecorr <- function(data_L1, data_L2, remove, tz) {
   # removed changes as input for plotting
   diff_old <- df %>%
     dplyr::filter(diff_nr %in% remove) %>%
-    dplyr::mutate(diff_nr_old = diff_nr) %>%
-    dplyr::mutate(diff_old = abs(diff)) %>%
-    dplyr::mutate(diff_old = ifelse(!is.na(deleted), 100, diff_old)) %>%
+    dplyr::rename(diff_nr_old = diff_nr) %>%
+    dplyr::rename(diff_old = diff_plot) %>%
     dplyr::select(ts, diff_old, diff_nr_old)
 
   df <- data_L2 %>%
