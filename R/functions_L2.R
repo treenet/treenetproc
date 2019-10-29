@@ -765,6 +765,15 @@ removeconsec <- function(df, remove, notremove) {
 #'
 calcmds <- function(df, reso, tz, plot_mds = FALSE, plot_export) {
 
+  if (reso > 720) {
+    message("the time resolution of the dataset ('reso') is too coarse to
+            calculate the maximum daily shrinkage 'mds'.")
+
+    df <- df %>%
+      dplyr::mutate(mds = NA)
+    return(df)
+  }
+
   if ("mds" %in% colnames(df)) {
     df <- df %>%
       dplyr::select(-mds)
