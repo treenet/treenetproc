@@ -68,8 +68,10 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
     for (s in 1:length(list_align)) {
       df <- list_server[[s]]
 
-      df <- tsalign(df = df, reso = 10, year = "asis", tz = tz) %>%
-        dplyr::mutate(series = fill_na(series))
+      if (nrow(df) >= 2) {
+        df <- tsalign(df = df, reso = 10, year = "asis", tz = tz) %>%
+          dplyr::mutate(series = fill_na(series))
+      }
 
       list_align[[s]] <- df
     }
