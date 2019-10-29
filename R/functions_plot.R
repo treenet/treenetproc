@@ -424,12 +424,12 @@ plot_density <- function(df, low, high, limit_val = 20, frost_thr,
                  main = paste(series, "\n", substr(df_plot$ts[1], 1, 10),
                               "to", substr(dplyr::last(df_plot$ts), 1, 10)))
 
-  graphics::rug(x = df_plot$diff_val[df$frost == FALSE], col = "black",
+  graphics::rug(x = df_plot$diff_val[df$frost == FALSE], col = "#9c2828",
                 quiet = TRUE)
   graphics::rug(x = df_plot$diff_val[df$frost == TRUE], col = "#73bfbf",
                 side = 3, quiet = TRUE)
   graphics::abline(v = low, col = "#9c2828")
   graphics::abline(v = high, col = "#9c2828")
-  graphics::abline(v = low * frost_thr, col = "#1ac4c4")
-  graphics::abline(v = high * frost_thr, col = "#1ac4c4")
+  graphics::abline(v = low * frost_thr, col = "#73bfbf")
+  graphics::abline(v = high * frost_thr, col = "#73bfbf")
 }
