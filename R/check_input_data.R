@@ -162,14 +162,14 @@ reso_check_L0 <- function(df, reso) {
   reso_med <- df %>%
     dplyr::mutate(reso = as.numeric(difftime(ts, dplyr::lag(ts, 1),
                                              units = "mins"))) %>%
-    dplyr::summarise(reso_med = median(reso, na.rm = TRUE)) %>%
+    dplyr::summarise(reso_med = stats::median(reso, na.rm = TRUE)) %>%
     dplyr::select(reso_med) %>%
     unlist(use.names = FALSE)
 
   if (2.1 * reso < reso_med) {
     message(paste("The specified 'reso' is very small compared to the",
                   "median time resolution of the input data. The",
-                  "time-alignement may therefore not work properly.",
+                  "time-alignment may therefore not work properly.",
                   "Please increase the value of 'reso'."))
   }
 }
