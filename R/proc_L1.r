@@ -74,7 +74,7 @@ proc_L1 <- function(data, reso = 10, year = "asis", input = "long",
   series_vec <- unique(df$series)
 
 
-  # Process to L1 (time alignement) -------------------------------------------
+  # Process to L1 (time-alignment) --------------------------------------------
   list_L1 <- vector("list", length = length(series_vec))
   df_L0 <- df
   for (s in 1:length(series_vec)) {
