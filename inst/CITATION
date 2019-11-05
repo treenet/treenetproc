@@ -1,0 +1,11 @@
+citHeader("To cite treenetproc in publications use:")
+
+citEntry(
+  entry       = "Manual",
+  title       = "treenetproc - Clean, process and visualise dendrometer data",
+  author      = c(person("Matthias", "Haeni"), person("Simon", "Knüsel"),
+  person("Micah", "Wilhelm"), person("Roman", "Zweifel")),
+  year        = "2019",
+  url         = "https://github.com/treenet/treenetproc",
+  textVersion = "Haeni M., Knüsel S., Wilhelm M., Zweifel R. 2019. treenetproc - Clean, process and visualise dendrometer data. Github repository: https://github.com/treenet/treenetproc"
+)
