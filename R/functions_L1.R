@@ -1,4 +1,4 @@
-#' Time-Alignement of Measurements to Regular Time Intervals
+#' Time-Alignment of Measurements to Regular Time Intervals
 #'
 #' \code{tsalign} aligns measurements to regular time intervals by
 #'   interpolating between irregular time intervals. If precipitation data
@@ -25,7 +25,7 @@ tsalign <- function(df, reso, year, tz) {
     df <- fillintergaps_prec(df = df, reso = reso)
     prec_sum_proc <- sum(df$value, na.rm = T)
     if (!(identical(prec_sum_raw, prec_sum_proc))) {
-      stop(paste0("there was an error with the time-alignement in the ",
+      stop(paste0("there was an error with the time-alignment in the ",
                   "precipitation data. Error in ", series, "."))
     }
   } else {
@@ -132,7 +132,7 @@ roundtimetoreso <- function(df, reso, pos, tz) {
 #' Interpolate Between Irregular and Regular Timesteps
 #'
 #' \code{fillintergaps} interpolates gaps between irregular and regular
-#'   timesteps, i.e. only over very small gaps (more an alignement than an
+#'   timesteps, i.e. only over very small gaps (more an alignment than an
 #'   interpolation).
 #'
 #' @param df input \code{data.frame}.
