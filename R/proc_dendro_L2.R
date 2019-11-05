@@ -53,18 +53,17 @@
 #'   Outliers are classified based on the value difference (referred to as
 #'   \code{diff}) between two timesteps. A \code{diff} is classified as an
 #'   outlier if it deviates more than a threshold value from the first
-#'   or third quartile of all \code{diff} in a specific time window.
-#'   Thresholds are calculated as:\cr
+#'   or third quartile of all \code{diff}. Thresholds are calculated as:\cr
 #'   \code{threshold_low = quantile(diff, probs = 0.25) + tol *
 #'   \link[stats]{mad}(diff)}\cr
 #'   \code{threshold_high = quantile(diff, probs = 0.75) + tol *
 #'   \link[stats]{mad}(diff)}
 #'
 #'   Thus, \code{tol} describes the number of times \code{\link[stats]{mad}}
-#'   is added to the first or third quartile of \code{diff} in a specific time
-#'   window until \code{diff} is classified as an outlier. \code{tol} is
-#'   increased to \code{tol * 15} in periods of probable frost (i.e. in
-#'   periods where the air temperature is below \code{lowtemp}).
+#'   is added to the first or third quartile of \code{diff}, before a
+#'   \code{diff} is classified as an outlier. \code{tol} is increased to
+#'   \code{tol * frost_thr} in periods of probable frost (i.e. in periods
+#'   where the air temperature is below \code{lowtemp}).
 #'
 #'   The maximum daily shrinkage \code{mds} is calculated similarly as in
 #'   the function \code{\link[dendrometeR]{phase_def}} in the package
