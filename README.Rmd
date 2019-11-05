@@ -18,18 +18,21 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 The package `treenetproc` cleans raw dendrometer data. The cleaning process 
-aligns measurements at regular time intervals, removes jumps and outliers,
-flags all changes and plots them as well.
+aligns measurements at regular time intervals and removes jumps and outliers.
+All changes are flagged can be visually examined in the graphical outputs.
 
 ## Installation
 
 You can install the development version of the package from 
 [GitHub](https://github.com/) with:
 
-``` r
+``` {r install packge, echo = TRUE, results = "hide", message=FALSE, warning=FALSE}
 # install.packages("devtools")
+library(devtools)
 devtools::install_github("treenet/treenetproc")
 ```
+<br>
+
 
 ## Example
 
@@ -55,18 +58,38 @@ plot(data = example_L2, value ~ ts, type = "n", xaxt = "n",
 title(ylab = "processed", mgp = c(0.8, 1, 0))
 lines(data = example_L2, value ~ ts, col = "#08519c")
 ```
+<br>
 
 For more information on the functionality of the package please see the 
 package vignettes:
 
-```{r browse vignettes, results="hide", message=FALSE, warning=FALSE}
+```{r install vignettes, results="hide", message=FALSE, warning=FALSE}
 browseVignettes("treenetproc")
 ```
 If you want to access the vignettes you need to build them when installing
 the package:
 
-``` r
+``` {r install package with vignettes, echo = TRUE, results = "hide", message=FALSE, warning=FALSE}
 # install.packages("devtools")
+library(devtools)
 devtools::install_github("treenet/treenetproc", build_vignettes = TRUE)
 ```
+<br>
 
+
+## Citation
+To cite `treenetproc` in a publication use:
+
+```{r citation, echo = TRUE, message=FALSE, warning=FALSE}
+citation("treenetproc")
+```
+
+Please consider citing all required packages as well. The package 
+[`grateful`](https://github.com/Pakillo/grateful) is a helpful resource for 
+this.
+
+```{r cite all dependencies, echo = TRUE, results="hide", message=FALSE, warning=FALSE}
+# install.packages("devtools")
+library(devtools)
+devtools::install_github("Pakillo/grateful")
+```
