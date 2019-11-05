@@ -3,6 +3,7 @@
 
 library(tidyverse)
 
+
 # prepare L0 data -------------------------------------------------------------
 ### prepare jump data
 jump_L0 <- download_treenet(sensor_name = "Beatenberg-0.dendrometer.ch1",
@@ -43,18 +44,27 @@ shrink_2_L0 <- download_treenet(sensor_name = "Pfynwald-02-11.dendrometer.ch0",
                                 tz = "UTC") %>%
   mutate(value = value + (last(delete_L0$value) - first(value)) - 5) %>%
   mutate(series = "site-1_dendro-3")
+
 shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-27" &
                     shrink_2_L0$ts <= "2016-08-28"] <- NA
 shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-28"] <-
   shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-28"] - 490
-shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-28 15:30:00"] <-
-  shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-28 15:30:00"] + 215
-shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 18:10:00"] <-
-  shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 18:10:00"] + 33
+shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 17:10:00"] <-
+  shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 17:10:00"] + 10
+shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 17:20:00"] <-
+  shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 17:20:00"] + 15
+shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 17:30:00"] <-
+  shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 17:30:00"] + 25
+shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 17:40:00"] <-
+  shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 17:40:00"] + 35
+shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 17:50:00"] <-
+  shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 17:50:00"] + 20
+shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 18:00:00"] <-
+  shrink_2_L0$value[shrink_2_L0$ts >= "2016-08-31 18:00:00"] + 10
 shrink_2_L0$value[shrink_2_L0$ts >= "2016-09-02 18:30:00"] <-
-  shrink_2_L0$value[shrink_2_L0$ts >= "2016-09-02 18:30:00"] + 38
+  shrink_2_L0$value[shrink_2_L0$ts >= "2016-09-02 18:30:00"] + 10
 shrink_2_L0$value[shrink_2_L0$ts >= "2016-09-03 18:00:00"] <-
-  shrink_2_L0$value[shrink_2_L0$ts >= "2016-09-03 18:00:00"] + 42
+  shrink_2_L0$value[shrink_2_L0$ts >= "2016-09-03 18:00:00"] + 25
 
 ### prepare frost data
 frost_L0 <- download_treenet(sensor_name = "Jussy-1.dendrometer.ch1",
@@ -102,11 +112,19 @@ ts_dendro_3 <-
 dendro_data_L0$ts[dendro_data_L0$series == "site-1_dendro-3"] <-
   ts_dendro_3[, 1]
 
+# set the year for all dendrometers to 2013
+dendro_data_L0$ts[dendro_data_L0$series == "site-1_dendro-1"] <-
+  dendro_data_L0$ts[dendro_data_L0$series == "site-1_dendro-1"] - 31520952
+dendro_data_L0$ts[dendro_data_L0$series == "site-1_dendro-2"] <-
+  dendro_data_L0$ts[dendro_data_L0$series == "site-1_dendro-2"] - 4 * 31556952
+dendro_data_L0$ts[dendro_data_L0$series == "site-1_dendro-3"] <-
+  dendro_data_L0$ts[dendro_data_L0$series == "site-1_dendro-3"] - 3 * 31556952
+
 # save L0 data
 usethis::use_data(dendro_data_L0, overwrite = TRUE)
 
 
-# prepare L0 data -------------------------------------------------------------
+# prepare L1 data -------------------------------------------------------------
 dendro_data_L1 <- proc_L1(data = dendro_data_L0, reso = 10, input = "long")
 
 # save L1 data
