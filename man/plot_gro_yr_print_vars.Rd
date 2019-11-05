@@ -4,20 +4,14 @@
 \alias{plot_gro_yr_print_vars}
 \title{Plot Yearly Growth Curves and Print Variables}
 \usage{
-plot_gro_yr_print_vars(data_L1, data_L2, tz, print_vars)
+plot_gro_yr_print_vars(data_plot, print_vars, tz)
 }
 \arguments{
-\item{data_L1}{time-aligned dendrometer data as produced by
-\code{\link{proc_L1}}.}
-
-\item{data_L2}{processed dendrometer data as produced by
-\code{\link{proc_dendro_L2}}.}
-
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
-
 \item{print_vars}{logical, specifies whether used variables should be
 plotted in the first panel. Command is only used internally in the
 function \code{\link{proc_dendro_L2}}.}
+
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{plot_gro_yr_print_vars} plots yearly growth curves for the whole

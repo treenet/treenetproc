@@ -10,7 +10,7 @@ proc_treenet(site = NULL, sensor_name = NULL, from = NULL,
   version = "L2", plot = TRUE, plot_period = "full",
   plot_export = TRUE, plot_name = "proc_L2_plot", plot_show = "all",
   plot_mds = FALSE, path_cred = NULL, year = "asis",
-  iter_clean = 1, tz = "Etc/GMT-1")
+  iter_clean = 1, tz = "Etc/GMT-1", use_intl = FALSE)
 }
 \arguments{
 \item{site}{character, specify the site. String is not case sensitive.}
@@ -98,6 +98,10 @@ process is repeated. Can be used to check whether running the cleaning
 process many times has an effect on the results.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+
+\item{use_intl}{logical, specify whether this function is used
+internally on the server. Changes \code{stop()} error messages to
+\code{message()} only.}
 }
 \value{
 The function returns a \code{data.frame} with processed dendrometer
@@ -146,18 +150,17 @@ The function returns a \code{data.frame} with processed dendrometer
   Outliers are classified based on the value difference (referred to as
   \code{diff}) between two timesteps. A \code{diff} is classified as an
   outlier if it deviates more than a threshold value from the first
-  or third quartile of all \code{diff} in a specific time window.
-  Thresholds are calculated as:\cr
+  or third quartile of all \code{diff}. Thresholds are calculated as:\cr
   \code{threshold_low = quantile(diff, probs = 0.25) + tol *
   \link[stats]{mad}(diff)}\cr
   \code{threshold_high = quantile(diff, probs = 0.75) + tol *
   \link[stats]{mad}(diff)}
 
   Thus, \code{tol} describes the number of times \code{\link[stats]{mad}}
-  is added to the first or third quartile of \code{diff} in a specific time
-  window until \code{diff} is classified as an outlier. \code{tol} is
-  increased to \code{tol * 15} in periods of probable frost (i.e. in
-  periods where the air temperature is below \code{lowtemp}).
+  is added to the first or third quartile of \code{diff}, before a
+  \code{diff} is classified as an outlier. \code{tol} is increased to
+  \code{tol * frost_thr} in periods of probable frost (i.e. in periods
+  where the air temperature is below \code{lowtemp}).
 
   The maximum daily shrinkage \code{mds} is calculated similarly as in
   the function \code{\link[dendrometeR]{phase_def}} in the package

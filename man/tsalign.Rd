@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_L1.R
 \name{tsalign}
 \alias{tsalign}
-\title{Time-Alignement of Measurements to Regular Time Intervals}
+\title{Time-Alignment of Measurements to Regular Time Intervals}
 \usage{
 tsalign(df, reso, year, tz)
 }

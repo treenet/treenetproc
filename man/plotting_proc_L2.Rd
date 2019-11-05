@@ -4,15 +4,12 @@
 \alias{plotting_proc_L2}
 \title{Plot Command to Plot L2 Dendrometer Data}
 \usage{
-plotting_proc_L2(data_L1, data_L2, diff, deleted, plot_period,
-  plot_add = TRUE, plot_frost = TRUE, plot_interpol = TRUE, tz)
+plotting_proc_L2(data_plot, plot_period, plot_add = TRUE,
+  plot_frost = TRUE, plot_interpol = TRUE, tz)
 }
 \arguments{
-\item{data_L1}{time-aligned dendrometer data as produced by
-\code{\link{proc_L1}}.}
-
-\item{data_L2}{processed dendrometer data as produced by
-\code{\link{proc_dendro_L2}}.}
+\item{data_plot}{input \code{data.frame} containing both \code{L1} and
+\code{L2} data as well as changes in \code{L2} for plotting.}
 
 \item{plot_period}{specify whether plots should be displayed over the whole
 plot_period (\code{plot_period = "full"}), for each year separately

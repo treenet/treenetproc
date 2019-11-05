@@ -22,7 +22,7 @@ If \code{interpol = NULL} the default value is set to
 }
 \description{
 \code{fillintergaps} interpolates gaps between irregular and regular
-  timesteps, i.e. only over very small gaps (more an alignement than an
+  timesteps, i.e. only over very small gaps (more an alignment than an
   interpolation).
 }
 \keyword{internal}

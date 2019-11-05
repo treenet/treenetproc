@@ -39,7 +39,7 @@ The function returns a \code{data.frame} with corrected \code{L1}
 }
 \examples{
 corr_dendro_L1(data_L1 = dendro_data_L1,
-               delete = c("2016-08-01", "2016-08-05"),
+               delete = c("2013-08-01", "2013-08-05"),
                series = "site-1_dendro-3", plot_export = FALSE)
 
 }

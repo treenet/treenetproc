@@ -4,11 +4,10 @@
 \alias{plot_frost_period}
 \title{Plot Frost Period}
 \usage{
-plot_frost_period(data_L2)
+plot_frost_period(df)
 }
 \arguments{
-\item{data_L2}{processed dendrometer data as produced by
-\code{\link{proc_dendro_L2}}.}
+\item{df}{input \code{data.frame}}
 }
 \description{
 \code{plot_frost_period} draws a horizontal line in periods of possible
