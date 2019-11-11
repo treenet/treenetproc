@@ -421,6 +421,7 @@ plot_density <- function(df, low, high, limit_val = 20, frost_thr,
 
   graphics::plot(stats::density(x = df_plot$diff_val, na.rm = TRUE),
                  xlim = c(limit_val * low, limit_val * high),
+                 xlab = "", ylab = "Density",
                  main = paste(series, "\n", substr(df_plot$ts[1], 1, 10),
                               "to", substr(dplyr::last(df_plot$ts), 1, 10)))
 
