@@ -182,8 +182,7 @@ plot_gro_yr_print_vars <- function(data_plot, print_vars, tz) {
                                    "interpol = ",
                                    passobj("interpol_plot"), "\n",
                                    "frag_len = ",
-                                   passobj("frag_len_plot") *
-                                     passobj("reso"), "\n",
+                                   passobj("frag_len_plot"), "\n",
                                    "tz = ", passobj("tz_plot")))
     # print applied thresholds and values
     graphics::text(x = 0.3, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
@@ -208,7 +207,7 @@ plot_gro_yr_print_vars <- function(data_plot, print_vars, tz) {
                                    "interpol = ",
                                    passobj("interpol_plot"), " min\n",
                                    "frag_len = ",
-                                   passobj("frag_len_plot"), " min\n"))
+                                   passobj("frag_len_plot"), "\n"))
     # print amount of missing, deleted and interpolated data
     list_missing <- calcmissing(data_plot = data_plot)
     graphics::text(x = 0.8, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
