@@ -4,8 +4,7 @@
 \name{treenetproc}
 \alias{treenetproc}
 \alias{treenetproc-package}
-\title{treenetproc: An R package to clean, process and visualize dendrometer
-  data}
+\title{treenetproc - Clean, process and visualize dendrometer data}
 \description{
 The \code{treenetproc} package contains three main functions:
   \code{proc_L1}, \code{proc_dendro_L2}, \code{corr_dendro_L3}

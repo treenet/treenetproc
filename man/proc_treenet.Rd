@@ -52,10 +52,11 @@ linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
 If \code{interpol = NULL} the default value is set to
 \code{interpol = 2.1 * reso}.}
 
-\item{frag_len}{numeric, specifying the length of non-\code{NA} data in
-between \code{NA} data. This is often the case if there is erroneous data
-in between jumps. If \code{frag_len = NULL} the devault value is set to
-\code{frag_len = 2.1}.}
+\item{frag_len}{numeric, specifies the length of data fragments in-between
+\code{NA} data that are automatically deleted during data cleaning. This
+can be helpful to remove short fragments of erroneous data within a
+period of missing data, i.e. after jumps. If \code{frag_len = NULL} the
+devault value is set to \code{frag_len = 2.1}.}
 
 \item{version}{character, specify to which level the data should be
 processed. Can be one of \code{L0, L1} or \code{L2}.}

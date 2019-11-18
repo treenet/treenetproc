@@ -13,10 +13,11 @@ executeflagout(df, len, frag_len, plot_density = FALSE, plot_export,
 \item{len}{specifies the minimal number of consecutive times the value
 difference threshold has to be exceeded for flagging.}
 
-\item{frag_len}{numeric, specifying the length of non-\code{NA} data in
-between \code{NA} data. This is often the case if there is erroneous data
-in between jumps. If \code{frag_len = NULL} the devault value is set to
-\code{frag_len = 2.1}.}
+\item{frag_len}{numeric, specifies the length of data fragments in-between
+\code{NA} data that are automatically deleted during data cleaning. This
+can be helpful to remove short fragments of erroneous data within a
+period of missing data, i.e. after jumps. If \code{frag_len = NULL} the
+devault value is set to \code{frag_len = 2.1}.}
 
 \item{plot_density}{logical, defines whether density plots should be drawn
 in the console. Can be used to check outlier thresholds and removal.}
