@@ -13,7 +13,7 @@
 #'   (\code{plot_period = "monthly"}).
 #' @param plot_show specify whether all periods should be plotted
 #'   (\code{plot_show = "all"}) or only those periods in which \code{L1} and
-#'   \code{L2} dendrometer data differ after processing
+#'   \code{L2} dendrometer data differ after data cleaning
 #'   (\code{plot_show = "diff"}).
 #' @param plot_name character, specify name of the PDF in which the plots are
 #'   saved.
