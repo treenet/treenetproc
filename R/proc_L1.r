@@ -21,13 +21,14 @@
 #' @details The input data needs to contain a timestamp column
 #'   (named \code{ts}). If \code{ts} is not provided in the standard format
 #'   (\code{\%Y-\%m-\%d \%H:\%M:\%S}) the format needs to be specified in
-#'   \code{format_date}.\cr
+#'   \code{format_date}.
+#'
 #'   Data of multiple sensors can either be in \code{long}
 #'   format (\code{input = "long"}) with a column named \code{series} to
 #'   differentiate the sensors or in \code{wide} format (\code{input = "wide"})
-#'   with sensors in separate columns.\cr
-#'   Temperature and precipitation data must contain \code{temp} or
-#'   \code{prec}, respectively, somewhere in their series name.
+#'   with sensors in separate columns. If temperature or precipitation data
+#'   are provided in the same \code{data.frame} as dendrometer data, the names
+#'   of the sensors must contain \code{temp} or \code{prec}, respectively.
 #'
 #'   To align data at regular time intervals defined in \code{reso}, the data
 #'   is linearly interpolated between the two values measured closest to the
