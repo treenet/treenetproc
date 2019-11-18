@@ -24,10 +24,11 @@
 #'   linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
 #'   If \code{interpol = NULL} the default value is set to
 #'   \code{interpol = 2.1 * reso}.
-#' @param frag_len numeric, specifying the length of non-\code{NA} data in
-#'   between \code{NA} data. This is often the case if there is erroneous data
-#'   in between jumps. If \code{frag_len = NULL} the devault value is set to
-#'   \code{frag_len = 2.1}.
+#' @param frag_len numeric, specifies the length of data fragments occurring
+#'   in-between missing data that are automatically deleted during data
+#'   cleaning. This can be helpful to remove short fragments of erroneous data
+#'   within a period of missing data, i.e. after jumps. If
+#'   \code{frag_len = NULL} the devault value is set to \code{frag_len = 2.1}.
 #' @param plot logical, specify whether a comparison of \code{L1} and \code{L2}
 #'   data should be plotted.
 #' @param plot_mds logical, specify whether maxima and minima used for the
@@ -104,8 +105,8 @@
 #'                plot_export = FALSE)
 #'
 proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
-                           tol_jump = 50, tol_out = 10,
-                           frost_thr = 5, lowtemp = 5,
+                           tol_out = 10, tol_jump = 50,
+                           lowtemp = 5, frost_thr = 5,
                            interpol = NULL, frag_len = NULL,
                            plot = TRUE, plot_period = "full",
                            plot_show = "all", plot_export = TRUE,
