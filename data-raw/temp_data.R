@@ -39,15 +39,15 @@ frost_L0 <- frost %>%
                         value * 0.6, value))
 
 ### extend temperature dataset
-after_L0 <- download_treenet(sensor_name = "Jussy-2.sht-temperature.ch0",
-                             from = "2019-03-31", to = "2019-10-19",
-                             data_format = "L0", server = "decentlab",
-                             tz = "UTC") %>%
-  mutate(ts = ts - 6 * 31556952) %>%
+temp_L0 <- download_treenet(sensor_name = "Pfynwald-02-12.sht-temperature.ch3",
+                                 from = "2016-03-30", to = "2018-12-31",
+                                 data_format = "L0", server = "decentlab",
+                                 tz = "UTC") %>%
+  mutate(ts = ts - 3 * 31556952) %>%
   mutate(series = "site-1_temperature")
 
 ### merge temperature data
-temp_data_L0 <- bind_rows(frost_L0, after_L0) %>%
+temp_data_L0 <- bind_rows(frost_L0, temp_L0) %>%
   arrange(ts)
 
 # save L0 data
