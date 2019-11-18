@@ -77,14 +77,16 @@ abline(v = data_L1_hourly$ts, lty = "dashed", col = "grey60")
 points(data = data_L1_hourly, value ~ ts, col = "blue", pch = 16, cex = 0.8)
 lines(data = data_L1_hourly, value ~ ts, col = "blue", lwd = 0.5)
 
-cap <- "**Figure 1** Time-alignment to a resolution of 10 minutes (top: 
-`reso = 10`) and 60 minutes (bottom: `reso = 60`). Grey lines and circles
-are the raw data, blue lines and points are the time-aligned data."
+cap <- "**Figure 1** Example of time-alignments to a resolution of 10 minutes 
+(top: `reso = 10`) and 60 minutes (bottom: `reso = 60`). Grey lines and circles
+indicate the raw data, blue lines and points show the time-aligned data."
 ```
 <br>
 
+**Add one short paragraph on precipitation data and how the interpolation works in this case**
 
-# Data cleaning (L2)
+
+# Data cleaning and processing (L2)
 
 ## Thresholds for jump and outlier correction
 The thresholds for jump and outlier correction are classified based on the 
@@ -205,7 +207,7 @@ To cite `treenetproc` in a publication use:
 citation("treenetproc")
 ```
 
-Please consider citing all required packages as well. The package 
+Consider citing all required packages as well. The package 
 [`grateful`](https://github.com/Pakillo/grateful) is a helpful resource for 
 this.
 
