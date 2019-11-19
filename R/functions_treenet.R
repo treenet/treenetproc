@@ -100,7 +100,7 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
           Precipitation = "precipitation",
           Rad = "radiation",
           RelH = "relativeairhumidity_relh",
-          Soil_temp = "soiltemperatrue",
+          Soil_temp = "soiltemperature",
           Soil_WP = "soilwaterpotential_soilwp",
           Wind_speed = "windspeed",
           Dendrometer_X = "dendrometer",
@@ -116,11 +116,15 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
           Ozone = "ozone",
           Precipitation_Invervall = "precipitationinterval")
 
-      meta_sensor <- meta %>%
-        dplyr::filter(Seriesname %in% meta_filter) %>%
-        dplyr::mutate(Sensor_query = unname(lookup[Sensor_class])) %>%
-        dplyr::filter(grepl(paste0(sensor_class[t]), Sensor_query,
-                            ignore.case = TRUE))
+      if (sensor_class == "all") {
+        meta_sensor <- meta
+      } else {
+        meta_sensor <- meta %>%
+          dplyr::filter(Seriesname %in% meta_filter) %>%
+          dplyr::mutate(Sensor_query = unname(lookup[Sensor_class])) %>%
+          dplyr::filter(grepl(paste0(sensor_class[t]), Sensor_query,
+                              ignore.case = TRUE))
+      }
 
       if (nrow(meta_sensor) != 0) {
         meta_select <- c(meta_select, meta_sensor$Seriesname)
