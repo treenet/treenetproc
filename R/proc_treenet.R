@@ -4,7 +4,7 @@
 #'   treenet server directly to \code{L1} (i.e. time-aligned data) or
 #'   \code{L2} (i.e. cleaned \code{L1} data).
 #'
-#' @param version character, specify to which level the data should be
+#' @param proc_to character, specify to which level the data should be
 #'   processed. Can be one of \code{L0, L1} or \code{L2}.
 #' @inheritParams select_series
 #' @inheritParams download_series
@@ -46,7 +46,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                          frost_thr = 5, lowtemp = 5,
                          tol_jump = 50, tol_out = 10,
                          interpol = NULL, frag_len = NULL,
-                         version = "L2", plot = TRUE, plot_period = "full",
+                         proc_to = "L2", plot = TRUE, plot_period = "full",
                          plot_export = TRUE, plot_name = "proc_L2_plot",
                          plot_show = "all", plot_mds = FALSE,
                          path_cred = NULL, year = "asis", iter_clean = 1,
@@ -81,7 +81,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
   print("process data to L1 (time-aligned data)...")
   df_L1 <- proc_L1(data = df_L0, reso = reso, year = year, input = "long",
                    date_format = "%Y-%m-%d %H:%M:%S", tz = tz)
-  if (version == "L1") {
+  if (proc_to == "L1") {
     return(df_L1)
   }
 
@@ -93,14 +93,18 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
   df_L1 <- df_L1 %>%
     dplyr::left_join(., meta_series, by = "series")
 
-  df_L2 <- proc_dendro_L2(dendro_data = df_L1, temp_data = NULL,
-                          tol_jump = tol_jump, tol_out = tol_out,
-                          frost_thr = frost_thr, lowtemp = lowtemp,
-                          interpol = interpol, frag_len = frag_len,
-                          plot = plot, plot_period = plot_period,
-                          plot_show = plot_show, plot_export = plot_export,
-                          plot_name = plot_name, plot_mds = plot_mds,
-                          iter_clean = iter_clean, tz = tz)
+  if (use_intl) {
+    suppressMessages(
+      df_L2 <- proc_dendro_L2(dendro_data = df_L1, temp_data = NULL,
+                              tol_jump = tol_jump, tol_out = tol_out,
+                              frost_thr = frost_thr, lowtemp = lowtemp,
+                              interpol = interpol, frag_len = frag_len,
+                              plot = plot, plot_period = plot_period,
+                              plot_show = plot_show, plot_export = plot_export,
+                              plot_name = plot_name, plot_mds = plot_mds,
+                              iter_clean = iter_clean, tz = tz)
+    )
+  }
 
   print("Done!")
   return(df_L2)
