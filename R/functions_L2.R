@@ -981,7 +981,6 @@ calcgroperiods <- function(df, reso, tz) {
 #' \code{summariseflags} summarises all previously created flags in one column.
 #'
 #' @param df input \code{data.frame}.
-#' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
 #'

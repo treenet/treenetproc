@@ -239,7 +239,6 @@ ts_overlap_check <- function(df, tem) {
 #'   assumed).
 #'
 #' @param df input \code{data.frame} of dendrometer data.
-#' @inheritParams proc_L1
 #'
 #' @keywords internal
 #'
