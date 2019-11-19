@@ -23,11 +23,6 @@ tsalign <- function(df, reso, year, tz) {
   if (length(grep("prec", series, ignore.case = T)) > 0) {
     prec_sum_raw <- sum(df$value, na.rm = T)
     df <- fillintergaps_prec(df = df, reso = reso)
-    prec_sum_proc <- sum(df$value, na.rm = T)
-    if (!(identical(prec_sum_raw, prec_sum_proc))) {
-      stop(paste0("there was an error with the time-alignment in the ",
-                  "precipitation data. Error in ", series, "."))
-    }
   } else {
     df <- fillintergaps(df = df, reso = reso, flag = FALSE,
                         interpol = NULL)
@@ -36,7 +31,16 @@ tsalign <- function(df, reso, year, tz) {
   df <- df %>%
     dplyr::left_join(ts_seq, ., by = "ts") %>%
     dplyr::arrange(series, ts) %>%
-    dplyr::distinct()
+    dplyr::distinct() %>%
+    dplyr::mutate(series = series)
+
+  if (length(grep("prec", series, ignore.case = T)) > 0) {
+    prec_sum_proc <- sum(df$value, na.rm = T)
+    if (!(identical(prec_sum_raw, prec_sum_proc))) {
+      stop(paste0("there was an error with the time-alignment in the ",
+                  "precipitation data. Error in ", series, "."))
+    }
+  }
 
   return(df)
 }
