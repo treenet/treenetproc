@@ -72,10 +72,10 @@ check_input_variables <- function(list) {
     }
   }
 
-  # version
-  if ("version" %in% var_names) {
-    if (!(list$version %in% c("L1", "L2"))) {
-      stop("Variable 'version' needs to be 'L1' or 'L2'.")
+  # proc_to
+  if ("proc_to" %in% var_names) {
+    if (!(list$proc_to %in% c("L1", "L2"))) {
+      stop("Variable 'proc_to' needs to be 'L1' or 'L2'.")
     }
   }
 
