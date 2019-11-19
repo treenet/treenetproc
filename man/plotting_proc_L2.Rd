@@ -4,8 +4,14 @@
 \alias{plotting_proc_L2}
 \title{Plot Command to Plot L2 Dendrometer Data}
 \usage{
-plotting_proc_L2(data_plot, plot_period, plot_add = TRUE,
-  plot_frost = TRUE, plot_interpol = TRUE, tz)
+plotting_proc_L2(
+  data_plot,
+  plot_period,
+  plot_add = TRUE,
+  plot_frost = TRUE,
+  plot_interpol = TRUE,
+  tz
+)
 }
 \arguments{
 \item{data_plot}{input \code{data.frame} containing both \code{L1} and

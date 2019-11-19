@@ -4,9 +4,16 @@
 \alias{plot_proc_L2}
 \title{Plot Processed Dendrometer Data}
 \usage{
-plot_proc_L2(data_L1, data_L2, plot_period = "full", plot_show = "all",
-  plot_export = TRUE, plot_name = "proc_L2_plot", tz = "UTC",
-  print_vars = FALSE)
+plot_proc_L2(
+  data_L1,
+  data_L2,
+  plot_period = "full",
+  plot_show = "all",
+  plot_export = TRUE,
+  plot_name = "proc_L2_plot",
+  tz = "UTC",
+  print_vars = FALSE
+)
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by
@@ -22,7 +29,7 @@ plot_period (\code{plot_period = "full"}), for each year separately
 
 \item{plot_show}{specify whether all periods should be plotted
 (\code{plot_show = "all"}) or only those periods in which \code{L1} and
-\code{L2} dendrometer data differ after processing
+\code{L2} dendrometer data differ after data cleaning
 (\code{plot_show = "diff"}).}
 
 \item{plot_export}{logical, specifies whether the plots are exported as a

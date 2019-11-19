@@ -4,8 +4,7 @@
 \alias{fillintergaps}
 \title{Interpolate Between Irregular and Regular Timesteps}
 \usage{
-fillintergaps(df, reso, interpol = NULL, type = "linear",
-  flag = FALSE)
+fillintergaps(df, reso, interpol = NULL, type = "linear", flag = FALSE)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}

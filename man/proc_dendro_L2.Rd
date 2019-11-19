@@ -4,11 +4,24 @@
 \alias{proc_dendro_L2}
 \title{Process L1 Dendrometer Data to L2}
 \usage{
-proc_dendro_L2(dendro_data, temp_data = NULL, tol_out = 10,
-  tol_jump = 50, lowtemp = 5, frost_thr = 5, interpol = NULL,
-  frag_len = NULL, plot = TRUE, plot_period = "full",
-  plot_show = "all", plot_export = TRUE, plot_name = "proc_L2_plot",
-  plot_mds = FALSE, iter_clean = 1, tz = "UTC")
+proc_dendro_L2(
+  dendro_data,
+  temp_data = NULL,
+  tol_out = 10,
+  tol_jump = 50,
+  lowtemp = 5,
+  frost_thr = 5,
+  interpol = NULL,
+  frag_len = NULL,
+  plot = TRUE,
+  plot_period = "full",
+  plot_show = "all",
+  plot_export = TRUE,
+  plot_name = "proc_L2_plot",
+  plot_mds = FALSE,
+  iter_clean = 1,
+  tz = "UTC"
+)
 }
 \arguments{
 \item{dendro_data}{\code{data.frame} with time-aligned dendrometer
@@ -37,11 +50,11 @@ linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
 If \code{interpol = NULL} the default value is set to
 \code{interpol = 2.1 * reso}.}
 
-\item{frag_len}{numeric, specifies the length of data fragments in-between
-\code{NA} data that are automatically deleted during data cleaning. This
-can be helpful to remove short fragments of erroneous data within a
-period of missing data, i.e. after jumps. If \code{frag_len = NULL} the
-devault value is set to \code{frag_len = 2.1}.}
+\item{frag_len}{numeric, specifies the length of data fragments occurring
+in-between missing data that are automatically deleted during data
+cleaning. This can be helpful to remove short fragments of erroneous data
+within a period of missing data, i.e. after jumps. If
+\code{frag_len = NULL} the devault value is set to \code{frag_len = 2.1}.}
 
 \item{plot}{logical, specify whether a comparison of \code{L1} and \code{L2}
 data should be plotted.}
@@ -53,7 +66,7 @@ plot_period (\code{plot_period = "full"}), for each year separately
 
 \item{plot_show}{specify whether all periods should be plotted
 (\code{plot_show = "all"}) or only those periods in which \code{L1} and
-\code{L2} dendrometer data differ after processing
+\code{L2} dendrometer data differ after data cleaning
 (\code{plot_show = "diff"}).}
 
 \item{plot_export}{logical, specifies whether the plots are exported as a
