@@ -14,20 +14,18 @@
 #'
 tsalign <- function(df, reso, year, tz) {
 
-  series <- unique(df$series)
+  series_name <- unique(df$series)
 
   out_generatets <- generatets(df = df, reso = reso, year = year, tz = tz)
   df <- out_generatets[[1]]
   ts_seq <- out_generatets[[2]]
 
-  if (length(grep("prec", series, ignore.case = T)) > 0) {
-    prec_sum_raw <- sum(df$value, na.rm = T)
+  if (length(grep("prec", series_name, ignore.case = T)) > 0) {
+    prec_sum_raw <- df %>%
+      dplyr::filter(ts <= dplyr::last(ts_seq$ts)) %>%
+      dplyr::summarise(sum = round(sum(value, na.rm = T), 1)) %>%
+      unlist(., use.names = FALSE)
     df <- fillintergaps_prec(df = df, reso = reso)
-    prec_sum_proc <- sum(df$value, na.rm = T)
-    if (!(identical(prec_sum_raw, prec_sum_proc))) {
-      stop(paste0("there was an error with the time-alignment in the ",
-                  "precipitation data. Error in ", series, "."))
-    }
   } else {
     df <- fillintergaps(df = df, reso = reso, flag = FALSE,
                         interpol = NULL)
@@ -35,8 +33,17 @@ tsalign <- function(df, reso, year, tz) {
 
   df <- df %>%
     dplyr::left_join(ts_seq, ., by = "ts") %>%
-    dplyr::arrange(series, ts) %>%
-    dplyr::distinct()
+    dplyr::arrange(ts) %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(series = series_name)
+
+  if (length(grep("prec", series_name, ignore.case = T)) > 0) {
+    prec_sum_proc <- round(sum(df$value, na.rm = T), 1)
+    if (!(identical(prec_sum_raw, prec_sum_proc))) {
+      stop(paste0("there was an error with the time-alignment in the ",
+                  "precipitation data. Error in ", series_name, "."))
+    }
+  }
 
   return(df)
 }
