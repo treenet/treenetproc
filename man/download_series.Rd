@@ -4,8 +4,21 @@
 \alias{download_series}
 \title{Download Series from Server}
 \usage{
-download_series(meta_series, data_format, data_version = NULL, from, to,
-  last, bind_df, reso, path_cred, server, temp_ref, tz, use_intl)
+download_series(
+  meta_series,
+  data_format,
+  data_version = NULL,
+  from,
+  to,
+  last,
+  bind_df,
+  reso,
+  path_cred,
+  server,
+  temp_ref,
+  tz,
+  use_intl
+)
 }
 \arguments{
 \item{meta_series}{\code{data.frame}, contains the names of the series to

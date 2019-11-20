@@ -4,13 +4,32 @@
 \alias{proc_treenet}
 \title{Process Treenet Data to L1 or L2}
 \usage{
-proc_treenet(site = NULL, sensor_name = NULL, from = NULL,
-  to = NULL, last = NULL, reso = 10, frost_thr = 5, lowtemp = 5,
-  tol_jump = 50, tol_out = 10, interpol = NULL, frag_len = NULL,
-  version = "L2", plot = TRUE, plot_period = "full",
-  plot_export = TRUE, plot_name = "proc_L2_plot", plot_show = "all",
-  plot_mds = FALSE, path_cred = NULL, year = "asis",
-  iter_clean = 1, tz = "Etc/GMT-1", use_intl = FALSE)
+proc_treenet(
+  site = NULL,
+  sensor_name = NULL,
+  from = NULL,
+  to = NULL,
+  last = NULL,
+  reso = 10,
+  frost_thr = 5,
+  lowtemp = 5,
+  tol_jump = 50,
+  tol_out = 10,
+  interpol = NULL,
+  frag_len = NULL,
+  version = "L2",
+  plot = TRUE,
+  plot_period = "full",
+  plot_export = TRUE,
+  plot_name = "proc_L2_plot",
+  plot_show = "all",
+  plot_mds = FALSE,
+  path_cred = NULL,
+  year = "asis",
+  iter_clean = 1,
+  tz = "Etc/GMT-1",
+  use_intl = FALSE
+)
 }
 \arguments{
 \item{site}{character, specify the site. String is not case sensitive.}
@@ -52,11 +71,11 @@ linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
 If \code{interpol = NULL} the default value is set to
 \code{interpol = 2.1 * reso}.}
 
-\item{frag_len}{numeric, specifies the length of data fragments in-between
-\code{NA} data that are automatically deleted during data cleaning. This
-can be helpful to remove short fragments of erroneous data within a
-period of missing data, i.e. after jumps. If \code{frag_len = NULL} the
-devault value is set to \code{frag_len = 2.1}.}
+\item{frag_len}{numeric, specifies the length of data fragments occurring
+in-between missing data that are automatically deleted during data
+cleaning. This can be helpful to remove short fragments of erroneous data
+within a period of missing data, i.e. after jumps. If
+\code{frag_len = NULL} the devault value is set to \code{frag_len = 2.1}.}
 
 \item{version}{character, specify to which level the data should be
 processed. Can be one of \code{L0, L1} or \code{L2}.}
@@ -77,7 +96,7 @@ saved.}
 
 \item{plot_show}{specify whether all periods should be plotted
 (\code{plot_show = "all"}) or only those periods in which \code{L1} and
-\code{L2} dendrometer data differ after processing
+\code{L2} dendrometer data differ after data cleaning
 (\code{plot_show = "diff"}).}
 
 \item{plot_mds}{logical, specify whether maxima and minima used for the

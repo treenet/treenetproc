@@ -4,9 +4,18 @@
 \alias{corr_dendro_L3}
 \title{Manually Correct Processed Dendrometer Data}
 \usage{
-corr_dendro_L3(data_L1 = NULL, data_L2, remove = NULL, force = NULL,
-  delete = NULL, series = NULL, n_days = 5, plot = TRUE,
-  plot_export = TRUE, tz = "UTC")
+corr_dendro_L3(
+  data_L1 = NULL,
+  data_L2,
+  remove = NULL,
+  force = NULL,
+  delete = NULL,
+  series = NULL,
+  n_days = 5,
+  plot = TRUE,
+  plot_export = TRUE,
+  tz = "UTC"
+)
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by

@@ -4,8 +4,14 @@
 \alias{plot_L1}
 \title{Plot L1 Data}
 \usage{
-plot_L1(data_L1, data_L1_orig = NULL, plot_period = "full",
-  plot_export = TRUE, plot_name = "L1_plot", tz = "UTC")
+plot_L1(
+  data_L1,
+  data_L1_orig = NULL,
+  plot_period = "full",
+  plot_export = TRUE,
+  plot_name = "L1_plot",
+  tz = "UTC"
+)
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by

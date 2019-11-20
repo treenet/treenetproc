@@ -4,8 +4,16 @@
 \alias{calcflagmad}
 \title{Define Outliers Based on Value Distribution}
 \usage{
-calcflagmad(df, reso, wnd = NULL, tol = 10, frost, frost_thr,
-  save_thr = FALSE, correction = NULL)
+calcflagmad(
+  df,
+  reso,
+  wnd = NULL,
+  tol = 10,
+  frost,
+  frost_thr,
+  save_thr = FALSE,
+  correction = NULL
+)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}

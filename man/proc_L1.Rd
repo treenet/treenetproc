@@ -4,8 +4,14 @@
 \alias{proc_L1}
 \title{Process Raw Dendrometer or Meteorological Data to L1}
 \usage{
-proc_L1(data, reso = 10, year = "asis", input = "long",
-  date_format = "\%Y-\%m-\%d \%H:\%M:\%S", tz = "UTC")
+proc_L1(
+  data,
+  reso = 10,
+  year = "asis",
+  input = "long",
+  date_format = "\%Y-\%m-\%d \%H:\%M:\%S",
+  tz = "UTC"
+)
 }
 \arguments{
 \item{data}{input \code{data.frame} containing raw dendrometer or

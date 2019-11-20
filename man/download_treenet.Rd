@@ -4,11 +4,22 @@
 \alias{download_treenet}
 \title{Download Dendrometer Data from TreeNet or Decentlab Server}
 \usage{
-download_treenet(site = NULL, sensor_name = NULL,
-  sensor_class = NULL, from = NULL, to = NULL, bind_df = TRUE,
-  server = "treenet", data_format = "L0", data_version = NULL,
-  path_cred = NULL, export = FALSE, last = NULL, tz = "Etc/GMT-1",
-  use_intl = FALSE)
+download_treenet(
+  site = NULL,
+  sensor_name = NULL,
+  sensor_class = NULL,
+  from = NULL,
+  to = NULL,
+  bind_df = TRUE,
+  server = "treenet",
+  data_format = "L0",
+  data_version = NULL,
+  path_cred = NULL,
+  export = FALSE,
+  last = NULL,
+  tz = "Etc/GMT-1",
+  use_intl = FALSE
+)
 }
 \arguments{
 \item{site}{character, specify the site. String is not case sensitive.}

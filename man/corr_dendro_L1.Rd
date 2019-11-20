@@ -4,8 +4,14 @@
 \alias{corr_dendro_L1}
 \title{Manually Correct Time-Aligned Dendrometer Data}
 \usage{
-corr_dendro_L1(data_L1, delete, series = NULL, plot = TRUE,
-  plot_export = TRUE, tz = "UTC")
+corr_dendro_L1(
+  data_L1,
+  delete,
+  series = NULL,
+  plot = TRUE,
+  plot_export = TRUE,
+  tz = "UTC"
+)
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by

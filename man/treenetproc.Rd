@@ -3,7 +3,6 @@
 \docType{package}
 \name{treenetproc}
 \alias{treenetproc}
-\alias{treenetproc-package}
 \title{treenetproc - Clean, process and visualize dendrometer data}
 \description{
 The \code{treenetproc} package contains three main functions:
