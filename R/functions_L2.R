@@ -692,10 +692,12 @@ findmaxmin <- function(df, reso, st) {
 #'   (i.e. maxima or minima).
 #' @param notremove numeric, in which consecutive values are not removed
 #'   (i.e. maxima or minima).
+#' @param mode character, specifies whether consecutive maxima or minima
+#'   are removed. Can either be \code{"max"} or \code{"min"}.
 #'
 #' @keywords internal
 #'
-removeconsec <- function(df, remove, notremove) {
+removeconsec <- function(df, remove, notremove, mode) {
 
   options(warn = -1)
   rem <- df %>%
@@ -711,7 +713,8 @@ removeconsec <- function(df, remove, notremove) {
     dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
     dplyr::mutate(cons_nr = cumsum(z)) %>%
     dplyr::group_by(cons_nr) %>%
-    dplyr::mutate(rem2 = max(rem, na.rm = T)) %>%
+    dplyr::mutate(rem2 = ifelse(mode == "max", max(rem, na.rm = TRUE),
+                                min(rem, na.rm = TRUE))) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(rem = dplyr::case_when(iscons & rem == rem2 ~ rem,
                                          !iscons ~ rem)) %>%
