@@ -954,6 +954,7 @@ calcgroperiods <- function(df, reso, tz) {
   list_cond <- Filter(f = length, x = list_cond)
 
   # calculate growth for different periods
+  options(warn = -1)
   for (l in 1:length(list_cond)) {
     gro_period <- df %>%
       dplyr::group_by_at(list_cond[[l]]) %>%
@@ -968,6 +969,7 @@ calcgroperiods <- function(df, reso, tz) {
 
     list_gro[[l]] <- gro_period
   }
+  options(warn = 0)
 
   gro_period <- dplyr::bind_rows(list_gro)
 
