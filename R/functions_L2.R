@@ -951,7 +951,7 @@ grostartend <- function(df, tol = 0.05, tz) {
   }
 
   nc <- ncol(df)
-  df <- df %>%
+  gro_season <- df %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::group_by(year) %>%
     dplyr::mutate(gro_tot = sum(gro_yr, na.rm = T)) %>%
@@ -966,8 +966,17 @@ grostartend <- function(df, tol = 0.05, tz) {
       gro_end_ind = dplyr::first(which(gro_sum >= gro_end_tol))) %>%
     dplyr::mutate(
       gro_end = as.numeric(strftime(ts[gro_end_ind], format = "%j"))) %>%
+    dplyr::summarise(ts = ts[1],
+                     gro_start = gro_start[1],
+                     gro_end = gro_end[1]) %>%
     dplyr::ungroup() %>%
-    dplyr::select(1:nc, gro_start, gro_end)
+    dplyr::filter(year != is.na(year)) %>%
+    # remove first year (since results depend on values of previous year)
+    dplyr::slice(-1) %>%
+    dplyr::select(ts, gro_start, gro_end)
+
+  df <- df %>%
+    dplyr::left_join(., gro_season, by = "ts")
 
   return(df)
 }
