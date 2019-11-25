@@ -770,7 +770,7 @@ calccycleparam <- function(df, maxmin, mode) {
     seq <- seq(from = 1, to = 2 * floor(nrow(maxmin) / 2), by = 2)
   }
   if (mode == "ref") {
-    seq <- seq_ref <- seq(from = 2, to = nrow(maxmin), by = 2)
+    seq <- seq(from = 2, to = nrow(maxmin) - 1, by = 2)
   }
   list_out <- vector("list", length = length(seq))
 
