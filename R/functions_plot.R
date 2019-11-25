@@ -301,49 +301,73 @@ plot_interpol_points <- function(df) {
 }
 
 
-#' Plot Maxima and Minima of MDS
+#' Plot Cycles
 #'
-#' \code{plot_mds} plots maxima and minima selected to calculate mds (maximum
-#'   daily shrinkage). Plots are saved as
+#' \code{plot_cycle} plots maxima and minima selected to calculate cycle
+#'   statistics and prints some characteristics of the cycles.
 #'
 #' @param df input \code{data.frame}.
-#' @param maxmin \code{data.frame} containing maxima and minima used for
-#'   the calculation of mds.
+#' @param cycle \code{data.frame} containing cycle statistics on the shrinkage
+#'   phase, refilling phase and full cycle (as produced by the function
+#'   \code{calccycle}.
 #'
 #' @return Plots are saved to current working directory as
-#'   \code{mds_plot.pdf}.
+#'   \code{cycle_plot.pdf}.
 #'
 #' @keywords internal
 #'
-plot_mds <- function(df, maxmin, plot_export) {
-  df <- df %>%
-    dplyr::mutate(month = as.numeric(cut(ts, breaks = "month",
-                                         labels = FALSE)))
+plot_cycle <- function(df, cycle, plot_export) {
 
   series <- unique(df$series)
   if (plot_export) {
-    grDevices::pdf(paste0("mds_plot_", series, ".pdf"),
+    grDevices::pdf(paste0("cycle_plot_", series, ".pdf"),
                    width = 8.3, height = 5.8)
   }
-  for (s in 1:length(series)) {
-    df_series <- df %>%
-      dplyr::filter(series == series[s])
 
-    for (m in 1:max(df_series$month)) {
-      df_plot <- df_series %>%
-        dplyr::filter(month == m)
+  for (c in 1:nrow(cycle)) {
+    cycle_plot <- cycle[c, ]
 
-      if (sum(!is.na(df_plot$value)) != 0) {
-        graphics::plot(x = df_plot$ts, y = df_plot$value, type = "l",
-                       xlab = substr(df_plot$ts[1], 1, 7), ylab = "value",
-                       main = df_plot$series[1])
-        graphics::points(x = maxmin$ts, y = maxmin$max1, pch = 1)
-        graphics::points(x = maxmin$ts, y = maxmin$min1, pch = 2)
-      } else {
-        next
-      }
+    if (is.na(cycle_plot$cycle_dur)) {
+      next
     }
+
+    plot_start <- cycle_plot$shrink_start - as.difftime(8, units = "hours")
+    plot_end <- cycle_plot$ref_end + as.difftime(8, units = "hours")
+
+    df_plot <- df %>%
+      dplyr::filter(ts >= plot_start & ts <= plot_end)
+
+    graphics::plot(x = df_plot$ts, y = df_plot$value, type = "l",
+                   xaxt = "n", las = 1, ylab = "value",
+                   xlab = paste("Time (Hours)\n",
+                                as.Date(cycle_plot$shrink_start), "to",
+                                as.Date(cycle_plot$shrink_end)),
+                   main = paste0(df_plot$series[1], "\n", "Cycle ", c))
+    graphics::axis.POSIXct(1, x = df_plot$ts, format = "%H")
+
+    graphics::points(x = cycle_plot$shrink_start,
+                     y = df_plot$value[df_plot$ts == cycle_plot$shrink_start])
+    graphics::points(x = cycle_plot$ref_end,
+                     y = df_plot$value[df_plot$ts == cycle_plot$ref_end])
+    graphics::points(x = cycle_plot$shrink_end,
+                     y = df_plot$value[df_plot$ts == cycle_plot$shrink_end],
+                     pch = 2)
+
+    graphics::legend(x = "bottomright",
+                     legend = c(paste("Cycle duration =",
+                                      cycle_plot$cycle_dur_class),
+                                paste("Cycle class =", cycle_plot$cycle_class),
+                                paste("Shrink amp =",
+                                      round(cycle_plot$shrink_amp, 2)),
+                                paste("Shrink slope =",
+                                      round(cycle_plot$shrink_slope, 4)),
+                                paste("Refill amp =",
+                                      round(cycle_plot$ref_amp, 2)),
+                                paste("Refill slope =",
+                                      round(cycle_plot$ref_slope, 4))),
+                     bty = "n")
   }
+
   if (plot_export) {
     grDevices::dev.off()
   }
