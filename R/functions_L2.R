@@ -738,12 +738,71 @@ removeconsec <- function(df, remove, notremove) {
 
     rem_noconsec <-
       dplyr::full_join(rem_noconsec, rem_cons, by = c("ts", "rem"))
+#' Calculate Cycle Parameters
+#'
+#' \code{calccycleparam} calculates parameters for cycles of shrinking and
+#'   refilling.
+#'
+#' @param df \code{data.frame} with dendrometer data
+#' @param maxmin \code{data.frame} with minima and maxima and the respective
+#'   time stamps.
+#' @param mode character, specify whether statistics for shrinkage
+#'   (\code{mode = "shrink"}) or refilling \code{mode = "ref"} are
+#'   calculated.
+#'
+#' @keywords internal
+#'
+calccycleparam <- function(df, maxmin, mode) {
+
+  if (mode == "shrink") {
+    param <- data.frame(cycle = NA, shrink_start = NA, shrink_end = NA,
+                        shrink_dur = NA, shrink_amp = NA, shrink_slope = NA)
+  }
+  if (mode == "ref") {
+    param <- data.frame(cycle = NA, ref_start = NA, ref_end = NA,
+                        ref_dur = NA, ref_amp = NA, ref_slope = NA)
   }
 
-  rem_noconsec <- rem_noconsec %>%
-    dplyr::filter(!(is.na(rem)))
+  if (mode == "shrink") {
+    seq <- seq(from = 1, to = 2 * floor(nrow(maxmin) / 2), by = 2)
+  }
+  if (mode == "ref") {
+    seq <- seq(from = 2, to = nrow(maxmin) - 1, by = 2)
+  }
+  list_out <- vector("list", length = length(seq))
 
-  return(rem_noconsec)
+  for (c in 1:length(seq)) {
+    # select single shrinkage or refill
+    df_param <- df %>%
+      dplyr::filter(ts >= maxmin$ts[seq[c]] &
+                      ts <= maxmin$ts[seq[c] + 1])
+    param$cycle <- c
+    param[, 2] <- df_param$ts[1]
+    param[, 3] <- dplyr::last(df_param$ts)
+
+    # set cycles to NA with too much missing data
+    if (length(which(is.na(df_param$value))) > 0.5 * nrow(df_param)) {
+      list_out[[c]] <- param
+      next
+    }
+
+    param[, 4] <- as.numeric(difftime(param[, 3], param[, 2], units = "mins"))
+    param[, 5] <- dplyr::last(df_param$value) - df_param$value[1]
+    param[, 6] <- summary(lm(data = df_param,
+                             value ~ ts))$coefficients[2, 1]
+
+    # set cycles to NA with wrong amplitude (i.e. positive for shrinkage)
+    if (mode == "shrink" & param[, 5] > 0) {
+      param[, 2:6] <- NA
+    }
+    if (mode == "ref" & param[, 5] < 0) {
+      param[, 2:6] <- NA
+    }
+
+    list_out[[c]] <- param
+  }
+  param_all <- dplyr::bind_rows(list_out)
+  return(param_all)
 }
 
 
