@@ -704,47 +704,38 @@ removeconsec <- function(df, remove, notremove, mode) {
     dplyr::mutate(rem = remove) %>%
     dplyr::mutate(norem = notremove) %>%
     dplyr::filter(rem == 2 | norem == 2) %>%
-    dplyr::mutate(rem2 = rep(rle(rem)[[1]], times = rle(rem)[[1]])) %>%
-    dplyr::mutate(rem = ifelse(rem == 2, value, NA)) %>%
-    dplyr::mutate(iscons = ifelse(rem2 > 1 & !is.na(rem), TRUE, FALSE)) %>%
+    # identify consecutive rem
+    dplyr::mutate(rem_cons = rep(rle(rem)[[1]], times = rle(rem)[[1]])) %>%
+    dplyr::mutate(iscons = ifelse(rem_cons > 1 & rem == 2, TRUE, FALSE)) %>%
     dplyr::mutate(cons = cumsum(iscons)) %>%
     dplyr::mutate(y = c(0, diff(cons, lag = 1))) %>%
     dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
     dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
-    dplyr::mutate(cons_nr = cumsum(z)) %>%
-    dplyr::group_by(cons_nr) %>%
-    dplyr::mutate(rem2 = ifelse(mode == "max", max(rem, na.rm = TRUE),
-                                min(rem, na.rm = TRUE))) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(rem = dplyr::case_when(iscons & rem == rem2 ~ rem,
-                                         !iscons ~ rem)) %>%
-    dplyr::group_by(cons_nr) %>%
-    dplyr::mutate(rem_cons = length(unique(rem))) %>%
-    dplyr::ungroup()
-  options(warn = 0)
+    dplyr::mutate(cons_nr = cumsum(z))
 
   rem_noconsec <- rem %>%
-    dplyr::filter(!(iscons == TRUE & rem_cons == 1)) %>%
+    dplyr::filter(rem_cons == 1 & rem == 2) %>%
+    dplyr::mutate(rem = value) %>%
     dplyr::select(ts, rem)
 
   rem_cons <- rem %>%
-    dplyr::filter(iscons == TRUE & rem_cons == 1)
+    dplyr::filter(rem_cons > 1 & rem == 2) %>%
+    dplyr::group_by(cons_nr) %>%
+    # identify rem with lowest or highest value
+    dplyr::filter(value == ifelse(mode == "max", max(value, na.rm = TRUE),
+                                  min(value, na.rm = TRUE))) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(rem = value) %>%
+    # select first of consecutive identical values
+    dplyr::group_by(cons_nr) %>%
+    dplyr::summarise(ts = ts[1],
+                     rem = rem[1]) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(ts, rem)
+  options(warn = 0)
 
-  # select first of consecutive identical values
-  if (nrow(rem_cons) > 0) {
-    rem_cons <- rem_cons %>%
-      dplyr::group_by(cons_nr, rem_cons) %>%
-      dplyr::summarise(ts = ts[1],
-                       rem = rem[1]) %>%
-      dplyr::ungroup() %>%
-      dplyr::select(ts, rem)
-
-    rem_noconsec <-
-      dplyr::full_join(rem_noconsec, rem_cons, by = c("ts", "rem"))
-  }
-
-  rem_noconsec <- rem_noconsec %>%
-    dplyr::filter(!(is.na(rem)))
+  rem_noconsec <- dplyr::bind_rows(rem_noconsec, rem_cons) %>%
+    dplyr::arrange(ts)
 
   return(rem_noconsec)
 }
