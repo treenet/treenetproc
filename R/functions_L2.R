@@ -809,38 +809,27 @@ calccycleparam <- function(df, maxmin, mode) {
 }
 
 
-#' Calculate Maximum Daily Shrinkage (MDS)
+#' Calculates Cycle Statistics
 #'
-#' \code{calcmds} calculates the maximum daily shrinkage (\code{mds}).
-#'   \code{mds} is defined as the largest daily shrinkage. First, local
-#'   maxima and minima are identified using a moving window. \code{mds} is
-#'   only calculated if a local maximum occurs before a local minimum
-#'   (i.e. if the stem shrinks during the day).
+#' \code{calccycle} calculates different statistics and characteristics of
+#'   cycles. To identify the cycles local maxima and minima are identified
+#'   using a moving window.
 #'
 #' @param df input \code{data.frame}.
 #' @inheritParams proc_dendro_L2
 #'
-#' @details \code{calcmds} is inspired by the function
+#' @details \code{calccycle} is inspired by the function
 #'   \code{\link[dendrometeR]{phase_def}} in the package \code{dendrometeR}.
 #'
 #' @keywords internal
 #'
-calcmds <- function(df, reso, tz, plot_mds = FALSE, plot_export) {
+calccycle <- function(df, reso, tz, plot_cycle = FALSE, plot_export) {
 
-  if (reso > 720) {
+  if (reso > 360) {
     message("the time resolution of the dataset ('reso') is too coarse to
-            calculate the maximum daily shrinkage 'mds'.")
-
-    df <- df %>%
-      dplyr::mutate(mds = NA)
+            calculate cycle statistics")
     return(df)
   }
-
-  if ("mds" %in% colnames(df)) {
-    df <- df %>%
-      dplyr::select(-mds)
-  }
-  nc <- ncol(df)
 
   maxmin1 <- findmaxmin(df = df, reso = reso, st = 1)
   maxmin2 <- findmaxmin(df = df, reso = reso, st = 2)
@@ -848,41 +837,90 @@ calcmds <- function(df, reso, tz, plot_mds = FALSE, plot_export) {
   max_wnd <- maxmin1[[1]] + maxmin2[[1]]
   min_wnd <- maxmin1[[2]] + maxmin2[[2]]
 
-  max1 <- removeconsec(df = df, remove = max_wnd, notremove = min_wnd) %>%
+  max1 <- removeconsec(df = df, remove = max_wnd, notremove = min_wnd,
+                       mode = "max") %>%
     dplyr::mutate(max1 = rem) %>%
     dplyr::select(-rem)
-  min1 <- removeconsec(df = df, remove = min_wnd, notremove = max_wnd) %>%
+  min1 <- removeconsec(df = df, remove = min_wnd, notremove = max_wnd,
+                       mode = "min") %>%
     dplyr::mutate(min1 = rem) %>%
     dplyr::select(-rem)
 
   maxmin <- dplyr::full_join(max1, min1, by = "ts") %>%
-    dplyr::arrange(ts)
+    dplyr::arrange(ts) %>%
+    dplyr::mutate(extrema = ifelse(is.na(max1), "min", "max")) %>%
+    dplyr::select(ts, extrema) %>%
+    # set first and last row to a maximum
+    dplyr::slice(which(extrema == "max")[1]:dplyr::n()) %>%
+    dplyr::slice(1:dplyr::last(which(extrema == "max")))
 
-  if (plot_mds) {
-    print("plot mds...")
-    plot_mds(df = df, maxmin = maxmin, plot_export = plot_export)
+  # calculate parameters for shrinkage and refill
+  param_shrink <- calccycleparam(df = df, maxmin = maxmin, mode = "shrink")
+  param_ref <- calccycleparam(df = df, maxmin = maxmin, mode = "ref")
+
+  # calculate maximum daily shrinkage (mds)
+  param_mds <- param_shrink %>%
+    dplyr::mutate(date_start = substr(shrink_start, 1, 10)) %>%
+    dplyr::mutate(date_end = substr(shrink_end, 1, 10)) %>%
+    dplyr::mutate(mds = ifelse(date_start == date_end, shrink_amp, NA)) %>%
+    dplyr::mutate(date_start = as.POSIXct(date_start, tz = tz)) %>%
+    dplyr::select(date_start, mds)
+
+  # calculate cycle statistics according to Turcotte et al. (2009)
+  param_cycle <- dplyr::full_join(param_shrink, param_ref, by = "cycle") %>%
+    dplyr::group_by(cycle) %>%
+    dplyr::mutate(cycle_dur = shrink_dur + ref_dur) %>%
+    dplyr::mutate(
+      cycle_dur_class = cut(cycle_dur,
+                            breaks = c(1, 1260, 1620, Inf),
+                            labels = c("SC", "DC", "LC"))) %>%
+    dplyr::mutate(mid_shrink = shrink_start +
+                    as.difftime(shrink_dur / 2, units = "mins")) %>%
+    dplyr::mutate(
+      mid_shrink_hour = as.numeric(format(mid_shrink, format = "%H"))) %>%
+    dplyr::mutate(mid_ref = ref_start +
+                    as.difftime(ref_dur / 2, units = "mins")) %>%
+    dplyr::mutate(
+      mid_ref_hour = as.numeric(format(mid_ref, format = "%H"))) %>%
+    dplyr::mutate(
+      shrink_nc = ifelse(mid_shrink_hour >= 8 & mid_shrink_hour < 16,
+                         1, 0)) %>%
+    dplyr::mutate(
+      ref_nc = ifelse(mid_ref_hour >= 16 & mid_ref_hour <= 24 |
+                        mid_ref_hour >= 0 & mid_ref_hour < 8, 1, 0)) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(cycle_nc = sum(shrink_nc, ref_nc)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(cycle_nc = ifelse(cycle_nc == 2 & cycle_dur_class != "LC",
+                                    1, 0)) %>%
+    dplyr::mutate(
+      shrink_ic = ifelse(mid_shrink_hour >= 16 & mid_shrink_hour <= 24 |
+                           mid_shrink_hour >= 0 & mid_shrink_hour < 8,
+                         1, 0)) %>%
+    dplyr::mutate(
+      ref_ic = ifelse(mid_ref_hour >= 8 & mid_ref_hour < 16, 1, 0)) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(cycle_ic = sum(shrink_ic, ref_ic)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(cycle_ic = ifelse(cycle_ic == 2 & cycle_dur_class != "LC",
+                                    1, 0)) %>%
+    dplyr::mutate(cycle_class = ifelse(cycle_nc == 1, "NC",
+                                       ifelse(cycle_ic == 1, "IC",
+                                              NA))) %>%
+    # add grouping variable ts
+    dplyr::mutate(ts = shrink_start) %>%
+    dplyr::select(ts, cycle, shrink_start, shrink_end, shrink_dur, shrink_amp,
+                  shrink_slope, ref_start, ref_end, ref_dur, ref_amp,
+                  ref_slope, cycle_dur, cycle_dur_class, cycle_class)
+
+  if (plot_cycle) {
+    print("plot cycles...")
+    plot_cycle(df = df, cycle = param_cycle, plot_export = plot_export)
   }
 
-  maxmin <- maxmin %>%
-    dplyr::mutate(min_lag = dplyr::lead(min1, n = 1)) %>%
-    dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
-                                   tz = tz)) %>%
-    dplyr::group_by(day) %>%
-    dplyr::mutate(mds = max1 - min_lag) %>%
-    dplyr::filter(!is.na(mds)) %>%
-    dplyr::mutate(mds = max(mds, na.rm = T)) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(mds = ifelse(mds >= 0, mds, NA)) %>%
-    dplyr::group_by(day) %>%
-    dplyr::summarise(mds = mds[1]) %>%
-    dplyr::ungroup()
-
   df <- df %>%
-    dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
-                                   tz = tz)) %>%
-    dplyr::full_join(., maxmin, by = "day") %>%
-    dplyr::arrange(ts) %>%
-    dplyr::select(1:nc, mds)
+    dplyr::full_join(., param_mds, by = c("ts" = "date_start")) %>%
+    dplyr::full_join(., param_cycle, by = "ts")
 
   return(df)
 }
