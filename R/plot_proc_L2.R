@@ -71,16 +71,17 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
     dplyr::group_by(series) %>%
     dplyr::mutate(diff_L1 = c(NA, diff(value, lag = 1))) %>%
     dplyr::ungroup() %>%
-    dplyr::rename(value_L1 = value)
+    dplyr::rename(value_L1 = value) %>%
+    dplyr::select(-version)
   df_L2 <- data_L2 %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
     dplyr::group_by(series) %>%
     dplyr::mutate(diff_L2 = c(NA, diff(value, lag = 1))) %>%
     dplyr::ungroup() %>%
-    dplyr::rename(value_L2 = value)
-  df <- dplyr::full_join(df_L1, df_L2, by = c("ts", "series", "version",
-                                              "year", "month"))
+    dplyr::rename(value_L2 = value) %>%
+    dplyr::select(-version)
+  df <- dplyr::full_join(df_L1, df_L2, by = c("ts", "series", "year", "month"))
 
   sensors <- unique(df$series)
   years <- unique(df$year)
