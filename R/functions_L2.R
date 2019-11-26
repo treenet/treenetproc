@@ -868,6 +868,9 @@ calccycle <- function(df, reso, tz, plot_cycle = FALSE, plot_export) {
 
   # calculate cycle statistics according to Turcotte et al. (2009)
   param_cycle <- dplyr::full_join(param_shrink, param_ref, by = "cycle") %>%
+    # remove incomplete cycles
+    dplyr::filter(!is.na(shrink_start)) %>%
+    dplyr::filter(!is.na(ref_start)) %>%
     dplyr::group_by(cycle) %>%
     dplyr::mutate(cycle_dur = shrink_dur + ref_dur) %>%
     dplyr::mutate(
@@ -1083,7 +1086,6 @@ calcgroperiods <- function(df, reso, tz) {
   gro_period <- dplyr::bind_rows(list_gro)
 
   return(gro_period)
-
 }
 
 
