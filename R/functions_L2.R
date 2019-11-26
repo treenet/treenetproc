@@ -708,8 +708,8 @@ removeconsec <- function(df, remove, notremove, mode) {
     dplyr::mutate(rem_cons = rep(rle(rem)[[1]], times = rle(rem)[[1]])) %>%
     dplyr::mutate(iscons = ifelse(rem_cons > 1 & rem == 2, TRUE, FALSE)) %>%
     dplyr::mutate(cons = cumsum(iscons)) %>%
-    dplyr::mutate(y = c(0, diff(cons, lag = 1))) %>%
-    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(y = c(ifelse(iscons[1], 1, 0), diff(cons, lag = 1))) %>%
+    dplyr::mutate(z = c(ifelse(iscons[1], 1, 0), diff(y, lag = 1))) %>%
     dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
     dplyr::mutate(cons_nr = cumsum(z))
 
