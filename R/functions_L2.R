@@ -864,6 +864,8 @@ calccycle <- function(df, reso, tz, plot_cycle = FALSE, plot_export) {
     dplyr::mutate(date_end = substr(shrink_end, 1, 10)) %>%
     dplyr::mutate(mds = ifelse(date_start == date_end, shrink_amp, NA)) %>%
     dplyr::mutate(date_start = as.POSIXct(date_start, tz = tz)) %>%
+    # remove erroneous cycles
+    dplyr::filter(!is.na(date_start)) %>%
     dplyr::select(date_start, mds)
 
   # calculate cycle statistics according to Turcotte et al. (2009)
