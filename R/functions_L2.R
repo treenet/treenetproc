@@ -714,7 +714,7 @@ removeconsec <- function(df, remove, notremove, mode) {
     dplyr::mutate(cons_nr = cumsum(z))
 
   rem_noconsec <- rem %>%
-    dplyr::filter(rem_cons == 1 & rem == 2) %>%
+    dplyr::filter(iscons == FALSE & rem == 2) %>%
     dplyr::mutate(rem = value) %>%
     dplyr::select(ts, rem)
 
