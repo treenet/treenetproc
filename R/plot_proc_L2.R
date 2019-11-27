@@ -97,7 +97,8 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
 
     diff_sensor <- df_sensor %>%
       dplyr::mutate(diff = diff_L1 - diff_L2) %>%
-      dplyr::mutate(diff = ifelse(abs(diff) <= 0.1, 0, diff)) %>%
+      # remove small differences without flag
+      dplyr::mutate(diff = ifelse(grepl(".*out|.*jump", flags), diff, 0)) %>%
       dplyr::mutate(diff = ifelse(is.na(diff), 0, diff)) %>%
       # add diff = 100 for removed outliers (flag = "out")
       dplyr::mutate(diff = ifelse(grepl("out", flags), 100, diff)) %>%
