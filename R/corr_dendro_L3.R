@@ -143,8 +143,11 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
     dplyr::mutate(
       version = utils::packageDescription("treenetproc",
                                           fields = "Version", drop = TRUE)) %>%
-    dplyr::select(series, ts, value, max, twd, mds, gro_yr, gro_start,
-                  gro_end, frost, flags, version)
+    dplyr::select(series, ts, value, max, twd, gro_yr, gro_start,
+                  gro_end, frost, flags, mds, cycle, shrink_start, shrink_end,
+                  shrink_dur, shrink_amp, shrink_slope, ref_start, ref_end,
+                  ref_dur, ref_amp, ref_slope, cycle_dur, cycle_dur_class,
+                  cycle_class, version)
 
   # append leading and trailing NA's
   df <- append_lead_trail_na(df = df, na = lead_trail_na)
