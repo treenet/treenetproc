@@ -263,8 +263,11 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
       dplyr::mutate(twd = ifelse(is.na(value), NA, twd)) %>%
       dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
       dplyr::mutate(frost = ifelse(is.na(value), NA, frost)) %>%
-      dplyr::select(series, ts, value, max, twd, mds, gro_yr, gro_start,
-                    gro_end, frost, flags) %>%
+      dplyr::select(series, ts, value, max, twd, gro_yr, gro_start,
+                    gro_end, frost, flags, mds, cycle, shrink_start, shrink_end,
+                    shrink_dur, shrink_amp, shrink_slope, ref_start, ref_end,
+                    ref_dur, ref_amp, ref_slope, cycle_dur, cycle_dur_class,
+                    cycle_class) %>%
       dplyr::mutate(
         version = utils::packageDescription("treenetproc",
                                             fields = "Version", drop = TRUE))
