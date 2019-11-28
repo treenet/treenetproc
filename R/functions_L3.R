@@ -197,7 +197,7 @@ summariseflagscorr <- function(df, remove = NULL, force = NULL,
   flags <- gsub(".*del", "del", flags)
   # remove NA's and single commas
   flags <- gsub(", NA|NA, |^, ", "", flags)
-  flags <- ifelse(flags == "NA", NA, flags)
+  flags <- ifelse(flags %in% c("NA", ""), NA, flags)
 
   df$flags <- flags
 
