@@ -4,7 +4,7 @@
 \alias{check_datevec}
 \title{Check Date Vector Input}
 \usage{
-check_datevec(datevec, tz)
+check_datevec(datevec, datevec_name, tz)
 }
 \arguments{
 \item{datevec}{character vector in a standard date or datetime format.}

@@ -4,7 +4,7 @@
 \alias{removeconsec}
 \title{Remove Consecutive Maxima or Minima}
 \usage{
-removeconsec(df, remove, notremove)
+removeconsec(df, remove, notremove, mode)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
@@ -14,11 +14,14 @@ removeconsec(df, remove, notremove)
 
 \item{notremove}{numeric, in which consecutive values are not removed
 (i.e. maxima or minima).}
+
+\item{mode}{character, specifies whether consecutive maxima or minima
+are removed. Can either be \code{"max"} or \code{"min"}.}
 }
 \description{
 \code{removeconsec} removes consecutive maxima or minima and keeps only
   the higher or lower value, respectively. The function makes sure no two
   maxima or minima appear consecutively. It is a helper function of
-  \code{\link{calcmds}}.
+  \code{\link{calccycle}}.
 }
 \keyword{internal}

@@ -18,7 +18,7 @@ proc_dendro_L2(
   plot_show = "all",
   plot_export = TRUE,
   plot_name = "proc_L2_plot",
-  plot_mds = FALSE,
+  plot_cycle = FALSE,
   iter_clean = 1,
   tz = "UTC"
 )
@@ -75,9 +75,8 @@ plot_period (\code{plot_period = "full"}), for each year separately
 \item{plot_name}{character, specify name of the PDF in which the plots are
 saved.}
 
-\item{plot_mds}{logical, specify whether maxima and minima used for the
-calculation of the maximum daily shrinkage (\code{mds}) should be
-plotted.}
+\item{plot_cycle}{logical, specify whether maxima and minima used for the
+calculation of the cycle statistics should be plotted.}
 
 \item{iter_clean}{numeric, specifies the number of times the cleaning
 process is repeated. Can be used to check whether running the cleaning

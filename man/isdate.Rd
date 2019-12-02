@@ -4,7 +4,7 @@
 \alias{isdate}
 \title{Check Date Format}
 \usage{
-isdate(datevec, var_name, date_formats, tz)
+isdate(datevec, datevec_name, date_formats, tz)
 }
 \arguments{
 \item{datevec}{character vector in a standard date or datetime format.}

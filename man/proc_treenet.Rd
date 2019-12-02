@@ -23,7 +23,7 @@ proc_treenet(
   plot_export = TRUE,
   plot_name = "proc_L2_plot",
   plot_show = "all",
-  plot_mds = FALSE,
+  plot_cycle = FALSE,
   path_cred = NULL,
   year = "asis",
   iter_clean = 1,
@@ -99,9 +99,8 @@ saved.}
 \code{L2} dendrometer data differ after data cleaning
 (\code{plot_show = "diff"}).}
 
-\item{plot_mds}{logical, specify whether maxima and minima used for the
-calculation of the maximum daily shrinkage (\code{mds}) should be
-plotted.}
+\item{plot_cycle}{logical, specify whether maxima and minima used for the
+calculation of the cycle statistics should be plotted.}
 
 \item{path_cred}{optional argument to specify the full path to the
 file \code{config.yml} containing the database login data. File can
