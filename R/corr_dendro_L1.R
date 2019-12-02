@@ -7,12 +7,12 @@
 #' @param plot logical, plots the corrected dataset with the original data
 #'   in the background in grey.
 #' @inheritParams plot_proc_L2
-#' @inheritParams corr_dendro_L3
+#' @inheritParams corr_dendro_L2
 #'
 #' @return The function returns a \code{data.frame} with corrected \code{L1}
 #'   dendrometer data.
 #'
-#' @seealso \code{\link{corr_dendro_L3}} to correct \code{L2} data.
+#' @seealso \code{\link{corr_dendro_L2}} to correct \code{L2} data.
 #'
 #' @export
 #'

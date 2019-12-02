@@ -391,7 +391,7 @@ outliers.
 # Manual corrections (L3)
 If not all errors in data cleaning can be removed by adjusting the default 
 values of `tol_jump` and/or `tol_out`, remaining errors can be removed using
-the function `corr_dendro_L3()`. There are three possibilities to revert 
+the function `corr_dendro_L2()`. There are three possibilities to revert 
 wrong changes:
 
 * **remove**: specify the numbers of the changes that should be reverted.
@@ -405,7 +405,7 @@ wrong changes:
 
 
 ## Example of manual corrections
-```{r corr_dendro_L3 example_1, fig.asp = 0.9, fig.keep = "first",  fig.retina=2, results="hide", message=FALSE, warning=FALSE}
+```{r corr_dendro_L2 example_1, fig.asp = 0.9, fig.keep = "first",  fig.retina=2, results="hide", message=FALSE, warning=FALSE}
 # Load dataset
 data("dendro_data_L1")
 
@@ -429,9 +429,9 @@ The following errors remained after data cleaning:
 Correct the above-described errors:
 
 
-```{r corr_dendro_L3 example_3, fig.asp = 0.9, fig.keep = "first", fig.retina=2, results="hide", message=FALSE, warning=FALSE}
+```{r corr_dendro_L2 example_3, fig.asp = 0.9, fig.keep = "first", fig.retina=2, results="hide", message=FALSE, warning=FALSE}
 # Correct described errors
-corr_dendro_L3(data_L1 = data_L1, data_L2 = data_L2, 
+corr_dendro_L2(data_L1 = data_L1, data_L2 = data_L2, 
                remove = 59:61, 
                force = "2013-08-12", 
                delete = c("2013-08-01", "2013-08-04"),
