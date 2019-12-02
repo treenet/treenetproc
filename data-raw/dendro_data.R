@@ -1,5 +1,5 @@
-## code to prepare `dendro_data_L0`, `dendro_data_L1` and `dendro_data_L2`
-## datasets goes here
+## code to prepare `dendro_data_L0`, `dendro_data_L1`, `dendro_data_L2` and
+## `dendro_data_L0_wide` datasets goes here
 
 library(tidyverse)
 
@@ -130,3 +130,13 @@ dendro_data_L2 <- proc_dendro_L2(dendro_data = dendro_data_L1,
 
 # save L2 data
 usethis::use_data(dendro_data_L2, overwrite = TRUE)
+
+
+# prepare dendro_data_L0_wide -------------------------------------------------
+dendro_data_L0_wide <- dendro_data_L0 %>%
+  full_join(temp_data_L0, by = c("series", "ts", "value")) %>%
+  filter(ts >= "2013-08-01 01:00:00") %>%
+  filter(ts <= "2013-08-30") %>%
+  spread(key = series, value = value)
+
+usethis::use_data(dendro_data_L0_wide, compress = "bzip2", overwrite = TRUE)
