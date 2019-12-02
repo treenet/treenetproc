@@ -83,11 +83,11 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
     }
   }
   if (length(force) != 0) {
-    force <- check_datevec(datevec = force, tz = tz)
+    force <- check_datevec(datevec = force, datevec_name = "force", tz = tz)
     check_date_period(datevec = force, datevec_name = "force", df = df)
   }
   if (length(delete) != 0) {
-    delete <- check_datevec(datevec = delete, tz = tz)
+    delete <- check_datevec(datevec = delete, datevec_name = "delete", tz = tz)
     check_date_period(datevec = delete, datevec_name = "delete", df = df)
     check_delete(delete)
   }
@@ -137,7 +137,6 @@ corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
 
   df <- df %>%
     dplyr::mutate(gro_yr = ifelse(is.na(value), NA, gro_yr)) %>%
-    dplyr::mutate(mds = ifelse(is.na(value), NA, mds)) %>%
     dplyr::mutate(twd = ifelse(is.na(value), NA, twd)) %>%
     dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
     dplyr::mutate(
