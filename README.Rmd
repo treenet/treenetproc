@@ -23,7 +23,7 @@ All changes are flagged can be visually examined in the graphical outputs.
 
 ## Installation
 
-You can install the development version of the package from 
+You can install the latest stable version of the package from 
 [GitHub](https://github.com/) with:
 
 ``` {r install packge, echo = TRUE, results = "hide", message=FALSE, warning=FALSE}
@@ -84,7 +84,7 @@ To cite `treenetproc` in a publication use:
 citation("treenetproc")
 ```
 
-Please consider citing all required packages as well. The package 
+Consider citing all required packages as well. The package 
 [`grateful`](https://github.com/Pakillo/grateful) is a helpful resource for 
 this.
 
