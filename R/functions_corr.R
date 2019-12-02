@@ -2,7 +2,7 @@
 #'
 #' \code{removecorr} removes wrong corrections in the dendrometer data.
 #'
-#' @inheritParams corr_dendro_L2
+#' @inheritParams corr_dendro_L3
 #' @inheritParams plot_proc_L2
 #'
 #' @keywords internal
@@ -81,7 +81,7 @@ removecorr <- function(data_L1, data_L2, remove, tz) {
 #' @param n_days numeric, specifies the length of the period (in days) after
 #'   the dates specified in \code{force} in which a missed jump is looked for.
 #' @inheritParams plot_proc_L2
-#' @inheritParams corr_dendro_L2
+#' @inheritParams corr_dendro_L3
 #'
 #' @keywords internal
 #'
@@ -123,7 +123,7 @@ forcejump <- function(data_L2, force, n_days = 5) {
 #' \code{deleteperiod} deletes dendrometer data in specified period.
 #'
 #' @param df input \code{data.frame}.
-#' @inheritParams corr_dendro_L2
+#' @inheritParams corr_dendro_L3
 #'
 #' @keywords internal
 #'

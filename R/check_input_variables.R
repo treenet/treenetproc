@@ -65,7 +65,7 @@ check_input_variables <- function(list) {
 
   # plot_show
   if ("plot_show" %in% var_names) {
-    # diff_corr is used for function 'corr_dendro_L2'
+    # diff_corr is used for function 'corr_dendro_L3'
     if (!(list$plot_show %in% c("all", "diff", "diff_corr"))) {
       stop(paste0("Variable 'plot_show' needs to be ",
                   "'all' or 'diff'."))
@@ -294,7 +294,7 @@ isdate <- function(datevec, datevec_name, date_formats, tz) {
 #'   date or datetime format. Dates are converted to \code{POSIXct}.
 #'
 #' @inheritParams isdate
-#' @inheritParams corr_dendro_L2
+#' @inheritParams corr_dendro_L3
 #'
 #' @keywords internal
 #'
@@ -330,7 +330,7 @@ check_datevec <- function(datevec, datevec_name, tz) {
 #'
 #' @param df input \code{data.frame}.
 #' @inheritParams isdate
-#' @inheritParams corr_dendro_L2
+#' @inheritParams corr_dendro_L3
 #'
 #' @keywords internal
 #'
@@ -407,7 +407,7 @@ check_data_L2 <- function(data_L2) {
 #' \code{check_series} checks the input of the variable series.
 #'
 #' @param df input \code{data.frame}.
-#' @inheritParams corr_dendro_L2
+#' @inheritParams corr_dendro_L3
 #'
 #' @keywords internal
 #'
@@ -431,7 +431,7 @@ check_series <- function(df, series) {
 #' \code{check_delete} checks whether the first value in a pair of dates
 #'   occurs before the second value.
 #'
-#' @inheritParams corr_dendro_L2
+#' @inheritParams corr_dendro_L3
 #'
 #' @keywords internal
 #'

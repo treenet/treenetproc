@@ -55,13 +55,13 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
 
 
   # Calculate differences -----------------------------------------------------
-  # add diff_old, used to plot removed differences (see corr_dendro_L2)
+  # add diff_old, used to plot removed differences (see corr_dendro_L3)
   if (!("diff_old" %in% colnames(data_L1))) {
     data_L1$diff_old <- NA
     data_L1$diff_nr_old <- NA
   }
   # add month_plot used to plot months with force or delete
-  # (see corr_dendro_L2)
+  # (see corr_dendro_L3)
   if (!("month_plot" %in% colnames(data_L1))) {
     data_L1$month_plot <- 0
   }
