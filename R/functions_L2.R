@@ -852,21 +852,58 @@ calccycle <- function(df, reso, tz, plot_cycle = FALSE, plot_export) {
     dplyr::select(ts, extrema) %>%
     # set first and last row to a maximum
     dplyr::slice(which(extrema == "max")[1]:dplyr::n()) %>%
-    dplyr::slice(1:dplyr::last(which(extrema == "max")))
+    dplyr::slice(1:dplyr::last(which(extrema == "max"))) %>%
+    dplyr::mutate(cycle_shrink = c(rep(1:floor(dplyr::n() / 2), each = 2),
+                                   NA)) %>%
+    dplyr::mutate(cycle_ref = dplyr::lag(cycle_shrink))
 
-  # calculate parameters for shrinkage and refill
-  param_shrink <- calccycleparam(df = df, maxmin = maxmin, mode = "shrink")
-  param_ref <- calccycleparam(df = df, maxmin = maxmin, mode = "ref")
+  # delete extreme values that follow an NA or which are followed by an NA
+  value_leadlag <- df %>%
+    dplyr::mutate(value_lag = dplyr::lag(value)) %>%
+    dplyr::mutate(value_lead = dplyr::lead(value)) %>%
+    dplyr::select(ts, value, value_lag, value_lead)
+  maxmin <- maxmin %>%
+    dplyr::left_join(., value_leadlag, by = "ts") %>%
+    dplyr::mutate(max_na = ifelse(is.na(value_lag), 1, 0)) %>%
+    dplyr::mutate(min_na = ifelse(is.na(value_lead), 1, 0)) %>%
+    dplyr::group_by(cycle_shrink) %>%
+    dplyr::mutate(cycle_na = ifelse(sum(max_na, min_na) > 0, 1, 0)) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(cycle_na == 0) %>%
+    dplyr::select(ts, value, extrema, cycle_shrink, cycle_ref)
 
   # calculate maximum daily shrinkage (mds)
-  param_mds <- param_shrink %>%
-    dplyr::mutate(date_start = substr(shrink_start, 1, 10)) %>%
-    dplyr::mutate(date_end = substr(shrink_end, 1, 10)) %>%
-    dplyr::mutate(mds = ifelse(date_start == date_end, shrink_amp, NA)) %>%
+  param_mds <- maxmin %>%
+    dplyr::group_by(cycle_shrink) %>%
+    dplyr::mutate(date_start = substr(ts[1], 1, 10)) %>%
+    dplyr::mutate(date_end = substr(ts[2], 1, 10)) %>%
+    dplyr::mutate(mds = ifelse(date_start == date_end,
+                               value[2] - value[1], NA)) %>%
     dplyr::mutate(date_start = as.POSIXct(date_start, tz = tz)) %>%
-    # remove erroneous cycles
-    dplyr::filter(!is.na(date_start)) %>%
+    # remove erroneous cycles where shrinkage is positive
+    dplyr::filter(mds < 0) %>%
+    dplyr::summarise(date_start = date_start[1],
+                     mds = mds[1]) %>%
+    dplyr::ungroup() %>%
     dplyr::select(date_start, mds)
+
+  # remove incomplete cycles
+  maxmin <- maxmin %>%
+    dplyr::mutate(cycle_ref = dplyr::lead(cycle_ref)) %>%
+    dplyr::mutate(ts_ref = dplyr::lead(ts)) %>%
+    dplyr::mutate(value_ref = dplyr::lead(value)) %>%
+    # delete incomplete cycles
+    dplyr::group_by(cycle_ref) %>%
+    dplyr::mutate(n_ref = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(n_ref == 2) %>%
+    dplyr::select(cycle = cycle_shrink, ts_shrink = ts, value_shrink = value,
+                  ts_ref, value_ref)
+
+  # calculate shrinking and refilling parameters
+  param_shrink <- calccycleparam(df = df, maxmin = maxmin,
+                                 mode = "shrink")
+  param_ref <- calccycleparam(df = df, maxmin = maxmin, mode = "ref")
 
   # calculate cycle statistics according to Turcotte et al. (2009)
   param_cycle <- dplyr::full_join(param_shrink, param_ref, by = "cycle") %>%
