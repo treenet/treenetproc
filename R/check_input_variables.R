@@ -259,7 +259,7 @@ check_numeric <- function(var, var_name) {
 #'
 #' @keywords internal
 #'
-isdate <- function(datevec, var_name, date_formats, tz) {
+isdate <- function(datevec, datevec_name, date_formats, tz) {
 
   datevec <- as.character(datevec)
   date_check <-
@@ -271,11 +271,12 @@ isdate <- function(datevec, var_name, date_formats, tz) {
         })
 
   if (length(unique(date_check)) > 1) {
-    stop(paste("Date format of some dates in '", var_name, "' not recognized.",
-               " Provide dates in a valid format, e.g. %Y-%m-%d %H:%M:%S"))
+    stop(paste("Date format of some dates in '", datevec_name,
+               "' not recognized. Provide dates in a valid format,",
+               "e.g. %Y-%m-%d %H:%M:%S"))
   }
   if (!(unique(date_check))) {
-    stop(paste0("Date format of dates in '", var_name, "' not recognized.",
+    stop(paste0("Date format of dates in '", datevec_name, "' not recognized.",
                " Provide dates in a valid format, e.g. %Y-%m-%d %H:%M:%S"))
   }
   if (unique(date_check)) {
@@ -297,7 +298,7 @@ isdate <- function(datevec, var_name, date_formats, tz) {
 #'
 #' @keywords internal
 #'
-check_datevec <- function(datevec, tz) {
+check_datevec <- function(datevec, datevec_name, tz) {
 
   date_formats <- c("%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S",
                     "%Y.%m.%d %H:%M:%S",
@@ -315,7 +316,8 @@ check_datevec <- function(datevec, tz) {
                     "%d-%m-%Y", "%d/%m/%Y", "%d.%m.%Y",
                     "%m-%d-%Y", "%m/%d/%Y", "%m.%d.%Y")
 
-  dates <- isdate(datevec = datevec, date_formats = date_formats, tz = tz)
+  dates <- isdate(datevec = datevec, datevec_name = datevec_name,
+                  date_formats = date_formats, tz = tz)
 
   return(dates)
 }
