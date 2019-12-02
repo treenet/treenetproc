@@ -14,13 +14,13 @@ graphical outputs.
 
 ## Installation
 
-You can install the development version of the package from
+You can install the latest stable version of the package from
 [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
 library(devtools)
-devtools::install_github("treenet/treenetproc")
+devtools::install_github("treenet/treenetproc", ref = "dev")
 ```
 
 <br>
@@ -29,7 +29,7 @@ devtools::install_github("treenet/treenetproc")
 
 Below you can see a basic example of a processing result.
 
-<img src="man/figures/README-Fig_1-1.png" width="100%" /> <br>
+<img src="man/figures/README-Fig_1-1.png" width="80%" /> <br>
 
 For more information on the functionality of the package please see the
 package vignettes:
@@ -56,18 +56,19 @@ To cite `treenetproc` in a publication use:
 ``` r
 citation("treenetproc")
 #> 
-#> To cite package 'treenetproc' in publications use:
+#> To cite treenetproc in publications use:
 #> 
-#>   Simon Knüsel and Matthias Haeni (2019). treenetproc: Process Raw
-#>   Dendrometer Data. R package version 0.1.3.9000.
+#>   Haeni M., Knüsel S., Wilhelm M., Zweifel R. 2019. treenetproc -
+#>   Clean, process and visualise dendrometer data. Github repository:
+#>   https://github.com/treenet/treenetproc
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
 #>   @Manual{,
-#>     title = {treenetproc: Process Raw Dendrometer Data},
-#>     author = {Simon Knüsel and Matthias Haeni},
+#>     title = {treenetproc - Clean, process and visualise dendrometer data},
+#>     author = {Matthias Haeni and Simon Knüsel and Micah Wilhelm and Roman Zweifel},
 #>     year = {2019},
-#>     note = {R package version 0.1.3.9000},
+#>     url = {https://github.com/treenet/treenetproc},
 #>   }
 ```
 

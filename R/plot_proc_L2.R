@@ -44,6 +44,18 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
                          plot_name = "proc_L2_plot", tz = "UTC",
                          print_vars = FALSE) {
 
+  #data_L1 <- dendro_data
+  #data_L2 <- df
+  #plot_period = "monthly"
+  #plot_show = "all"
+  #plot_export = TRUE
+  #plot_name = "proc_L2_plot"
+  #tz = "UTC"
+  #print_vars = TRUE
+
+
+
+
   # Check input variables -----------------------------------------------------
   list_inputs <- mget(ls())
   check_input_variables(list = list_inputs)

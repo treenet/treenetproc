@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "80%"
 )
 ```
 # treenetproc
@@ -23,7 +23,7 @@ All changes are flagged can be visually examined in the graphical outputs.
 
 ## Installation
 
-You can install the development version of the package from 
+You can install the latest stable version of the package from 
 [GitHub](https://github.com/) with:
 
 ``` {r install packge, echo = TRUE, results = "hide", message=FALSE, warning=FALSE}
@@ -38,14 +38,16 @@ devtools::install_github("treenet/treenetproc")
 
 Below you can see a basic example of a processing result. 
 
-```{r Fig_1, fig.width = 6, fig.height = 2, fig.retina = 2, echo = FALSE}
+```{r Fig_1, fig.asp = 0.35, fig.retina = 2, echo = FALSE}
 library(treenetproc)
 data("dendro_data_L1")
 data("dendro_data_L2")
 example_L1 <- dendro_data_L1 %>% 
-  dplyr::filter(series == "site-1_dendro-1")
+  dplyr::filter(series == "site-1_dendro-1") %>% 
+  dplyr::filter(ts <= "2013-06-01")
 example_L2 <- dendro_data_L2 %>% 
-  dplyr::filter(series == "site-1_dendro-1")
+  dplyr::filter(series == "site-1_dendro-1") %>% 
+  dplyr::filter(ts <= "2013-06-01")
 layout(matrix(c(1, 2), nrow = 2), heights = c(1, 1),
        widths = 1)
 par(mar = c(0, 2.1, 0, 1))

@@ -112,6 +112,24 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                            plot_name = "proc_L2_plot",
                            plot_cycle = FALSE, iter_clean = 1, tz = "UTC") {
 
+  #dendro_data <- readRDS("/Users/simonknusel/Documents/02_Job/06_PostDoc/02_TreeNet/04_R_Package_development/04_proc_treenet/lens_L1.rds")
+  #temp_data = NULL
+  #tol_out = 10
+  #tol_jump = 50
+  #lowtemp = 5
+  #frost_thr = 5
+  #interpol = NULL
+  #frag_len = NULL
+  #plot = TRUE
+  #plot_period = "monthly"
+  #plot_show = "all"
+  #plot_export = TRUE
+  #plot_name = "proc_L2_plot"
+  #plot_cycle = FALSE
+  #iter_clean = 1
+  #tz = "UTC"
+
+
   # Check input variables -----------------------------------------------------
   list_inputs <- mget(ls())
   check_input_variables(list = list_inputs)
@@ -259,7 +277,6 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
 
     df <- df %>%
       dplyr::mutate(gro_yr = ifelse(is.na(value), NA, gro_yr)) %>%
-      dplyr::mutate(mds = ifelse(is.na(value), NA, mds)) %>%
       dplyr::mutate(twd = ifelse(is.na(value), NA, twd)) %>%
       dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
       dplyr::mutate(frost = ifelse(is.na(value), NA, frost)) %>%
