@@ -1,18 +1,20 @@
 #' Calculates Cycle Statistics
 #'
-#' \code{calccycle} calculates different statistics and characteristics of
+#' \code{cycle_stats} calculates different statistics and characteristics of
 #'   cycles. To identify the cycles local maxima and minima are identified
 #'   using a moving window.
 #'
 #' @param df input \code{data.frame}.
 #' @inheritParams proc_dendro_L2
 #'
-#' @details \code{calccycle} is inspired by the function
+#' @details \code{cycle_stats} is inspired by the function
 #'   \code{\link[dendrometeR]{phase_def}} in the package \code{dendrometeR}.
 #'
-#' @keywords internal
+#' @export
 #'
-calccycle <- function(df, reso, tz, plot_cycle = FALSE, plot_export) {
+#' @example
+#'
+cycle_stats <- function(df, reso, tz, plot_cycle = FALSE, plot_export) {
 
   if ("cycle" %in% colnames(df)) {
     df <- df %>%
