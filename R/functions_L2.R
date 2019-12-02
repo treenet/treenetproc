@@ -831,6 +831,11 @@ calccycleparam <- function(df, maxmin, mode) {
 #'
 calccycle <- function(df, reso, tz, plot_cycle = FALSE, plot_export) {
 
+  if ("cycle" %in% colnames(df)) {
+    df <- df %>%
+      dplyr::select_if(!grepl("cycle|shrink|ref|mds", colnames(.)))
+  }
+
   if (reso > 360) {
     message("the time resolution of the dataset ('reso') is too coarse to
             calculate cycle statistics")
