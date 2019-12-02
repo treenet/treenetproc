@@ -1,6 +1,6 @@
 #' Manually Correct Processed Dendrometer Data
 #'
-#' \code{corr_dendro_L3} corrects errors in processed \code{L2} dendrometer
+#' \code{corr_dendro_L2} corrects errors in processed \code{L2} dendrometer
 #'   data that are easier to correct by hand than by changing parameter values
 #'   in \code{\link{proc_dendro_L2}}.
 #'
@@ -39,12 +39,12 @@
 #' @export
 #'
 #' @examples
-#' corr_dendro_L3(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
+#' corr_dendro_L2(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
 #'                remove = 59:61, force = "2013-08-12",
 #'                delete = c("2013-08-01", "2013-08-04"),
 #'                series = "site-1_dendro-3", plot_export = FALSE)
 #'
-corr_dendro_L3 <- function(data_L1 = NULL, data_L2, remove = NULL,
+corr_dendro_L2 <- function(data_L1 = NULL, data_L2, remove = NULL,
                            force = NULL, delete = NULL, series = NULL,
                            n_days = 5, plot = TRUE, plot_export = TRUE,
                            tz = "UTC") {
