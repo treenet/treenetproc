@@ -48,7 +48,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                          interpol = NULL, frag_len = NULL,
                          proc_to = "L2", plot = TRUE, plot_period = "full",
                          plot_export = TRUE, plot_name = "proc_L2_plot",
-                         plot_show = "all", plot_mds = FALSE,
+                         plot_show = "all", plot_cycle = FALSE,
                          path_cred = NULL, year = "asis", iter_clean = 1,
                          tz = "Etc/GMT-1", use_intl = FALSE) {
 
@@ -101,7 +101,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                               interpol = interpol, frag_len = frag_len,
                               plot = plot, plot_period = plot_period,
                               plot_show = plot_show, plot_export = plot_export,
-                              plot_name = plot_name, plot_mds = plot_mds,
+                              plot_name = plot_name, plot_cycle = plot_cycle,
                               iter_clean = iter_clean, tz = tz)
     )
   } else {
@@ -111,7 +111,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                             interpol = interpol, frag_len = frag_len,
                             plot = plot, plot_period = plot_period,
                             plot_show = plot_show, plot_export = plot_export,
-                            plot_name = plot_name, plot_mds = plot_mds,
+                            plot_name = plot_name, plot_cycle = plot_cycle,
                             iter_clean = iter_clean, tz = tz)
   }
 
