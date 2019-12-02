@@ -1,6 +1,6 @@
 #' Calculate Start and End of Yearly Growth
 #'
-#' \code{grostartend} returns the day of the year at which growth starts
+#' \code{grow_seas} returns the day of the year at which growth starts
 #'   or ends.
 #'
 #' @param df input \code{data.frame}.
@@ -11,7 +11,7 @@
 #'
 #' @keywords internal
 #'
-grostartend <- function(df, tol = 0.05, tz) {
+grow_seas <- function(df, tol = 0.05, tz) {
 
   if ("gro_start" %in% colnames(df)) {
     df <- df %>%
