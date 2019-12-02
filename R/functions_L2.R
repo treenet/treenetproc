@@ -766,43 +766,49 @@ calccycleparam <- function(df, maxmin, mode) {
                         ref_dur = NA, ref_amp = NA, ref_slope = NA)
   }
 
-  if (mode == "shrink") {
-    seq <- seq(from = 1, to = 2 * floor(nrow(maxmin) / 2), by = 2)
-  }
-  if (mode == "ref") {
-    seq <- seq(from = 2, to = nrow(maxmin) - 1, by = 2)
-  }
+  maxmin <- maxmin %>%
+    dplyr::select(cycle, dplyr::matches(mode))
+
+  seq <- seq(from = 1, to = 2 * floor(nrow(maxmin) / 2), by = 2)
   list_out <- vector("list", length = length(seq))
 
   for (c in 1:length(seq)) {
+
     # select single shrinkage or refill
+    cycle_start <- dplyr::pull(dplyr::select(maxmin,
+                                             dplyr::matches("ts")))[seq[c]]
+    cycle_end <- dplyr::pull(dplyr::select(maxmin,
+                                           dplyr::matches("ts")))[seq[c] + 1]
     df_param <- df %>%
-      dplyr::filter(ts >= maxmin$ts[seq[c]] &
-                      ts <= maxmin$ts[seq[c] + 1])
-    param$cycle <- c
-    param[, 2] <- df_param$ts[1]
-    param[, 3] <- dplyr::last(df_param$ts)
+      dplyr::filter(ts >= cycle_start & ts <= cycle_end)
+    param_cycle <- param
+    param_cycle$cycle <- maxmin$cycle[seq[c]]
 
     # set cycles to NA with too much missing data
     if (length(which(is.na(df_param$value))) > 0.5 * nrow(df_param)) {
-      list_out[[c]] <- param
+      list_out[[c]] <- param_cycle
       next
     }
 
-    param[, 4] <- as.numeric(difftime(param[, 3], param[, 2], units = "mins"))
-    param[, 5] <- dplyr::last(df_param$value) - df_param$value[1]
-    param[, 6] <- summary(lm(data = df_param,
-                             value ~ ts))$coefficients[2, 1]
+    param_cycle[, 2] <- cycle_start
+    param_cycle[, 3] <- cycle_end
+    param_cycle[, 4] <- as.numeric(difftime(cycle_end, cycle_start,
+                                            units = "mins"))
+    param_cycle[, 5] <- dplyr::last(df_param$value) - df_param$value[1]
+    options(warn = -1)
+    param_cycle[, 6] <- summary(stats::lm(data = df_param,
+                                          value ~ ts))$coefficients[2, 1]
+    options(warn = 0)
 
     # set cycles to NA with wrong amplitude (i.e. positive for shrinkage)
-    if (mode == "shrink" & param[, 5] > 0) {
-      param[, 2:6] <- NA
+    if (mode == "shrink" & param_cycle[, 5] > 0) {
+      param_cycle[, 2:6] <- NA
     }
-    if (mode == "ref" & param[, 5] < 0) {
-      param[, 2:6] <- NA
+    if (mode == "ref" & param_cycle[, 5] < 0) {
+      param_cycle[, 2:6] <- NA
     }
 
-    list_out[[c]] <- param
+    list_out[[c]] <- param_cycle
   }
   param_all <- dplyr::bind_rows(list_out)
   return(param_all)
