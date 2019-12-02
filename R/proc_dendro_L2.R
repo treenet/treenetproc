@@ -259,7 +259,6 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
 
     df <- df %>%
       dplyr::mutate(gro_yr = ifelse(is.na(value), NA, gro_yr)) %>%
-      dplyr::mutate(mds = ifelse(is.na(value), NA, mds)) %>%
       dplyr::mutate(twd = ifelse(is.na(value), NA, twd)) %>%
       dplyr::mutate(max = ifelse(is.na(value), NA, max)) %>%
       dplyr::mutate(frost = ifelse(is.na(value), NA, frost)) %>%
