@@ -341,8 +341,9 @@ plot_cycle <- function(df, cycle, plot_export) {
                    xaxt = "n", las = 1, ylab = "value",
                    xlab = paste("Time (Hours)\n",
                                 as.Date(cycle_plot$shrink_start), "to",
-                                as.Date(cycle_plot$shrink_end)),
-                   main = paste0(df_plot$series[1], "\n", "Cycle ", c))
+                                as.Date(cycle_plot$ref_end)),
+                   main = paste0(df_plot$series[1], "\n", "Cycle ",
+                                 cycle$cycle[c]))
     graphics::axis.POSIXct(1, x = df_plot$ts, format = "%H")
 
     graphics::points(x = cycle_plot$shrink_start,
