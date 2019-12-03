@@ -8,6 +8,11 @@ deleteperiod(df, delete)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
+
+\item{delete}{character vector, specify pairs of dates between which
+all dendrometer data will be deleted (i.e. 4 dates will result in two
+periods: 1-2 and 3-4 in which data is deleted). Dates need to be in a
+standard date or datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).}
 }
 \description{
 \code{deleteperiod} deletes dendrometer data in specified period.

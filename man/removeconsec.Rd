@@ -22,6 +22,6 @@ are removed. Can either be \code{"max"} or \code{"min"}.}
 \code{removeconsec} removes consecutive maxima or minima and keeps only
   the higher or lower value, respectively. The function makes sure no two
   maxima or minima appear consecutively. It is a helper function of
-  \code{\link{calccycle}}.
+  \code{\link{cycle_stats}}.
 }
 \keyword{internal}

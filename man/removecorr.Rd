@@ -8,10 +8,16 @@ removecorr(data_L1, data_L2, remove, tz)
 }
 \arguments{
 \item{data_L1}{time-aligned dendrometer data as produced by
-\code{\link{proc_L1}}.}
+\code{\link{proc_L1}}. Optional, only needed for \code{remove} and if
+\code{plot = TRUE}.}
 
 \item{data_L2}{processed dendrometer data as produced by
 \code{\link{proc_dendro_L2}}.}
+
+\item{remove}{numeric vector, specify numbers of the changes that should
+be removed. Numbers are displayed in the plots produced by
+\code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers
+are only displayed if \code{plot_period = "monthly"}).}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }

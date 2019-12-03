@@ -6,7 +6,7 @@
 \title{treenetproc - Clean, process and visualize dendrometer data}
 \description{
 The \code{treenetproc} package contains three main functions:
-  \code{proc_L1}, \code{proc_dendro_L2}, \code{corr_dendro_L3}
+  \code{proc_L1}, \code{proc_dendro_L2}, \code{corr_dendro_L2}
 }
 \section{\code{proc_L1()}}{
 
@@ -19,9 +19,9 @@ The \code{treenetproc} package contains three main functions:
   The function \code{proc_dendro_L2} removes jumps and outliers.
 }
 
-\section{\code{corr_dendro_L3()}}{
+\section{\code{corr_dendro_L2()}}{
 
-  The function \code{corr_dendro_L3} can be used to manually correct
+  The function \code{corr_dendro_L2} can be used to manually correct
   remaining errors in data cleaning.
 }
 

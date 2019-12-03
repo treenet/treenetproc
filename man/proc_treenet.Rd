@@ -208,6 +208,6 @@ proc_treenet(sensor_name = c("Alvaneu-2.dendrometer.ch0",
   \code{\link{proc_dendro_L2}} to process dendrometer data from \code{L1}
   to \code{L2}.\cr
   \code{\link{corr_dendro_L1}} to correct errors before processing.\cr
-  \code{\link{corr_dendro_L3}} to correct errors after processing.
+  \code{\link{corr_dendro_L2}} to correct errors after processing.
 }
 \keyword{treenet}

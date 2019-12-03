@@ -8,6 +8,10 @@ check_series(df, series)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
+
+\item{series}{character, specify the name of a single dendrometer series
+for which changes should be made. Data of other series is left unchanged.
+Not needed if only a single series is provided.}
 }
 \description{
 \code{check_series} checks the input of the variable series.

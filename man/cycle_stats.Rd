@@ -9,6 +9,9 @@ cycle_stats(df, reso, tz, plot_cycle = FALSE, plot_export)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
+\item{reso}{desired time resolution of output (in minutes). See
+\code{Details} for more information on data aggregation.}
+
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 
 \item{plot_cycle}{logical, specify whether maxima and minima used for the
