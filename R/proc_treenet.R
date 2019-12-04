@@ -36,11 +36,6 @@
 #' proc_treenet(sensor_name = c("Alvaneu-2.dendrometer.ch0",
 #'                              "Alvaneu-4.dendrometer.ch0"))
 #'
-#' # throws error
-#' proc_treenet(sensor_name = c("Alvaneu-2.dendrometer.ch0",
-#'                              "Alvaneu-4.dendrometer.ch0",
-#'                              "Bachtel-2.dendrometer.ch0"))
-#' }
 proc_treenet <- function(site = NULL, sensor_name = NULL,
                          from = NULL, to = NULL, last = NULL, reso = 10,
                          frost_thr = 5, lowtemp = 5,
@@ -48,7 +43,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                          interpol = NULL, frag_len = NULL,
                          proc_to = "L2", plot = TRUE, plot_period = "full",
                          plot_export = TRUE, plot_name = "proc_L2_plot",
-                         plot_show = "all", plot_cycle = FALSE,
+                         plot_show = "all", plot_phase = FALSE,
                          path_cred = NULL, year = "asis", iter_clean = 1,
                          tz = "Etc/GMT-1", use_intl = FALSE) {
 
