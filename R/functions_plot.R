@@ -301,26 +301,24 @@ plot_interpol_points <- function(df) {
 }
 
 
-#' Plot Cycles
+#' Plot Phases
 #'
-#' \code{plot_cycle} plots maxima and minima selected to calculate cycle
-#'   statistics and prints some characteristics of the cycles.
+#' \code{plot_phase} plots phases of shrinkage and expansion based on
+#'   selected maxima and minima and returns some statistics on the phases.
 #'
-#' @param df input \code{data.frame}.
-#' @param cycle \code{data.frame} containing cycle statistics on the shrinkage
-#'   phase, refilling phase and full cycle (as produced by the function
-#'   \code{calccycle}.
+#' @param phase \code{data.frame} containing statistics on the shrinkage
+#'   phase and expansion phase.
 #'
 #' @return Plots are saved to current working directory as
-#'   \code{cycle_plot.pdf}.
+#'   \code{phase_plot.pdf}.
 #'
 #' @keywords internal
 #'
-plot_cycle <- function(phase, plot_export) {
+plot_phase <- function(phase, plot_export) {
 
   series <- unique(phase$series)
   if (plot_export) {
-    grDevices::pdf(paste0("cycle_plot_", series, ".pdf"),
+    grDevices::pdf(paste0("phase_plot_", series, ".pdf"),
                    width = 8.3, height = 5.8)
   }
 
