@@ -100,16 +100,15 @@ removeconsec <- function(df, remove, notremove, mode) {
 }
 
 
-#' Calculate Cycle Parameters
+#' Calculate Phase Parameters
 #'
-#' \code{calccycleparam} calculates parameters for cycles of shrinking and
-#'   refilling.
+#' \code{calcshrinkexpparam} calculates parameters for phases of shrinkage and
+#'   expansion.
 #'
-#' @param df \code{data.frame} with dendrometer data
-#' @param maxmin \code{data.frame} with minima and maxima and the respective
-#'   time stamps.
+#' @param df \code{data.frame} with dendrometer data and grouping variables
+#'   for shrinkage and expansion.
 #' @param mode character, specify whether statistics for shrinkage
-#'   (\code{mode = "shrink"}) or refilling \code{mode = "ref"} are
+#'   (\code{mode = "shrink"}) or expansion \code{mode = "exp"} are
 #'   calculated.
 #'
 #' @keywords internal
