@@ -96,8 +96,8 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                               interpol = interpol, frag_len = frag_len,
                               plot = plot, plot_period = plot_period,
                               plot_show = plot_show, plot_export = plot_export,
-                              plot_name = plot_name, plot_cycle = plot_cycle,
-                              iter_clean = iter_clean, tz = tz)
+                              plot_name = plot_name, iter_clean = iter_clean,
+                              tz = tz)
     )
   } else {
     df_L2 <- proc_dendro_L2(dendro_data = df_L1, temp_data = NULL,
@@ -106,8 +106,8 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                             interpol = interpol, frag_len = frag_len,
                             plot = plot, plot_period = plot_period,
                             plot_show = plot_show, plot_export = plot_export,
-                            plot_name = plot_name, plot_cycle = plot_cycle,
-                            iter_clean = iter_clean, tz = tz)
+                            plot_name = plot_name, iter_clean = iter_clean,
+                            tz = tz)
   }
 
   print("Done!")
