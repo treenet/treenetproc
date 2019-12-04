@@ -68,5 +68,15 @@ grow_seas <- function(df, tol_seas = 0.05, agg_yearly = FALSE, tz = "UTC") {
   df <- df %>%
     dplyr::left_join(., gro_season, by = "ts")
 
+  if (agg_yearly) {
+    df <- df %>%
+      dplyr::select(series, ts, gro_start, gro_end) %>%
+      dplyr::filter(!is.na(gro_start) | !(is.na(gro_end))) %>%
+      dplyr::mutate(year = as.numeric(substr(ts, 1, 4))) %>%
+      dplyr::mutate(date = )
+      dplyr::arrange(series, year) %>%
+      dplyr::select(series, year, gro_start, gro_end)
+  }
+
   return(df)
 }
