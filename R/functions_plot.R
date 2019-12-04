@@ -316,23 +316,43 @@ plot_interpol_points <- function(df) {
 #'
 #' @keywords internal
 #'
-plot_cycle <- function(df, cycle, plot_export) {
+plot_cycle <- function(phase, plot_export) {
 
-  series <- unique(df$series)
+  series <- unique(phase$series)
   if (plot_export) {
     grDevices::pdf(paste0("cycle_plot_", series, ".pdf"),
                    width = 8.3, height = 5.8)
   }
 
-  for (c in 1:nrow(cycle)) {
-    cycle_plot <- cycle[c, ]
+  df <- phase
 
-    if (is.na(cycle_plot$cycle_dur)) {
-      next
+  phase <- phase %>%
+    dplyr::mutate(day = substr(ts, 1, 10)) %>%
+    dplyr::group_by(day) %>%
+    dplyr::mutate(phase_class = fill_na(phase_class)) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(!is.na(shrink_start) | !(is.na(exp_start))) %>%
+    dplyr::select(shrink_start, shrink_end, shrink_dur, shrink_amp,
+                  shrink_slope, exp_start, exp_end, exp_dur, exp_amp,
+                  exp_slope, phase_class)
+
+  for (p in 1:nrow(phase)) {
+    phase_plot <- phase[p, ]
+
+    if (!is.na(phase_plot$shrink_start)) {
+      mode <- "shrink"
+      phase_plot <- phase_plot %>%
+        dplyr::rename(start = shrink_start, end = shrink_end, dur = shrink_dur,
+                      amp = shrink_amp, slope = shrink_slope)
+    } else {
+      mode <- "exp"
+      phase_plot <- phase_plot %>%
+        dplyr::rename(start = exp_start, end = exp_end, dur = exp_dur,
+                      amp = exp_amp, slope = exp_slope)
     }
 
-    plot_start <- cycle_plot$shrink_start - as.difftime(8, units = "hours")
-    plot_end <- cycle_plot$ref_end + as.difftime(8, units = "hours")
+    plot_start <- phase_plot$start - as.difftime(8, units = "hours")
+    plot_end <- phase_plot$end + as.difftime(8, units = "hours")
 
     df_plot <- df %>%
       dplyr::filter(ts >= plot_start & ts <= plot_end)
@@ -340,33 +360,38 @@ plot_cycle <- function(df, cycle, plot_export) {
     graphics::plot(x = df_plot$ts, y = df_plot$value, type = "l",
                    xaxt = "n", las = 1, ylab = "value",
                    xlab = paste("Time (Hours)\n",
-                                as.Date(cycle_plot$shrink_start), "to",
-                                as.Date(cycle_plot$ref_end)),
-                   main = paste0(df_plot$series[1], "\n", "Cycle ",
-                                 cycle$cycle[c]))
+                                as.Date(phase_plot$start), "to",
+                                as.Date(phase_plot$end)),
+                   main = paste0(df_plot$series[1], "\n",
+                                 ifelse(mode == "shrink",
+                                        "Shrinkage", "Expansion")))
     graphics::axis.POSIXct(1, x = df_plot$ts, format = "%H")
+    graphics::abline(v = unique(as.Date(df_plot$ts)), lty = "dashed",
+                     col = "grey")
 
-    graphics::points(x = cycle_plot$shrink_start,
-                     y = df_plot$value[df_plot$ts == cycle_plot$shrink_start])
-    graphics::points(x = cycle_plot$ref_end,
-                     y = df_plot$value[df_plot$ts == cycle_plot$ref_end])
-    graphics::points(x = cycle_plot$shrink_end,
-                     y = df_plot$value[df_plot$ts == cycle_plot$shrink_end],
+    graphics::points(x = phase_plot$start,
+                     y = df_plot$value[df_plot$ts == phase_plot$start],
+                     pch = 16)
+    graphics::points(x = phase_plot$end,
+                     y = df_plot$value[df_plot$ts == phase_plot$end],
+                     pch = 17)
+    # plot adjacent maxima and minima
+    graphics::points(x = df_plot$ts[df_plot$extrema == "max"],
+                     y = df_plot$value[df_plot$extrema == "max"],
+                     pch = 1)
+    graphics::points(x = df_plot$ts[df_plot$extrema == "min"],
+                     y = df_plot$value[df_plot$extrema == "min"],
                      pch = 2)
 
-    graphics::legend(x = "bottomright",
-                     legend = c(paste("Cycle duration =",
-                                      cycle_plot$cycle_dur_class),
-                                paste("Cycle class =", cycle_plot$cycle_class),
-                                paste("Shrink amp =",
-                                      round(cycle_plot$shrink_amp, 2)),
-                                paste("Shrink slope =",
-                                      round(cycle_plot$shrink_slope, 4)),
-                                paste("Refill amp =",
-                                      round(cycle_plot$ref_amp, 2)),
-                                paste("Refill slope =",
-                                      round(cycle_plot$ref_slope, 4))),
-                     bty = "n")
+    graphics::legend(x = ifelse(mode == "shrink", "bottomleft", "bottomright"),
+                     legend = c(paste("Phase duration =",
+                                      phase_plot$dur),
+                                paste("Phase class =", phase_plot$phase_class),
+                                paste("Amplitude =",
+                                      round(phase_plot$amp, 2)),
+                                paste("Slope =",
+                                      round(phase_plot$slope, 4))),
+                                bty = "n")
   }
 
   if (plot_export) {
