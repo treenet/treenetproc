@@ -325,14 +325,10 @@ plot_phase <- function(phase, plot_export) {
   df <- phase
 
   phase <- phase %>%
-    dplyr::mutate(day = substr(ts, 1, 10)) %>%
-    dplyr::group_by(day) %>%
-    dplyr::mutate(phase_class = fill_na(phase_class)) %>%
-    dplyr::ungroup() %>%
     dplyr::filter(!is.na(shrink_start) | !(is.na(exp_start))) %>%
     dplyr::select(shrink_start, shrink_end, shrink_dur, shrink_amp,
                   shrink_slope, exp_start, exp_end, exp_dur, exp_amp,
-                  exp_slope, phase_class)
+                  exp_slope)
 
   for (p in 1:nrow(phase)) {
     phase_plot <- phase[p, ]
@@ -384,7 +380,6 @@ plot_phase <- function(phase, plot_export) {
     graphics::legend(x = ifelse(mode == "shrink", "bottomleft", "bottomright"),
                      legend = c(paste("Phase duration =",
                                       phase_plot$dur),
-                                paste("Phase class =", phase_plot$phase_class),
                                 paste("Amplitude =",
                                       round(phase_plot$amp, 2)),
                                 paste("Slope =",
