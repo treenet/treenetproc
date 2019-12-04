@@ -144,9 +144,14 @@ check_input_variables <- function(list) {
     check_logical(var = list$plot_export, var_name = "plot_export")
   }
 
-  # plot_mds
-  if ("plot_mds" %in% var_names) {
-    check_logical(var = list$plot_mds, var_name = "plot_mds")
+  # plot_phase
+  if ("plot_phase" %in% var_names) {
+    check_logical(var = list$plot_phase, var_name = "plot_phase")
+  }
+
+  # agg_daily
+  if ("agg_daily" %in% var_names) {
+    check_logical(var = list$agg_daily, var_name = "agg_daily")
   }
 
   # print_vars
