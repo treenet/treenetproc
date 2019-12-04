@@ -31,8 +31,8 @@
 #'   \code{frag_len = NULL} the devault value is set to \code{frag_len = 2.1}.
 #' @param plot logical, specify whether a comparison of \code{L1} and \code{L2}
 #'   data should be plotted.
-#' @param plot_cycle logical, specify whether maxima and minima used for the
-#'   calculation of the cycle statistics should be plotted.
+#' @param plot_phase logical, specify whether maxima and minima used for the
+#'   calculation of the phase statistics should be plotted.
 #' @param iter_clean numeric, specifies the number of times the cleaning
 #'   process is repeated. Can be used to check whether running the cleaning
 #'   process many times has an effect on the results.
@@ -110,7 +110,7 @@ proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
                            plot = TRUE, plot_period = "full",
                            plot_show = "all", plot_export = TRUE,
                            plot_name = "proc_L2_plot",
-                           plot_cycle = FALSE, iter_clean = 1, tz = "UTC") {
+                           plot_phase = FALSE, iter_clean = 1, tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
   list_inputs <- mget(ls())
