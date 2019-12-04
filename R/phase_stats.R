@@ -1,12 +1,17 @@
-#' Calculates Phase Statistics
+#' Calculate Phase Statistics
 #'
-#' \code{phase_stats} calculates different statistics and characteristics of
-#'   phases of shrinkage and expansion. To identify the phases local maxima
-#'   and minima are identified using a moving window.
+#' \code{phase_stats} calculates different statistics of shrinkage and
+#'   expansion phases. To identify the phases local maxima and minima are
+#'   identified using a moving window.
 #'
 #' @param df input \code{data.frame}.
+#' @param agg_daily logical, specify whether phase statistics are appended
+#'   to the \code{L2} data or are exported as a daily aggregated
+#'   \code{data.frame}.
 #' @inheritParams proc_L1
 #' @inheritParams proc_dendro_L2
+#'
+#' @return
 #'
 #' @details \code{phase_stats} is inspired by the function
 #'   \code{\link[dendrometeR]{phase_def}} in the package \code{dendrometeR}.
@@ -15,18 +20,28 @@
 #'
 #' @examples
 #'
-phase_stats <- function(df, reso, plot_phase = FALSE, plot_export,
-                        tz = "UTC") {
+phase_stats <- function(df, plot_phase = FALSE, plot_export = TRUE,
+                        agg_daily = FALSE, tz = "UTC") {
 
-  if ("phase" %in% colnames(df)) {
-    df <- df %>%
-      dplyr::select_if(!grepl("phase|shrink|exp|mds|mde", colnames(.)))
-  }
+  # Check input variables -----------------------------------------------------
+  list_inputs <- mget(ls())
+  check_input_variables(list = list_inputs)
 
+
+  # Check input data ----------------------------------------------------------
+  check_data_L2(data_L2 = df)
+  reso <- reso_check_L1(df = df)
   if (reso > 360) {
     message("the time resolution of the dataset ('reso') is too coarse to
             calculate phase statistics")
     return(df)
+  }
+
+
+  # Calculate phase statistics ------------------------------------------------
+  if ("phase_class" %in% colnames(df)) {
+    df <- df %>%
+      dplyr::select_if(!grepl("phase|shrink|exp|mds|mde", colnames(.)))
   }
 
   series_vec <- unique(df$series)
