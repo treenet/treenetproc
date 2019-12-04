@@ -62,6 +62,7 @@ removeconsec <- function(df, remove, notremove, mode) {
     dplyr::mutate(rem = remove) %>%
     dplyr::mutate(norem = notremove) %>%
     dplyr::filter(rem == 2 | norem == 2) %>%
+    dplyr::filter(!(rem == 2 & norem == 2)) %>%
     # identify consecutive rem
     dplyr::mutate(rem_cons = rep(rle(rem)[[1]], times = rle(rem)[[1]])) %>%
     dplyr::mutate(iscons = ifelse(rem_cons > 1 & rem == 2, TRUE, FALSE)) %>%
