@@ -187,6 +187,13 @@ createfrostflag <- function(df, tem, lowtemp = 5, sample_temp) {
     }
   }
 
+  if (all(is.na(df_frost$frost))) {
+    df <- df_frost %>%
+      dplyr::mutate(frost = FALSE)
+
+    return(df)
+  }
+
   df <- df_frost %>%
     dplyr::mutate(frost = fill_na(frost)) %>%
     dplyr::mutate(frost = fill_na_lead(frost))
