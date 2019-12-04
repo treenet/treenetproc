@@ -364,15 +364,15 @@ plot_phase <- function(phase, plot_export) {
                                  ifelse(mode == "shrink",
                                         "Shrinkage", "Expansion")))
     graphics::axis.POSIXct(1, x = df_plot$ts, format = "%H")
-    graphics::abline(v = unique(as.Date(df_plot$ts)), lty = "dashed",
-                     col = "grey")
+    graphics::abline(v = as.POSIXct(unique(as.Date(df_plot$ts))),
+                     lty = "dashed", col = "grey")
 
     graphics::points(x = phase_plot$start,
                      y = df_plot$value[df_plot$ts == phase_plot$start],
-                     pch = 16)
+                     pch = ifelse(mode == "shrink", 16, 17))
     graphics::points(x = phase_plot$end,
                      y = df_plot$value[df_plot$ts == phase_plot$end],
-                     pch = 17)
+                     pch = ifelse(mode == "shrink", 17, 16))
     # plot adjacent maxima and minima
     graphics::points(x = df_plot$ts[df_plot$extrema == "max"],
                      y = df_plot$value[df_plot$extrema == "max"],
