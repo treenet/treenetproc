@@ -105,15 +105,16 @@ removeconsec <- function(df, remove, notremove, mode) {
 #' \code{calcshrinkexpparam} calculates parameters for phases of shrinkage and
 #'   expansion.
 #'
-#' @param df \code{data.frame} with dendrometer data and grouping variables
-#'   for shrinkage and expansion.
+#' @param df \code{data.frame} with dendrometer data
+#' @param maxmin \code{data.frame} with identified maxima and minima
+#'   and grouping variables for shrinkage and expansion phases.
 #' @param mode character, specify whether statistics for shrinkage
 #'   (\code{mode = "shrink"}) or expansion \code{mode = "exp"} are
 #'   calculated.
 #'
 #' @keywords internal
 #'
-calcshrinkexpparam <- function(df, mode) {
+calcshrinkexpparam <- function(df, maxmin, mode) {
 
   if (mode == "shrink") {
     group <- "shrink_group"
@@ -126,7 +127,7 @@ calcshrinkexpparam <- function(df, mode) {
                    "exp_slope")
   }
 
-  # delete incomplete shrinkages or refillings
+  # delete incomplete shrinkages or expansions
   maxmin_complete <- maxmin %>%
     dplyr::group_by_at(group) %>%
     dplyr::filter(dplyr::n() == 2) %>%
