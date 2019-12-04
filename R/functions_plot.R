@@ -345,8 +345,8 @@ plot_phase <- function(phase, plot_export) {
                       amp = exp_amp, slope = exp_slope)
     }
 
-    plot_start <- phase_plot$start - as.difftime(8, units = "hours")
-    plot_end <- phase_plot$end + as.difftime(8, units = "hours")
+    plot_start <- phase_plot$start - as.difftime(12, units = "hours")
+    plot_end <- phase_plot$end + as.difftime(12, units = "hours")
 
     df_plot <- df %>%
       dplyr::filter(ts >= plot_start & ts <= plot_end)
