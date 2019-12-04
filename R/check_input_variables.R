@@ -154,6 +154,11 @@ check_input_variables <- function(list) {
     check_logical(var = list$agg_daily, var_name = "agg_daily")
   }
 
+  # agg_yearly
+  if ("agg_yearly" %in% var_names) {
+    check_logical(var = list$agg_yearly, var_name = "agg_yearly")
+  }
+
   # print_vars
   if ("print_vars" %in% var_names) {
     check_logical(var = list$print_vars, var_name = "print_vars")
@@ -214,6 +219,13 @@ check_input_variables <- function(list) {
   if ("n_days" %in% var_names) {
     if (length(list$n_days > 0)) {
       check_numeric(var = list$n_days, var_name = "n_days")
+    }
+  }
+
+  # tol_seas
+  if ("tol_seas" %in% var_names) {
+    if (length(list$tol_seas > 0)) {
+      check_numeric(var = list$tol_seas, var_name = "tol_seas")
     }
   }
 
