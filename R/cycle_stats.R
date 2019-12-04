@@ -1,20 +1,22 @@
-#' Calculates Cycle Statistics
+#' Calculates Phase Statistics
 #'
-#' \code{cycle_stats} calculates different statistics and characteristics of
-#'   cycles. To identify the cycles local maxima and minima are identified
-#'   using a moving window.
+#' \code{phase_stats} calculates different statistics and characteristics of
+#'   phases of shrinkage and expansion. To identify the phases local maxima
+#'   and minima are identified using a moving window.
 #'
 #' @param df input \code{data.frame}.
+#' @inheritParams proc_L1
 #' @inheritParams proc_dendro_L2
 #'
-#' @details \code{cycle_stats} is inspired by the function
+#' @details \code{phase_stats} is inspired by the function
 #'   \code{\link[dendrometeR]{phase_def}} in the package \code{dendrometeR}.
 #'
 #' @export
 #'
-#' @example
+#' @examples
 #'
-cycle_stats <- function(df, reso, tz, plot_cycle = FALSE, plot_export) {
+phase_stats <- function(df, reso, plot_phase = FALSE, plot_export,
+                        tz = "UTC") {
 
   if ("phase" %in% colnames(df)) {
     df <- df %>%
@@ -23,16 +25,16 @@ cycle_stats <- function(df, reso, tz, plot_cycle = FALSE, plot_export) {
 
   if (reso > 360) {
     message("the time resolution of the dataset ('reso') is too coarse to
-            calculate cycle statistics")
+            calculate phase statistics")
     return(df)
   }
 
   series_vec <- unique(df$series)
-  list_cycle <- vector("list", length = length(series_vec))
-  df_cycle <- df
+  list_phase <- vector("list", length = length(series_vec))
+  df_phase <- df
   for (s in 1:length(series_vec)) {
-    message(paste0("calculating cycle stats of ", series_vec[s], "..."))
-    df <- df_cycle %>%
+    message(paste0("calculating phase statistics of ", series_vec[s], "..."))
+    df <- df_phase %>%
       dplyr::filter(series == series_vec[s])
 
     maxmin1 <- findmaxmin(df = df, reso = reso, st = 1)
@@ -115,15 +117,15 @@ cycle_stats <- function(df, reso, tz, plot_cycle = FALSE, plot_export) {
     shrink_exp_stats <- shrink_exp_stats %>%
       dplyr::full_join(., phase_class, by = "ts")
 
-    if (plot_cycle) {
-      print("plot cycles...")
-      plot_cycle(phase = shrink_exp_stats, plot_export = plot_export)
+    if (plot_phase) {
+      print("plot phases...")
+      plot_phase(phase = shrink_exp_stats, plot_export = plot_export)
     }
 
-    list_cycle[[s]] <- shrink_exp_stats
+    list_phase[[s]] <- shrink_exp_stats
   }
 
-  df <- dplyr::bind_rows(list_cycle)
+  df <- dplyr::bind_rows(list_phase)
 
   return(df)
 }
