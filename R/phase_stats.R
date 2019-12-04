@@ -103,8 +103,6 @@ phase_stats <- function(df, plot_phase = FALSE, plot_export = TRUE,
                                      ifelse(!is.na(exp_dur), "max", NA)))
 
     # classify days as transpir (1) or inverted (-1)
-    # day is transp, if there is a shrinkage occurring during the day
-    # day is inv, if there is a expansion occurring during the day
     phase_class <- shrink_exp_stats %>%
       dplyr::filter(!is.na(shrink_start) | !is.na(exp_start)) %>%
       dplyr::mutate(day = substr(ts, 1, 10)) %>%
