@@ -1,7 +1,7 @@
 #' Find Maximum and Minimum in Time Window
 #'
 #' \code{findmaxmin} identifies maxima and minima in a specified time window.
-#'   It is a helper function of \code{\link{cycle_stats}}.
+#'   It is a helper function of \code{\link{phase_stats}}.
 #'
 #' @param df input \code{data.frame}
 #' @param span width of the time window. Relative to \code{reso}.
@@ -43,7 +43,7 @@ findmaxmin <- function(df, reso, st) {
 #' \code{removeconsec} removes consecutive maxima or minima and keeps only
 #'   the higher or lower value, respectively. The function makes sure no two
 #'   maxima or minima appear consecutively. It is a helper function of
-#'   \code{\link{cycle_stats}}.
+#'   \code{\link{phase_stats}}.
 #'
 #' @param df input \code{data.frame}.
 #' @param remove numeric, for which consecutive values are removed
