@@ -66,11 +66,20 @@ creategapflag <- function(df, reso, gaple = 12 * (60 / reso)) {
 #'
 #' @keywords internal
 #'
-fill_na <- function(x) {
+fill_na <- function(x, from_last = FALSE) {
+
+  if (from_last) {
+    x <- rev(x)
+  }
+
   nonaid <- !is.na(x)
   val_nona <- c(NA, x[nonaid])
   fillid <- cumsum(nonaid) + 1
   x <- val_nona[fillid]
+
+  if (from_last) {
+    x <- rev(x)
+  }
 
   return(x)
 }
