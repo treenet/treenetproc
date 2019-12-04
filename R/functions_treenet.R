@@ -39,8 +39,7 @@ load_credentials <- function(path_cred = NULL) {
 #'   class, i.e. \code{"dendro"} works for \code{"dendrometer"}. String is not
 #'   case sensitive.
 #' @param sensor_name character, specify the name of a single or
-#'   multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}) of the
-#'   same site.
+#'   multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}).
 #' @param path_cred optional argument to specify the full path to the
 #'   file \code{config.yml} containing the database login data. File can
 #'   also be copied to the main folder of the package for automatic
