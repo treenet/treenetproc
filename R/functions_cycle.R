@@ -114,61 +114,51 @@ removeconsec <- function(df, remove, notremove, mode) {
 #'
 #' @keywords internal
 #'
-calccycleparam <- function(df, maxmin, mode) {
+calcshrinkexpparam <- function(df, mode) {
 
   if (mode == "shrink") {
-    param <- data.frame(cycle = NA, shrink_start = NA, shrink_end = NA,
-                        shrink_dur = NA, shrink_amp = NA, shrink_slope = NA)
+    group <- "shrink_group"
+    col_names <- c("ts", "shrink_start", "shrink_end", "shrink_dur",
+                   "shrink_amp", "shrink_slope")
   }
-  if (mode == "ref") {
-    param <- data.frame(cycle = NA, ref_start = NA, ref_end = NA,
-                        ref_dur = NA, ref_amp = NA, ref_slope = NA)
+  if (mode == "exp") {
+    group <- "exp_group"
+    col_names <- c("ts", "exp_start", "exp_end", "exp_dur", "exp_amp",
+                   "exp_slope")
   }
 
-  maxmin <- maxmin %>%
-    dplyr::select(cycle, dplyr::matches(mode))
+  # delete incomplete shrinkages or refillings
+  maxmin_complete <- maxmin %>%
+    dplyr::group_by_at(group) %>%
+    dplyr::filter(dplyr::n() == 2) %>%
+    dplyr::ungroup() %>%
+    dplyr::rename(group = group)
 
-  seq <- seq(from = 1, to = 2 * floor(nrow(maxmin) / 2), by = 2)
-  list_out <- vector("list", length = length(seq))
+  param <- df %>%
+    dplyr::full_join(., maxmin_complete, by = "ts") %>%
+    dplyr::mutate(fill_forw = fill_na(group)) %>%
+    dplyr::mutate(fill_rev = fill_na(group, from_last = TRUE)) %>%
+    dplyr::mutate(group = ifelse(fill_forw == fill_rev,
+                                        fill_forw, NA)) %>%
+    dplyr::filter(!is.na(group)) %>%
+    # remove shrinkages or refillings with more than 50% NA values
+    dplyr::group_by(group) %>%
+    dplyr::mutate(value_na = length(which(is.na(value)))) %>%
+    dplyr::mutate(na_prop = value_na / dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(na_prop < 0.5) %>%
+    # calculate shrinkage or refilling parameters
+    dplyr::group_by(group) %>%
+    dplyr::mutate(start = ts[1]) %>%
+    dplyr::mutate(end = dplyr::last(ts)) %>%
+    dplyr::mutate(dur = as.numeric(difftime(dplyr::last(ts), ts[1],
+                                            units = "mins"))) %>%
+    dplyr::mutate(amp = dplyr::last(value) - value[1]) %>%
+    dplyr::mutate(slope = stats::lm(value ~ ts)$coefficients[2]) %>%
+    dplyr::slice(dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(ts, start, end, dur, amp, slope) %>%
+    stats::setNames(col_names)
 
-  for (c in 1:length(seq)) {
-
-    # select single shrinkage or refill
-    cycle_start <- dplyr::pull(dplyr::select(maxmin,
-                                             dplyr::matches("ts")))[seq[c]]
-    cycle_end <- dplyr::pull(dplyr::select(maxmin,
-                                           dplyr::matches("ts")))[seq[c] + 1]
-    df_param <- df %>%
-      dplyr::filter(ts >= cycle_start & ts <= cycle_end)
-    param_cycle <- param
-    param_cycle$cycle <- maxmin$cycle[seq[c]]
-
-    # set cycles to NA with too much missing data
-    if (length(which(is.na(df_param$value))) > 0.5 * nrow(df_param)) {
-      list_out[[c]] <- param_cycle
-      next
-    }
-
-    param_cycle[, 2] <- cycle_start
-    param_cycle[, 3] <- cycle_end
-    param_cycle[, 4] <- as.numeric(difftime(cycle_end, cycle_start,
-                                            units = "mins"))
-    param_cycle[, 5] <- dplyr::last(df_param$value) - df_param$value[1]
-    options(warn = -1)
-    param_cycle[, 6] <- summary(stats::lm(data = df_param,
-                                          value ~ ts))$coefficients[2, 1]
-    options(warn = 0)
-
-    # set cycles to NA with wrong amplitude (i.e. positive for shrinkage)
-    if (mode == "shrink" & param_cycle[, 5] > 0) {
-      param_cycle[, 2:6] <- NA
-    }
-    if (mode == "ref" & param_cycle[, 5] < 0) {
-      param_cycle[, 2:6] <- NA
-    }
-
-    list_out[[c]] <- param_cycle
-  }
-  param_all <- dplyr::bind_rows(list_out)
-  return(param_all)
+  return(param)
 }
