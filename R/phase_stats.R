@@ -93,8 +93,8 @@ phase_stats <- function(df, plot_phase = FALSE, plot_export = TRUE,
       dplyr::select(ts, extrema, shrink_group, exp_group)
 
     # calculate parameters for shrinkage and expansion
-    shrink <- calcshrinkexpparam(df = df, mode = "shrink")
-    exp <- calcshrinkexpparam(df = df, mode = "exp")
+    shrink <- calcshrinkexpparam(df = df, maxmin = maxmin, mode = "shrink")
+    exp <- calcshrinkexpparam(df = df, maxmin = maxmin, mode = "exp")
 
     shrink_exp_stats <- df %>%
       dplyr::full_join(., shrink, by = "ts") %>%
