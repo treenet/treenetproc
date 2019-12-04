@@ -46,9 +46,9 @@ findmaxmin <- function(df, reso, st) {
 #'   \code{\link{cycle_stats}}.
 #'
 #' @param df input \code{data.frame}.
-#' @param remove numeric, in which consecutive values are removed
+#' @param remove numeric, for which consecutive values are removed
 #'   (i.e. maxima or minima).
-#' @param notremove numeric, in which consecutive values are not removed
+#' @param notremove numeric, for which consecutive values are not removed
 #'   (i.e. maxima or minima).
 #' @param mode character, specifies whether consecutive maxima or minima
 #'   are removed. Can either be \code{"max"} or \code{"min"}.
