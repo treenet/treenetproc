@@ -125,8 +125,8 @@ usethis::use_data(dendro_data_L1, overwrite = TRUE)
 
 # prepare L2 data -------------------------------------------------------------
 data("temp_data_L1")
-dendro_data_L2 <- proc_dendro_L2(dendro_data = dendro_data_L1,
-                                 temp_data = temp_data_L1, plot = FALSE)
+dendro_data_L2 <- proc_dendro_L2(dendro_L1 = dendro_data_L1,
+                                 temp_L1 = temp_data_L1, plot = FALSE)
 
 # save L2 data
 usethis::use_data(dendro_data_L2, overwrite = TRUE)

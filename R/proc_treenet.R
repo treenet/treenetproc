@@ -90,7 +90,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
 
   if (use_intl) {
     suppressMessages(
-      df_L2 <- proc_dendro_L2(dendro_data = df_L1, temp_data = NULL,
+      df_L2 <- proc_dendro_L2(dendro_L1 = df_L1, temp_L1 = NULL,
                               tol_jump = tol_jump, tol_out = tol_out,
                               frost_thr = frost_thr, lowtemp = lowtemp,
                               interpol = interpol, frag_len = frag_len,
@@ -100,7 +100,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                               tz = tz)
     )
   } else {
-    df_L2 <- proc_dendro_L2(dendro_data = df_L1, temp_data = NULL,
+    df_L2 <- proc_dendro_L2(dendro_L1 = df_L1, temp_L1 = NULL,
                             tol_jump = tol_jump, tol_out = tol_out,
                             frost_thr = frost_thr, lowtemp = lowtemp,
                             interpol = interpol, frag_len = frag_len,

@@ -128,7 +128,7 @@ dendro_data_L1 <- dendro_data_L1 %>%
 
 ```{r process to L2, results = "hide", message = FALSE, warning = FALSE}
 # Clean time-aligned (L1) dendrometer data
-proc_dendro_L2(dendro_data = dendro_data_L1, temp_data = temp_data_L1, 
+proc_dendro_L2(dendro_L1 = dendro_data_L1, temp_L1 = temp_data_L1, 
                plot = FALSE)
 ```
 <br>
@@ -192,7 +192,7 @@ data_L1 <- dendro_data_L1 %>%
   filter(ts < "2014-12-31")
 
 # Clean time-aligned (L1) dendrometer data and plot changes
-proc_dendro_L2(dendro_data = data_L1, temp_data = temp_data_L1,
+proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1,
                plot_period = "monthly", plot_export = FALSE)
 ```
 <br>
@@ -223,7 +223,7 @@ cleaning are printed.
 
 
 ```{r process to L2 last_plot, fig.asp = 1.4, fig.retina = 2, fig.keep = "last", echo = FALSE, results = "hide", message = FALSE}
-proc_dendro_L2(dendro_data = data_L1, temp_data = temp_data_L1, 
+proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1, 
                plot_period = "monthly", plot_export = FALSE)
 ```
 
@@ -254,7 +254,7 @@ data_L1 <- dendro_data_L1 %>%
   filter(series == "site-1_dendro-2")
 
 # Clean dendrometer data (tol_jump = 1, tol_out = 10)
-proc_dendro_L2(dendro_data = data_L1, temp_data = temp_data_L1, 
+proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1, 
                tol_jump = 1, tol_out = 10, plot_export = FALSE)
 ```
 
@@ -263,8 +263,8 @@ data("dendro_data_L1")
 data_L1 <- dendro_data_L1 %>% 
   filter(series == "site-1_dendro-2")
 
-data_shrink_L2 <- proc_dendro_L2(dendro_data = data_L1, 
-                                 temp_data = temp_data_L1, 
+data_shrink_L2 <- proc_dendro_L2(dendro_L1 = data_L1, 
+                                 temp_L1 = temp_data_L1, 
                                  tol_jump = 1, tol_out = 10, plot = FALSE)
 
 par(mar = c(2.1, 4, 1, 2))
@@ -280,12 +280,12 @@ Such problems can be fixed by increasing the value of `tol_jump`.
 <br>
 ```{r shrinking example higher tol code, fig.asp = 0.9, fig.show="hide", results="hide", message = FALSE, warning = FALSE}
 # Clean dendrometer data (use default values of 'tol_jump' and 'tol_out')
-proc_dendro_L2(dendro_data = data_L1, temp_data = temp_data_L1, 
+proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1, 
                tol_jump = 50, tol_out = 10, plot_export = FALSE)
 ```
 
 ```{r shrinking example higher tol code #2, fig.asp = 0.9, fig.show="hide", echo=FALSE, results = "hide", message = FALSE, warning = FALSE}
-data_L2 <- proc_dendro_L2(dendro_data = data_L1, temp_data = temp_data_L1, 
+data_L2 <- proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1, 
                           tol_jump = 50, tol_out = 10, plot_export = FALSE)
 ```
 
@@ -327,12 +327,12 @@ data_L1 <- dendro_data_L1 %>%
   filter(series == "site-1_dendro-4")
 
 # Clean dendrometer data (without temperature data)
-proc_dendro_L2(dendro_data = data_L1, plot_export = FALSE)
+proc_dendro_L2(dendro_L1 = data_L1, plot_export = FALSE)
 ```
 
 ```{r frost no temp data_2, fig.asp = 0.5, fig.retina = 2, out.width = "70%", echo=FALSE, results="hide", warning=FALSE, message=FALSE}
 # Process to L2 without temperature data
-data_L2 <- proc_dendro_L2(dendro_data = data_L1, plot = FALSE)
+data_L2 <- proc_dendro_L2(dendro_L1 = data_L1, plot = FALSE)
 
 par(mar = c(2.1, 4, 1, 2))
 plot(data = data_L2, value ~ ts, type = "n", ylab = "L2", 
@@ -356,14 +356,14 @@ data("temp_data_L0")
 temp_L1 <- proc_L1(data_L0 = temp_data_L0)
 
 # Clean dendrometer data (with temperature data)
-proc_dendro_L2(dendro_data = data_L1, temp_data = temp_L1, 
+proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_L1, 
                plot_export = FALSE)
 ```
 
 ```{r frost with temp data_2, fig.asp = 0.5, fig.retina = 2, out.width = "70%", echo=FALSE, results="hide", warning=FALSE, message=FALSE}
 # Load dataset
 data("temp_data_L1")
-data_L2 <- proc_dendro_L2(dendro_data = data_L1, temp_data = temp_data_L1, 
+data_L2 <- proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1, 
                           plot = FALSE)
 
 par(mar = c(2.1, 4, 1, 2))
@@ -414,7 +414,7 @@ data_L1 <- dendro_data_L1 %>%
   filter(series == "site-1_dendro-3")
 
 # Clean dendrometer data
-data_L2 <- proc_dendro_L2(dendro_data = data_L1, temp_data = temp_data_L1, 
+data_L2 <- proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1, 
                           plot_period = "monthly", plot_export = FALSE)
 ```
 <br><br>

@@ -5,10 +5,11 @@
 #'   small gaps and calculates growth, tree water deficit and maximum daily
 #'   shrinkage.
 #'
-#' @param dendro_data \code{data.frame} with time-aligned dendrometer
-#'   data. Output of function \code{proc_L1()}.
-#' @param temp_data \code{data.frame} with time-aligned temperature data.
-#'   Output of function \code{proc_L1()} (see Details for further information).
+#' @param dendro_L1 \code{data.frame} with time-aligned dendrometer
+#'   data. Output of function \code{\link{proc_L1()}}.
+#' @param temp_L1 \code{data.frame} with time-aligned temperature data.
+#'   Output of function \code{\link{proc_L1()}} (see Details for further
+#'   information).
 #' @param tol_jump numeric, defines the tolerance of the threshold above or
 #'   below which a value is flagged for jump correction.
 #' @param tol_out numeric, defines the tolerance of the threshold above or
@@ -100,10 +101,10 @@
 #' @export
 #'
 #' @examples
-#' proc_dendro_L2(dendro_data = dendro_data_L1, plot_period = "monthly",
+#' proc_dendro_L2(dendro_L1 = dendro_data_L1, plot_period = "monthly",
 #'                plot_export = FALSE)
 #'
-proc_dendro_L2 <- function(dendro_data, temp_data = NULL,
+proc_dendro_L2 <- function(dendro_L1, temp_L1 = NULL,
                            tol_out = 10, tol_jump = 50,
                            lowtemp = 5, frost_thr = 5,
                            interpol = NULL, frag_len = NULL,
