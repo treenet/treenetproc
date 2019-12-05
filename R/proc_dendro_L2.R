@@ -6,9 +6,9 @@
 #'   shrinkage.
 #'
 #' @param dendro_L1 \code{data.frame} with time-aligned dendrometer
-#'   data. Output of function \code{\link{proc_L1()}}.
+#'   data. Output of function \code{\link{proc_L1}}.
 #' @param temp_L1 \code{data.frame} with time-aligned temperature data.
-#'   Output of function \code{\link{proc_L1()}} (see Details for further
+#'   Output of function \code{\link{proc_L1}} (see Details for further
 #'   information).
 #' @param tol_jump numeric, defines the tolerance of the threshold above or
 #'   below which a value is flagged for jump correction.

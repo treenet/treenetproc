@@ -35,6 +35,7 @@
 #'
 #' proc_treenet(sensor_name = c("Alvaneu-2.dendrometer.ch0",
 #'                              "Alvaneu-4.dendrometer.ch0"))
+#'}
 #'
 proc_treenet <- function(site = NULL, sensor_name = NULL,
                          from = NULL, to = NULL, last = NULL, reso = 10,
