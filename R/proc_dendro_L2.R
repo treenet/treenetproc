@@ -159,7 +159,7 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = NULL,
         dplyr::filter(series %in% temp_series)
       df <- df %>%
         dplyr::filter(!(series %in% temp_series))
-      dendro_data <- df
+      dendro_L1 <- df
     }
     # for user-specified data
     if (!("temp_ref" %in% colnames(df))) {
@@ -180,7 +180,7 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = NULL,
         df <- df %>%
           dplyr::filter(series != temp_series) %>%
           dplyr::mutate(temp_ref = temp_series)
-        dendro_data <- df
+        dendro_L1 <- df
       }
     }
   }
@@ -273,7 +273,7 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = NULL,
 
   if (plot) {
     print("plot data...")
-    plot_proc_L2(dendro_L1 = dendro_data, dendro_L2 = df,
+    plot_proc_L2(dendro_L1 = dendro_L1, dendro_L2 = df,
                  plot_period = plot_period, plot_show = plot_show,
                  plot_export = plot_export, plot_name = plot_name, tz = tz,
                  print_vars = TRUE)
