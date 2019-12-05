@@ -4,7 +4,6 @@
 #'   or ends. Values are returned starting from the second year, since their
 #'   calculation depends on the previous year.
 #'
-#' @param df input \code{data.frame}.
 #' @param tol_seas numeric, defines the amount of yearly growth that needs to be
 #'   surpassed for \code{gro_start} to be defined. \code{1 - tol_seas} is the
 #'   amount of yearly growth at which \code{gro_end} is defined.
@@ -12,6 +11,7 @@
 #'   to the \code{L2} data or or are exported as a yearly aggregated
 #'   \code{data.frame}.
 #' @inheritParams proc_dendro_L2
+#' @inheritParams phase_stats
 #'
 #' @export
 #'
@@ -19,7 +19,8 @@
 #'
 #' @examples
 #'
-grow_seas <- function(df, tol_seas = 0.05, agg_yearly = FALSE, tz = "UTC") {
+grow_seas <- function(dendro_L2, tol_seas = 0.05, agg_yearly = FALSE,
+                      tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
   list_inputs <- mget(ls())

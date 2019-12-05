@@ -4,7 +4,9 @@
 #'   expansion phases. To identify the phases local maxima and minima are
 #'   identified using two overlapping sets of time windows.
 #'
-#' @param df input \code{data.frame}.
+#' @param dendro_L2 input \code{data.frame} containing cleaned \code{L2}
+#'   dendrometer data (obtained from functions \code{\link{proc_dendro_L2}}
+#'   or \code{\link{corr_dendro_L2}}).
 #' @param phase_wnd numeric, specify the window length used to identify
 #'   local maxima and minima. A shorter window length leads to the
 #'   identification of more maxima and minima.
@@ -28,7 +30,7 @@
 #'
 #' @examples
 #'
-phase_stats <- function(df, phase_wnd = 8, plot_phase = FALSE,
+phase_stats <- function(dendro_L2, phase_wnd = 8, plot_phase = FALSE,
                         plot_export = TRUE, agg_daily = FALSE, tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
