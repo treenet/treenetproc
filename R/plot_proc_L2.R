@@ -53,7 +53,7 @@ plot_proc_L2 <- function(dendro_L1, dendro_L2, plot_period = "full",
   data_L1 <- dendro_L1
   data_L2 <- dendro_L2
   check_data_L1(data_L1 = data_L1)
-  check_data_L2(data_L2 = data_L1)
+  check_data_L2(data_L2 = data_L2)
 
 
   # Calculate differences -----------------------------------------------------
