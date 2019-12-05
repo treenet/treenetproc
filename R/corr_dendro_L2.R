@@ -4,7 +4,7 @@
 #'   data that are easier to correct by hand than by changing parameter values
 #'   in \code{\link{proc_dendro_L2}}.
 #'
-#' @param data_L1 time-aligned dendrometer data as produced by
+#' @param dendro_L1 time-aligned dendrometer data as produced by
 #'   \code{\link{proc_L1}}. Optional, only needed for \code{remove} and if
 #'   \code{plot = TRUE}.
 #' @param remove numeric vector, specify numbers of the changes that should
@@ -39,34 +39,34 @@
 #' @export
 #'
 #' @examples
-#' corr_dendro_L2(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
+#' corr_dendro_L2(dendro_L1 = dendro_data_L1, dendro_L2 = dendro_data_L2,
 #'                remove = 59:61, force = "2013-08-12",
 #'                delete = c("2013-08-01", "2013-08-04"),
 #'                series = "site-1_dendro-3", plot_export = FALSE)
 #'
-corr_dendro_L2 <- function(data_L1 = NULL, data_L2, remove = NULL,
+corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, remove = NULL,
                            force = NULL, delete = NULL, series = NULL,
                            n_days = 5, plot = TRUE, plot_export = TRUE,
                            tz = "UTC") {
 
   # Subset data to selected series --------------------------------------------
-  check_series(df = data_L2, series = series)
+  check_series(df = dendro_L2, series = series)
 
   series_select <- series
-  n_series <- length(unique(data_L2$series))
+  n_series <- length(unique(dendro_L2$series))
 
-  if (length(data_L1) != 0 && length(series_select) != 0) {
-    data_L1 <- data_L1 %>%
+  if (length(dendro_L1) != 0 && length(series_select) != 0) {
+    dendro_L1 <- dendro_L1 %>%
       dplyr::filter(series == series_select)
   }
   if (length(series_select) != 0) {
-    df <- data_L2 %>%
+    df <- dendro_L2 %>%
       dplyr::filter(series == series_select)
   } else {
-    df <- data_L2
+    df <- dendro_L2
   }
   if (n_series > 1) {
-    data_L2_append <- data_L2 %>%
+    data_L2_append <- dendro_L2 %>%
       dplyr::filter(series != series_select)
   }
 
@@ -94,18 +94,18 @@ corr_dendro_L2 <- function(data_L1 = NULL, data_L2, remove = NULL,
   if (length(remove) == 0 & length(force) == 0 & length(delete) == 0) {
     stop("provide at least 'remove', 'force' or 'delete'.")
   }
-  if (length(data_L1) != 0) {
-    check_data_L1(data_L1 = data_L1)
+  if (length(dendro_L1) != 0) {
+    check_data_L1(data_L1 = dendro_L1)
   }
-  if (length(data_L1) == 0 && length(remove) != 0) {
-    stop("you need to provide 'data_L1' along with 'remove'.")
+  if (length(dendro_L1) == 0 && length(remove) != 0) {
+    stop("you need to provide 'dendro_L1' along with 'remove'.")
   }
-  check_data_L2(data_L2 = data_L2)
-  if (plot & length(data_L1) == 0) {
-    stop("'data_L1' needed for plotting. Set 'plot = FALSE' or provide ",
-         "'data_L1'.")
+  check_data_L2(data_L2 = dendro_L2)
+  if (plot & length(dendro_L1) == 0) {
+    stop("'dendro_L1' needed for plotting. Set 'plot = FALSE' or provide ",
+         "'dendro_L1'.")
   }
-
+  data_L1 <- dendro_L1
 
   # Remove errors in processing -----------------------------------------------
   # remove leading and trailing NA's

@@ -431,7 +431,7 @@ Correct the above-described errors:
 
 ```{r corr_dendro_L2 example_3, fig.asp = 0.9, fig.keep = "first", fig.retina=2, results="hide", message=FALSE, warning=FALSE}
 # Correct described errors
-corr_dendro_L2(data_L1 = data_L1, data_L2 = data_L2, 
+corr_dendro_L2(dendro_L1 = data_L1, dendro_L2 = data_L2, 
                remove = 59:61, 
                force = "2013-08-12", 
                delete = c("2013-08-01", "2013-08-04"),
