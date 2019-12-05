@@ -17,30 +17,30 @@
 #' @export
 #'
 #' @examples
-#' corr_dendro_L1(data_L1 = dendro_data_L1,
+#' corr_dendro_L1(dendro_L1 = dendro_data_L1,
 #'                delete = c("2013-08-01", "2013-08-05"),
 #'                series = "site-1_dendro-3", plot_export = FALSE)
 #'
-corr_dendro_L1 <- function(data_L1, delete, series = NULL, plot = TRUE,
+corr_dendro_L1 <- function(dendro_L1, delete, series = NULL, plot = TRUE,
                            plot_export = TRUE, tz = "UTC") {
 
   # Subset data to selected series --------------------------------------------
-  check_series(df = data_L1, series = series)
+  check_series(df = dendro_L1, series = series)
 
   series_select <- series
-  n_series <- length(unique(data_L1$series))
+  n_series <- length(unique(dendro_L1$series))
 
   if (length(series_select) != 0) {
-    df <- data_L1 %>%
+    df <- dendro_L1 %>%
       dplyr::filter(series == series_select)
-    data_L1_orig <- data_L1 %>%
+    data_L1_orig <- dendro_L1 %>%
       dplyr::filter(series == series_select)
   } else {
-    df <- data_L1
-    data_L1_orig <- data_L1
+    df <- dendro_L1
+    data_L1_orig <- dendro_L1
   }
   if (n_series > 1) {
-    data_L1_append <- data_L1 %>%
+    data_L1_append <- dendro_L1 %>%
       dplyr::filter(series != series_select)
   }
 
@@ -51,7 +51,7 @@ corr_dendro_L1 <- function(data_L1, delete, series = NULL, plot = TRUE,
 
 
   # Check input data ----------------------------------------------------------
-  check_data_L1(data_L1 = data_L1)
+  check_data_L1(data_L1 = dendro_L1)
   delete <- check_datevec(datevec = delete, datevec_name = "delete", tz = tz)
   check_delete(delete = delete)
   check_date_period(datevec = delete, datevec_name = "delete", df = df)
