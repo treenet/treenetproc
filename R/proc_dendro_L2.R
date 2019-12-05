@@ -40,11 +40,12 @@
 #' @inheritParams proc_L1
 #' @inheritParams plot_proc_L2
 #'
-#' @details \code{temp_data} is used to define periods in which frost shrinkage
-#'   is probable, e.g. when the temperature is <5°C. Without temperature data,
-#'   shrinkages due to frost may be classified as outliers.
+#' @details Time-aligned temperature data \code{temp_L1} is used to define
+#'   periods in which frost shrinkage is probable, e.g. when the temperature
+#'   is <5°C. Without temperature data, shrinkages due to frost may be
+#'   classified as outliers.
 #'
-#'   \code{temp_data} can also be attached to dendrometer data. In this case,
+#'   Temperature data can also be attached to dendrometer data. In this case,
 #'   the \code{series} name of temperature data has to contain the string
 #'   \code{temp}. In case no temperature dataset is specified, a sample
 #'   temperature dataset will be used with a warning. The sample temperature
@@ -129,11 +130,11 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = NULL,
 
 
   # Check input data ----------------------------------------------------------
-  df <- dendro_data
+  df <- dendro_L1
   check_data_L1(data_L1 = df)
 
-  if (length(temp_data) != 0) {
-    tem <- temp_data
+  if (length(temp_L1) != 0) {
+    tem <- temp_L1
     tem_series <- unique(tem$series)
 
     if (length(grep("temp", tem_series, ignore.case = T)) > 1) {
@@ -148,7 +149,7 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = NULL,
   }
 
   passenv$sample_temp <- FALSE
-  if (length(temp_data) == 0) {
+  if (length(temp_L1) == 0) {
     df_series <- unique(df$series)
 
     # for data from server
