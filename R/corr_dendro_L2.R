@@ -173,7 +173,7 @@ corr_dendro_L2 <- function(data_L1 = NULL, data_L2, remove = NULL,
         dplyr::select(-month_forc)
     }
 
-    plot_proc_L2(data_L1 = data_L1, data_L2 = df,
+    plot_proc_L2(dendro_L1 = data_L1, dendro_L2 = df,
                  plot_period = "monthly", plot_show = "diff_corr",
                  plot_export = plot_export,
                  plot_name = "corr_L3_plot", tz = tz)
