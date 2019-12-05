@@ -2,9 +2,12 @@
 #'
 #' \code{phase_stats} calculates different statistics of shrinkage and
 #'   expansion phases. To identify the phases local maxima and minima are
-#'   identified using a moving window.
+#'   identified using two overlapping sets of time windows.
 #'
 #' @param df input \code{data.frame}.
+#' @param phase_wnd numeric, specify the window length used to identify
+#'   local maxima and minima. A shorter window length leads to the
+#'   identification of more maxima and minima.
 #' @param agg_daily logical, specify whether phase statistics are appended
 #'   to the \code{L2} data or are exported as a daily aggregated
 #'   \code{data.frame}.
@@ -13,15 +16,20 @@
 #'
 #' @return
 #'
-#' @details \code{phase_stats} is inspired by the function
+#' @details The identification of local maxima and minima in the function
+#'   \code{phase_stats} is inspired by the function
 #'   \code{\link[dendrometeR]{phase_def}} in the package \code{dendrometeR}.
+#'   Overlapping sets of time windows are used to identify 'true' maxima and
+#'   minima, i.e. maxima or minima that appear in both overlapping time windows
+#'   and are not only bound to the start or the end of the respective time
+#'   windows.
 #'
 #' @export
 #'
 #' @examples
 #'
-phase_stats <- function(df, plot_phase = FALSE, plot_export = TRUE,
-                        agg_daily = FALSE, tz = "UTC") {
+phase_stats <- function(df, phase_wnd = 8, plot_phase = FALSE,
+                        plot_export = TRUE, agg_daily = FALSE, tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
   list_inputs <- mget(ls())
@@ -48,12 +56,12 @@ phase_stats <- function(df, plot_phase = FALSE, plot_export = TRUE,
   list_phase <- vector("list", length = length(series_vec))
   df_phase <- df
   for (s in 1:length(series_vec)) {
-    message(paste0("calculating phase statistics of ", series_vec[s], "..."))
+    message(paste0("calculating phase statistics for ", series_vec[s], "..."))
     df <- df_phase %>%
       dplyr::filter(series == series_vec[s])
 
-    maxmin1 <- findmaxmin(df = df, reso = reso, st = 1)
-    maxmin2 <- findmaxmin(df = df, reso = reso, st = 2)
+    maxmin1 <- findmaxmin(df = df, phase_wnd = phase_wnd, reso = reso, st = 1)
+    maxmin2 <- findmaxmin(df = df, phase_wnd = phase_wnd, reso = reso, st = 2)
 
     max_wnd <- maxmin1[[1]] + maxmin2[[1]]
     min_wnd <- maxmin1[[2]] + maxmin2[[2]]

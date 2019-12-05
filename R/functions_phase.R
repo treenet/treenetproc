@@ -10,9 +10,9 @@
 #'
 #' @keywords internal
 #'
-findmaxmin <- function(df, reso, st) {
+findmaxmin <- function(df, phase_wnd = 8, reso, st) {
 
-  span <- 60 / reso * 6
+  span <- 60 / reso * (phase_wnd / 2)
   by <- 2 * span
   if (st != 1) {
     st <- span
