@@ -187,12 +187,12 @@ in the current working directory (`plot_export = TRUE`).
 data("dendro_data_L1")
 
 # Subset dataset for example
-data_L1 <- dendro_data_L1 %>% 
+dendro_L1 <- dendro_data_L1 %>% 
   filter(series == "site-1_dendro-1") %>% 
   filter(ts < "2014-12-31")
 
 # Clean time-aligned (L1) dendrometer data and plot changes
-proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1,
+proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1,
                plot_period = "monthly", plot_export = FALSE)
 ```
 <br>
@@ -223,7 +223,7 @@ cleaning are printed.
 
 
 ```{r process to L2 last_plot, fig.asp = 1.4, fig.retina = 2, fig.keep = "last", echo = FALSE, results = "hide", message = FALSE}
-proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1, 
+proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1, 
                plot_period = "monthly", plot_export = FALSE)
 ```
 
@@ -250,27 +250,27 @@ contrast, is appropriate if obvious jumps are not corrected.
 data("dendro_data_L1")
 
 # Subset dataset for example
-data_L1 <- dendro_data_L1 %>% 
+dendro_L1 <- dendro_data_L1 %>% 
   filter(series == "site-1_dendro-2")
 
 # Clean dendrometer data (tol_jump = 1, tol_out = 10)
-proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1, 
+proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1, 
                tol_jump = 1, tol_out = 10, plot_export = FALSE)
 ```
 
 ```{r shrinking example plot, fig.asp = 0.5, fig.retina = 2, out.width = "70%", echo=FALSE}
 data("dendro_data_L1")
-data_L1 <- dendro_data_L1 %>% 
+dendro_L1 <- dendro_data_L1 %>% 
   filter(series == "site-1_dendro-2")
 
-data_shrink_L2 <- proc_dendro_L2(dendro_L1 = data_L1, 
+data_shrink_L2 <- proc_dendro_L2(dendro_L1 = dendro_L1, 
                                  temp_L1 = temp_data_L1, 
                                  tol_jump = 1, tol_out = 10, plot = FALSE)
 
 par(mar = c(2.1, 4, 1, 2))
 plot(data = data_shrink_L2, value ~ ts, type = "n", ylab = "L2", 
      las = 1)
-lines(data = data_L1, value ~ ts, col = "grey70")
+lines(data = dendro_L1, value ~ ts, col = "grey70")
 lines(data = data_shrink_L2, value ~ ts, col = "#08519c")
 ```
 <br><br>
@@ -280,21 +280,21 @@ Such problems can be fixed by increasing the value of `tol_jump`.
 <br>
 ```{r shrinking example higher tol code, fig.asp = 0.9, fig.show="hide", results="hide", message = FALSE, warning = FALSE}
 # Clean dendrometer data (use default values of 'tol_jump' and 'tol_out')
-proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1, 
+proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1, 
                tol_jump = 50, tol_out = 10, plot_export = FALSE)
 ```
 
 ```{r shrinking example higher tol code #2, fig.asp = 0.9, fig.show="hide", echo=FALSE, results = "hide", message = FALSE, warning = FALSE}
-data_L2 <- proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1, 
+dendro_L2 <- proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1, 
                           tol_jump = 50, tol_out = 10, plot_export = FALSE)
 ```
 
 ```{r shrinking example higher tol plot, fig.asp = 0.5, fig.retina=2, out.width = "70%", echo=FALSE}
 par(mar = c(2.1, 4, 1, 2))
-plot(data = data_L2, value ~ ts, type = "n", ylab = "L2", 
+plot(data = dendro_L2, value ~ ts, type = "n", ylab = "L2", 
      las = 1)
-lines(data = data_L1, value ~ ts, col = "grey70")
-lines(data = data_L2, value ~ ts, col = "#08519c")
+lines(data = dendro_L1, value ~ ts, col = "grey70")
+lines(data = dendro_L2, value ~ ts, col = "#08519c")
 ```
 <br><br>
 
@@ -323,22 +323,22 @@ January and February; i.e. the temperature is set to 0°C in Dec-Feb and to
 data("dendro_data_L1")
 
 # Subset dataset for example
-data_L1 <- dendro_data_L1 %>% 
+dendro_L1 <- dendro_data_L1 %>% 
   filter(series == "site-1_dendro-4")
 
 # Clean dendrometer data (without temperature data)
-proc_dendro_L2(dendro_L1 = data_L1, plot_export = FALSE)
+proc_dendro_L2(dendro_L1 = dendro_L1, plot_export = FALSE)
 ```
 
 ```{r frost no temp data_2, fig.asp = 0.5, fig.retina = 2, out.width = "70%", echo=FALSE, results="hide", warning=FALSE, message=FALSE}
 # Process to L2 without temperature data
-data_L2 <- proc_dendro_L2(dendro_L1 = data_L1, plot = FALSE)
+dendro_L2 <- proc_dendro_L2(dendro_L1 = dendro_L1, plot = FALSE)
 
 par(mar = c(2.1, 4, 1, 2))
-plot(data = data_L2, value ~ ts, type = "n", ylab = "L2", 
+plot(data = dendro_L2, value ~ ts, type = "n", ylab = "L2", 
      las = 1)
-lines(data = data_L1, value ~ ts, col = "grey70")
-lines(data = data_L2, value ~ ts, col = "#08519c")
+lines(data = dendro_L1, value ~ ts, col = "grey70")
+lines(data = dendro_L2, value ~ ts, col = "#08519c")
 ```
 
 The sample temperature dataset does not assume frost after the end of 
@@ -356,23 +356,23 @@ data("temp_data_L0")
 temp_L1 <- proc_L1(data_L0 = temp_data_L0)
 
 # Clean dendrometer data (with temperature data)
-proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_L1, 
+proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_L1, 
                plot_export = FALSE)
 ```
 
 ```{r frost with temp data_2, fig.asp = 0.5, fig.retina = 2, out.width = "70%", echo=FALSE, results="hide", warning=FALSE, message=FALSE}
 # Load dataset
 data("temp_data_L1")
-data_L2 <- proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1, 
+dendro_L2 <- proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1, 
                           plot = FALSE)
 
 par(mar = c(2.1, 4, 1, 2))
-plot(data = data_L2, value ~ ts, type = "n", ylab = "L2", 
+plot(data = dendro_L2, value ~ ts, type = "n", ylab = "L2", 
      las = 1)
-lines(data = data_L1, value ~ ts, col = "grey70")
-lines(data = data_L2, value ~ ts, col = "#08519c")
+lines(data = dendro_L1, value ~ ts, col = "grey70")
+lines(data = dendro_L2, value ~ ts, col = "#08519c")
 # add abline to indicate frost
-data_L2_frost <- data_L2 %>% 
+data_L2_frost <- dendro_L2 %>% 
   dplyr::rename(value_L2 = value)
 plot_frost_period(df = data_L2_frost)
 ```
@@ -410,12 +410,12 @@ wrong changes:
 data("dendro_data_L1")
 
 # Subset dataset for example
-data_L1 <- dendro_data_L1 %>% 
+dendro_L1 <- dendro_data_L1 %>% 
   filter(series == "site-1_dendro-3")
 
 # Clean dendrometer data
-data_L2 <- proc_dendro_L2(dendro_L1 = data_L1, temp_L1 = temp_data_L1, 
-                          plot_period = "monthly", plot_export = FALSE)
+dendro_L2 <- proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1, 
+                            plot_period = "monthly", plot_export = FALSE)
 ```
 <br><br>
 
@@ -431,7 +431,7 @@ Correct the above-described errors:
 
 ```{r corr_dendro_L2 example_3, fig.asp = 0.9, fig.keep = "first", fig.retina=2, results="hide", message=FALSE, warning=FALSE}
 # Correct described errors
-corr_dendro_L2(dendro_L1 = data_L1, dendro_L2 = data_L2, 
+corr_dendro_L2(dendro_L1 = dendro_L1, dendro_L2 = dendro_L2, 
                remove = 59:61, 
                force = "2013-08-12", 
                delete = c("2013-08-01", "2013-08-04"),
