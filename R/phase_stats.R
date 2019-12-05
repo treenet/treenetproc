@@ -142,26 +142,27 @@ phase_stats <- function(df, plot_phase = FALSE, plot_export = TRUE,
 
   if (agg_daily) {
     df <- df %>%
-      dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), tz = tz))
+      dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), tz = tz)) %>%
+      dplyr::mutate(doy = as.numeric(strftime(day, format = "%j",
+                                              tz = tz)))
 
     shrink <- df %>%
       dplyr::filter(!is.na(shrink_start)) %>%
-      dplyr::select(series, day, shrink_start, shrink_end, shrink_dur,
+      dplyr::select(series, day, doy, shrink_start, shrink_end, shrink_dur,
                     shrink_amp, shrink_slope)
 
     exp <- df %>%
       dplyr::filter(!is.na(exp_start)) %>%
-      dplyr::select(series, day, exp_start, exp_end, exp_dur, exp_amp,
+      dplyr::select(series, day, doy, exp_start, exp_end, exp_dur, exp_amp,
                     exp_slope)
 
     mds_mde <- df %>%
       dplyr::filter(!is.na(phase_class)) %>%
-      dplyr::select(series, day, mds, mde, phase_class)
+      dplyr::select(series, day, doy, mds, mde, phase_class)
 
-    df <- dplyr::full_join(shrink, exp, by = c("series", "day")) %>%
-      dplyr::full_join(., mds_mde, by = c("series", "day")) %>%
+    df <- dplyr::full_join(shrink, exp, by = c("series", "day", "doy")) %>%
+      dplyr::full_join(., mds_mde, by = c("series", "day", "doy")) %>%
       dplyr::arrange(series, day)
-
   }
 
   return(df)
