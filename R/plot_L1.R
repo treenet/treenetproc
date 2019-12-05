@@ -27,17 +27,19 @@ plot_L1 <- function(dendro_L1, dendro_L1_orig = NULL, plot_period = "full",
 
 
   # Check input data ----------------------------------------------------------
-  check_data_L1(data_L1 = dendro_L1)
+  data_L1 <- dendro_L1
+  data_L1_orig <- dendro_L1_orig
+  check_data_L1(data_L1 = data_L1)
 
 
   # Plot L1 data --------------------------------------------------------------
-  data_L1 <- dendro_L1 %>%
+  data_L1 <- data_L1 %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
     dplyr::mutate(day = strftime(ts, format = "%d", tz = tz))
 
-  if (length(dendro_L1_orig) != 0) {
-    data_L1_orig <- dendro_L1_orig %>%
+  if (length(data_L1_orig) != 0) {
+    data_L1_orig <- data_L1_orig %>%
       dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
       dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
       dplyr::mutate(day = strftime(ts, format = "%d", tz = tz))
