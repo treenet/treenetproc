@@ -3,9 +3,9 @@
 #' \code{plot_proc_L2} provides plots of time-aligned (\code{L1}) and
 #'   processed (\code{L2}) dendrometer data to visually assess the processing.
 #'
-#' @param data_L1 time-aligned dendrometer data as produced by
+#' @param dendro_L1 time-aligned dendrometer data as produced by
 #'   \code{\link{proc_L1}}.
-#' @param data_L2 processed dendrometer data as produced by
+#' @param dendro_L2 processed dendrometer data as produced by
 #'   \code{\link{proc_dendro_L2}}.
 #' @param plot_period specify whether plots should be displayed over the whole
 #'   plot_period (\code{plot_period = "full"}), for each year separately
@@ -36,10 +36,10 @@
 #' @export
 #'
 #' @examples
-#' plot_proc_L2(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
+#' plot_proc_L2(dendro_L1 = dendro_data_L1, dendro_L2 = dendro_data_L2,
 #'             plot_period = "yearly", plot_export = FALSE)
 #'
-plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
+plot_proc_L2 <- function(dendro_L1, dendro_L2, plot_period = "full",
                          plot_show = "all", plot_export = TRUE,
                          plot_name = "proc_L2_plot", tz = "UTC",
                          print_vars = FALSE) {
@@ -50,8 +50,10 @@ plot_proc_L2 <- function(data_L1, data_L2, plot_period = "full",
 
 
   # Check input data ----------------------------------------------------------
+  data_L1 <- dendro_L1
+  data_L2 <- dendro_L2
   check_data_L1(data_L1 = data_L1)
-  check_data_L2(data_L2 = data_L2)
+  check_data_L2(data_L2 = data_L1)
 
 
   # Calculate differences -----------------------------------------------------
