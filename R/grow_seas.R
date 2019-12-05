@@ -28,6 +28,7 @@ grow_seas <- function(dendro_L2, tol_seas = 0.05, agg_yearly = FALSE,
 
 
   # Check input data ----------------------------------------------------------
+  df <- dendro_L2
   check_data_L2(data_L2 = df)
   reso <- reso_check_L1(df = df)
 
