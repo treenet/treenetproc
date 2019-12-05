@@ -56,7 +56,7 @@ data_L0 <- dendro_data_L0 %>%
 data_L1 <- dendro_data_L1 %>% 
   dplyr::filter(ts >= start) %>% 
   dplyr::filter(ts <= end)
-data_L1_hourly <- proc_L1(data = data_L0, reso = 60)
+data_L1_hourly <- proc_L1(data_L0 = data_L0, reso = 60)
 
 xlim_min <- start + 5400
 xlim_max <- end - 5400

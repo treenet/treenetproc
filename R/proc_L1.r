@@ -3,7 +3,7 @@
 #' \code{proc_L1} processes raw dendrometer and raw meteorological data to
 #'   time-aligned data.
 #'
-#' @param data input \code{data.frame} containing raw dendrometer or
+#' @param data_L0 input \code{data.frame} containing raw dendrometer or
 #'   meteorological data (see Details for formatting requirements).
 #' @param reso desired time resolution of output (in minutes). See
 #'   \code{Details} for more information on data aggregation.
@@ -50,10 +50,10 @@
 #' @export
 #'
 #' @examples
-#' proc_L1(data = dendro_data_L0)
-#' proc_L1(data = dendro_data_L0_wide, input = "wide")
+#' proc_L1(data_L0 = dendro_data_L0)
+#' proc_L1(data_L0 = dendro_data_L0_wide, input = "wide")
 #'
-proc_L1 <- function(data, reso = 10, year = "asis", input = "long",
+proc_L1 <- function(data_L0, reso = 10, year = "asis", input = "long",
                     date_format = "%Y-%m-%d %H:%M:%S", tz = "UTC") {
 
   # Check input variables -----------------------------------------------------

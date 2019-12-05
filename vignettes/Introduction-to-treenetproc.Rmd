@@ -106,10 +106,10 @@ dendro_data_L0 <- dendro_data_L0[1:100, ]
 
 ```{r examples of proc_L1, results = "hide"}
 # Data in long format (cf. Table 1)
-proc_L1(data = dendro_data_L0, reso = 10, input = "long")
+proc_L1(data_L0 = dendro_data_L0, reso = 10, input = "long")
 
 # Data in wide format (cf. Table 2)
-proc_L1(data = dendro_data_L0_wide, reso = 10, input = "wide")
+proc_L1(data_L0 = dendro_data_L0_wide, reso = 10, input = "wide")
 ```
 <br>
 
@@ -353,7 +353,7 @@ outliers and deleted.
 data("temp_data_L0")
 
 # Time-align temperature data
-temp_L1 <- proc_L1(data = temp_data_L0)
+temp_L1 <- proc_L1(data_L0 = temp_data_L0)
 
 # Clean dendrometer data (with temperature data)
 proc_dendro_L2(dendro_data = data_L1, temp_data = temp_L1, 

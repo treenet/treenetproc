@@ -55,7 +55,7 @@ usethis::use_data(temp_data_L0, overwrite = TRUE)
 
 
 # prepare L1 data -------------------------------------------------------------
-temp_data_L1 <- proc_L1(data = temp_data_L0, reso = 10, input = "long")
+temp_data_L1 <- proc_L1(data_L0 = temp_data_L0, reso = 10, input = "long")
 
 # save L1 data
 usethis::use_data(temp_data_L1, overwrite = TRUE)

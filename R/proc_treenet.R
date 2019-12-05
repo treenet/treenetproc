@@ -74,7 +74,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
 
   # Process data to L1 --------------------------------------------------------
   print("process data to L1 (time-aligned data)...")
-  df_L1 <- proc_L1(data = df_L0, reso = reso, year = year, input = "long",
+  df_L1 <- proc_L1(data_L0 = df_L0, reso = reso, year = year, input = "long",
                    date_format = "%Y-%m-%d %H:%M:%S", tz = tz)
   if (proc_to == "L1") {
     return(df_L1)

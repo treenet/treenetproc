@@ -117,7 +117,7 @@ usethis::use_data(dendro_data_L0, overwrite = TRUE)
 
 
 # prepare L1 data -------------------------------------------------------------
-dendro_data_L1 <- proc_L1(data = dendro_data_L0, reso = 10, input = "long")
+dendro_data_L1 <- proc_L1(data_L0 = dendro_data_L0, reso = 10, input = "long")
 
 # save L1 data
 usethis::use_data(dendro_data_L1, overwrite = TRUE)
