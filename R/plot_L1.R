@@ -3,7 +3,7 @@
 #' \code{plot_L1} plots \code{L1} data divided into specified periods. Can be
 #'   used for both dendrometer and climate data.
 #'
-#' @param data_L1_orig optional, used in \code{\link{corr_dendro_L1}}. Can be
+#' @param dendro_L1_orig optional, used in \code{\link{corr_dendro_L1}}. Can be
 #'   used to plot a previous version of \code{data_L1} in the background.
 #' @inheritParams plot_proc_L2
 #' @inheritParams proc_L1
@@ -14,10 +14,10 @@
 #' @export
 #'
 #' @examples
-#' plot_L1(data_L1 = dendro_data_L1, plot_period = "monthly",
+#' plot_L1(dendro_L1 = dendro_data_L1, plot_period = "monthly",
 #'         plot_export = FALSE)
 #'
-plot_L1 <- function(data_L1, data_L1_orig = NULL, plot_period = "full",
+plot_L1 <- function(dendro_L1, dendro_L1_orig = NULL, plot_period = "full",
                     plot_export = TRUE, plot_name = "L1_plot",
                     tz = "UTC") {
 
@@ -27,17 +27,17 @@ plot_L1 <- function(data_L1, data_L1_orig = NULL, plot_period = "full",
 
 
   # Check input data ----------------------------------------------------------
-  check_data_L1(data_L1 = data_L1)
+  check_data_L1(data_L1 = dendro_L1)
 
 
   # Plot L1 data --------------------------------------------------------------
-  data_L1 <- data_L1 %>%
+  data_L1 <- dendro_L1 %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
     dplyr::mutate(day = strftime(ts, format = "%d", tz = tz))
 
-  if (length(data_L1_orig) != 0) {
-    data_L1_orig <- data_L1_orig %>%
+  if (length(dendro_L1_orig) != 0) {
+    data_L1_orig <- dendro_L1_orig %>%
       dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
       dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
       dplyr::mutate(day = strftime(ts, format = "%d", tz = tz))
