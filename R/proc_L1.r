@@ -63,7 +63,7 @@ proc_L1 <- function(data_L0, reso = 10, year = "asis", input = "long",
 
 
   # Check input data ----------------------------------------------------------
-  df <- data
+  df <- data_L0
   df <- check_ts(df = df, date_format = date_format, tz = tz)
   check_format(df = df, input = input)
   reso_check_L0(df = df, reso = reso)
