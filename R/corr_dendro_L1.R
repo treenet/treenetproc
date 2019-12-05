@@ -83,7 +83,7 @@ corr_dendro_L1 <- function(data_L1, delete, series = NULL, plot = TRUE,
       dplyr::mutate(month = paste0(substr(ts, 1, 7), "-01")) %>%
       dplyr::filter(month %in% month_plot)
 
-    plot_L1(data_L1 = df_plot, data_L1_orig = data_L1_orig,
+    plot_L1(dendro_L1 = df_plot, dendro_L1_orig = data_L1_orig,
             plot_period = "monthly", plot_export = plot_export,
             plot_name = "corr_L1_plot", tz = tz)
   }
