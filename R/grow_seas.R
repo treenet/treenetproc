@@ -92,7 +92,6 @@ grow_seas <- function(dendro_L2, tol_seas = 0.05, agg_yearly = TRUE,
       dplyr::select(series, ts, gro_start, gro_end) %>%
       dplyr::filter(!is.na(gro_start) | !(is.na(gro_end))) %>%
       dplyr::mutate(year = as.numeric(substr(ts, 1, 4))) %>%
-      dplyr::mutate(date = )
       dplyr::arrange(series, year) %>%
       dplyr::select(series, year, gro_start, gro_end)
   }
