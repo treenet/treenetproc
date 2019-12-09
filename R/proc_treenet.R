@@ -12,9 +12,9 @@
 #' @inheritParams proc_dendro_L2
 #' @inheritParams plot_proc_L2
 #'
-#' @inherit proc_dendro_L2 return
-#'
 #' @inherit proc_dendro_L2 details
+#'
+#' @inherit proc_dendro_L2 return
 #'
 #' @seealso \code{\link{proc_L1}} to process dendrometer or climate data to
 #'   \code{L1}.\cr
@@ -98,8 +98,13 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                               plot = plot, plot_period = plot_period,
                               plot_show = plot_show, plot_export = plot_export,
                               plot_name = plot_name, iter_clean = iter_clean,
-                              tz = tz)
-    )
+                              tz = tz))
+    suppressMessages(
+      df_L2 <- grow_seas(dendro_L2 = df_L2, agg_yearly = FALSE, tz = tz))
+    suppressMessages(
+      df_L2 <- phase_stats(dendro_L2 = df_L2, agg_daily = FALSE,
+                           plot_phase = plot_phase, plot_export = plot_export,
+                           tz = tz))
   } else {
     df_L2 <- proc_dendro_L2(dendro_L1 = df_L1, temp_L1 = NULL,
                             tol_jump = tol_jump, tol_out = tol_out,
@@ -109,11 +114,11 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                             plot_show = plot_show, plot_export = plot_export,
                             plot_name = plot_name, iter_clean = iter_clean,
                             tz = tz)
+    df_L2 <- grow_seas(dendro_L2 = df_L2, agg_yearly = FALSE, tz = tz)
+    df_L2 <- phase_stats(dendro_L2 = df_L2, agg_daily = FALSE,
+                         plot_phase = plot_phase, plot_export = plot_export,
+                         tz = tz)
   }
-
-  df_L2 <- grow_seas(dendro_L2 = df_L2, tz = tz)
-  df_L2 <- phase_stats(dendro_L2 = df_L2, plot_phase = plot_phase,
-                       plot_export = plot_export, tz = tz)
 
   print("Done!")
   return(df_L2)
