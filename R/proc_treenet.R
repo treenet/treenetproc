@@ -111,9 +111,9 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                             tz = tz)
   }
 
-  df_L2 <- grow_seas(df = df_L2, tz = tz)
-  df_L2 <- phase_stats(df = df_L2, tz = tz, plot_phase = plot_phase,
-                       plot_export = plot_export)
+  df_L2 <- grow_seas(dendro_L2 = df_L2, tz = tz)
+  df_L2 <- phase_stats(dendro_L2 = df_L2, plot_phase = plot_phase,
+                       plot_export = plot_export, tz = tz)
 
   print("Done!")
   return(df_L2)
