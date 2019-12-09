@@ -16,7 +16,33 @@
 #' @inheritParams proc_L1
 #' @inheritParams proc_dendro_L2
 #'
-#' @return
+#' @return The following additional variables are returned by
+#'   \code{phase_stats}:
+#'    \item{shrink_start}{timestamp of the start of the shrinkage phase.}
+#'    \item{shrink_end}{timestamp of the end of the shrinkage phase.}
+#'    \item{shrink_dur}{duration of the shrinkage phase in minutes.}
+#'    \item{shrink_amp}{amplitude of the shrinkage phase.}
+#'    \item{shrink_slope}{slope of the shrinkage phase.}
+#'  The same variables are returned for the expansion (\code{exp}) phase.
+#'    \item{mds}{maximum daily shrinkage, only returned on days on which a
+#'      local maximum is followed by a local minimum and the shrinkage finishes
+#'      on the same day.}
+#'    \item{mde}{maximum daily expansion, only returned on days where a
+#'      local minimum is followed by a local maximum and the exmpansion
+#'      finishes on the same day.}
+#'    \item{phase_class}{days are classified into days on which a shrinkage
+#'      occurrs during the day \code{(1)}, i.e. where the stem radius is
+#'      likely driven by transpiration; and days on which an expansion occurs
+#'      \code{(-1)}, i.e. where the stem radius is likely driven by
+#'      temperature.}
+#'
+#'   In case data is not aggregated to daily values
+#'   (\code{agg_daily = FALSE}), all columns are appended to \code{dendro_L2}.
+#'   All parameters related to shrinkage or expansion phases are pasted at
+#'   the timestamp corresponding to the end of the respective phases
+#'   (\code{shrink_end} or \code{exp_end}). All other values are set to \code{NA}.
+#'   All daily statistics (\code{mds}, \code{mde} and \code{phase_class}) are
+#'   pasted at the first timestamp of the day.
 #'
 #' @details The identification of local maxima and minima in the function
 #'   \code{phase_stats} is inspired by the function
@@ -31,7 +57,7 @@
 #' @examples
 #'
 phase_stats <- function(dendro_L2, phase_wnd = 8, plot_phase = FALSE,
-                        plot_export = TRUE, agg_daily = FALSE, tz = "UTC") {
+                        plot_export = TRUE, agg_daily = TRUE, tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
   list_inputs <- mget(ls())
