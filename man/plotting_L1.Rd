@@ -7,9 +7,6 @@
 plotting_L1(data_L1, data_L1_orig, plot_period, tz)
 }
 \arguments{
-\item{data_L1}{time-aligned dendrometer data as produced by
-\code{\link{proc_L1}}.}
-
 \item{data_L1_orig}{uncorrected original \code{L1} data. If specified, it
 is plotted behind the corrected \code{L1} data.}
 

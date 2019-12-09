@@ -5,8 +5,8 @@
 \title{Manually Correct Processed Dendrometer Data}
 \usage{
 corr_dendro_L2(
-  data_L1 = NULL,
-  data_L2,
+  dendro_L1 = NULL,
+  dendro_L2,
   remove = NULL,
   force = NULL,
   delete = NULL,
@@ -18,11 +18,11 @@ corr_dendro_L2(
 )
 }
 \arguments{
-\item{data_L1}{time-aligned dendrometer data as produced by
+\item{dendro_L1}{time-aligned dendrometer data as produced by
 \code{\link{proc_L1}}. Optional, only needed for \code{remove} and if
 \code{plot = TRUE}.}
 
-\item{data_L2}{processed dendrometer data as produced by
+\item{dendro_L2}{processed dendrometer data as produced by
 \code{\link{proc_dendro_L2}}.}
 
 \item{remove}{numeric vector, specify numbers of the changes that should
@@ -67,7 +67,7 @@ The function returns a \code{data.frame} with corrected \code{L2}
   in \code{\link{proc_dendro_L2}}.
 }
 \examples{
-corr_dendro_L2(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
+corr_dendro_L2(dendro_L1 = dendro_data_L1, dendro_L2 = dendro_data_L2,
                remove = 59:61, force = "2013-08-12",
                delete = c("2013-08-01", "2013-08-04"),
                series = "site-1_dendro-3", plot_export = FALSE)

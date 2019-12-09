@@ -5,8 +5,8 @@
 \title{Process L1 Dendrometer Data to L2}
 \usage{
 proc_dendro_L2(
-  dendro_data,
-  temp_data = NULL,
+  dendro_L1,
+  temp_L1 = NULL,
   tol_out = 10,
   tol_jump = 50,
   lowtemp = 5,
@@ -18,17 +18,18 @@ proc_dendro_L2(
   plot_show = "all",
   plot_export = TRUE,
   plot_name = "proc_L2_plot",
-  plot_cycle = FALSE,
+  plot_phase = FALSE,
   iter_clean = 1,
   tz = "UTC"
 )
 }
 \arguments{
-\item{dendro_data}{\code{data.frame} with time-aligned dendrometer
-data. Output of function \code{proc_L1()}.}
+\item{dendro_L1}{\code{data.frame} with time-aligned dendrometer
+data. Output of function \code{\link{proc_L1}}.}
 
-\item{temp_data}{\code{data.frame} with time-aligned temperature data.
-Output of function \code{proc_L1()} (see Details for further information).}
+\item{temp_L1}{\code{data.frame} with time-aligned temperature data.
+Output of function \code{\link{proc_L1}} (see Details for further
+information).}
 
 \item{tol_out}{numeric, defines the tolerance of the threshold above or
 below which a value is classified as outlier (see Details for further
@@ -75,8 +76,8 @@ plot_period (\code{plot_period = "full"}), for each year separately
 \item{plot_name}{character, specify name of the PDF in which the plots are
 saved.}
 
-\item{plot_cycle}{logical, specify whether maxima and minima used for the
-calculation of the cycle statistics should be plotted.}
+\item{plot_phase}{logical, specify whether maxima and minima used for the
+calculation of the phase statistics should be plotted.}
 
 \item{iter_clean}{numeric, specifies the number of times the cleaning
 process is repeated. Can be used to check whether running the cleaning
@@ -85,31 +86,7 @@ process many times has an effect on the results.}
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \value{
-The function returns a \code{data.frame} with processed dendrometer
- data containing the following columns:
-   \item{series}{name of the series.}
-   \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
-   \item{value}{dendrometer value.}
-   \item{max}{highest measured value up to this timestamp.}
-   \item{twd}{tree water deficit, i.e. the amount of stem shrinkage
-     expressed as the difference between \code{max} and \code{value}.}
-   \item{mds}{maximum daily shrinkage, calculated as the difference between
-     a local maximum that occurs before a local minimum during one day. If
-     there is no local maximum or minimum or if the minimum occurs prior to
-     the maximum, then \code{mds = NA}. This may occur on days with rain or
-     in winter (see Details for further information).}
-   \item{gro_yr}{growth since the beginning of the year. Also calculated
-     for years with missing data.}
-   \item{gro_start}{day of year at which growth starts. \code{gro_start} is
-     defined as the day of year at which 5\% of total yearly growth is
-     surpassed.}
-   \item{gro_end}{day of year at which growth stops. \code{gro_end} is
-     defined as the day of year at which 95\% of total yearly growth is
-     reached.}
-   \item{flags}{character vector specifying the changes that occurred
-     during the processing. For more details see the following vignette:
-     \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
-   \item{version}{package version that was used.}
+
 }
 \description{
 \code{proc_dendro_L2} processes time-aligned (\code{L1}) dendrometer data
@@ -118,11 +95,12 @@ The function returns a \code{data.frame} with processed dendrometer
   shrinkage.
 }
 \details{
-\code{temp_data} is used to define periods in which frost shrinkage
-  is probable, e.g. when the temperature is <5°C. Without temperature data,
-  shrinkages due to frost may be classified as outliers.
+Time-aligned temperature data \code{temp_L1} is used to define
+  periods in which frost shrinkage is probable, e.g. when the temperature
+  is <5°C. Without temperature data, shrinkages due to frost may be
+  classified as outliers.
 
-  \code{temp_data} can also be attached to dendrometer data. In this case,
+  Temperature data can also be attached to dendrometer data. In this case,
   the \code{series} name of temperature data has to contain the string
   \code{temp}. In case no temperature dataset is specified, a sample
   temperature dataset will be used with a warning. The sample temperature
@@ -151,7 +129,7 @@ The function returns a \code{data.frame} with processed dendrometer
   occurs before a local minimum (i.e. if the stem shrinks during the day).
 }
 \examples{
-proc_dendro_L2(dendro_data = dendro_data_L1, plot_period = "monthly",
+proc_dendro_L2(dendro_L1 = dendro_data_L1, plot_period = "monthly",
                plot_export = FALSE)
 
 }

@@ -5,8 +5,8 @@
 \title{Plot Processed Dendrometer Data}
 \usage{
 plot_proc_L2(
-  data_L1,
-  data_L2,
+  dendro_L1,
+  dendro_L2,
   plot_period = "full",
   plot_show = "all",
   plot_export = TRUE,
@@ -16,10 +16,10 @@ plot_proc_L2(
 )
 }
 \arguments{
-\item{data_L1}{time-aligned dendrometer data as produced by
+\item{dendro_L1}{time-aligned dendrometer data as produced by
 \code{\link{proc_L1}}.}
 
-\item{data_L2}{processed dendrometer data as produced by
+\item{dendro_L2}{processed dendrometer data as produced by
 \code{\link{proc_dendro_L2}}.}
 
 \item{plot_period}{specify whether plots should be displayed over the whole
@@ -59,7 +59,7 @@ Plots are saved in a PDF to current working directory as
   processed (\code{L2}) dendrometer data to visually assess the processing.
 }
 \examples{
-plot_proc_L2(data_L1 = dendro_data_L1, data_L2 = dendro_data_L2,
+plot_proc_L2(dendro_L1 = dendro_data_L1, dendro_L2 = dendro_data_L2,
             plot_period = "yearly", plot_export = FALSE)
 
 }

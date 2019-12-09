@@ -25,8 +25,7 @@ download_treenet(
 \item{site}{character, specify the site. String is not case sensitive.}
 
 \item{sensor_name}{character, specify the name of a single or
-multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}) of the
-same site.}
+multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}).}
 
 \item{sensor_class}{charcter, specify a single or multiple sensor
 classes. String does not have to contain the full name of the sensor

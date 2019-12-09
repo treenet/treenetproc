@@ -2,22 +2,49 @@
 % Please edit documentation in R/grow_seas.R
 \name{grow_seas}
 \alias{grow_seas}
-\title{Calculate Start and End of Yearly Growth}
+\title{Calculate Start and End of the Growing Season}
 \usage{
-grow_seas(df, tol = 0.05, tz)
+grow_seas(dendro_L2, tol_seas = 0.05, agg_yearly = FALSE, tz = "UTC")
 }
 \arguments{
-\item{df}{input \code{data.frame}.}
+\item{dendro_L2}{input \code{data.frame} containing cleaned \code{L2}
+dendrometer data (obtained from functions \code{\link{proc_dendro_L2}}
+or \code{\link{corr_dendro_L2}}).}
 
-\item{tol}{numeric, defines the amount of yearly growth that needs to be
-surpassed for \code{gro_start} to be defined. \code{1 - tol} is the
+\item{tol_seas}{numeric, defines the amount of yearly growth that needs to be
+surpassed for \code{gro_start} to be defined. \code{1 - tol_seas} is the
 amount of yearly growth at which \code{gro_end} is defined.}
+
+\item{agg_yearly}{logical, specify whether growth start and end are appended
+to the \code{L2} data or or are exported as a yearly aggregated
+\code{data.frame}.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
+\value{
+The following additional variables are returned by
+  \code{grow_seas}:
+    \item{gro_start}{day of year at which growth starts}
+    \item{gro_end}{day of year at which growth ends}
+
+  In case data is not aggregated to yearly values
+  (\code{agg_yearly = FALSE}), all columns are appended to \code{dendro_L2}.
+  Both values \code{gro_start} and \code{gro_end} are only pasted at the
+  first timestamp of the year, all other values are set to \code{NA}.
+}
 \description{
-\code{grow_seas} returns the day of the year at which growth starts
-  or ends.
+\code{grow_seas} returns the day of year at which growth starts
+  or ends. Values are returned starting from the second year, since their
+  calculation depends on the previous year (see Details for further
+  information on the calculation).
+}
+\details{
+\code{gro_start} is defined as the day of year at which the
+  maximum dendrometer value of the previous year is surpassed. Identically,
+  \code{gro_end} is defined as the day of year at which the maximum
+  dendrometer value is reached. To reduce the influence of outliers in
+  the dendrometer data, a tolerance value (\code{tol_seas}) is added
+  \code{gro_start} or subtracted from \code{gro_end}.
 }
 \examples{
 

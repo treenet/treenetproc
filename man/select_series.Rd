@@ -15,8 +15,7 @@ class, i.e. \code{"dendro"} works for \code{"dendrometer"}. String is not
 case sensitive.}
 
 \item{sensor_name}{character, specify the name of a single or
-multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}) of the
-same site.}
+multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}).}
 
 \item{path_cred}{optional argument to specify the full path to the
 file \code{config.yml} containing the database login data. File can

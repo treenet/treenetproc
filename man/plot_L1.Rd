@@ -5,8 +5,8 @@
 \title{Plot L1 Data}
 \usage{
 plot_L1(
-  data_L1,
-  data_L1_orig = NULL,
+  dendro_L1,
+  dendro_L1_orig = NULL,
   plot_period = "full",
   plot_export = TRUE,
   plot_name = "L1_plot",
@@ -14,10 +14,10 @@ plot_L1(
 )
 }
 \arguments{
-\item{data_L1}{time-aligned dendrometer data as produced by
+\item{dendro_L1}{time-aligned dendrometer data as produced by
 \code{\link{proc_L1}}.}
 
-\item{data_L1_orig}{optional, used in \code{\link{corr_dendro_L1}}. Can be
+\item{dendro_L1_orig}{optional, used in \code{\link{corr_dendro_L1}}. Can be
 used to plot a previous version of \code{data_L1} in the background.}
 
 \item{plot_period}{specify whether plots should be displayed over the whole
@@ -42,7 +42,7 @@ Plots are saved to current working directory as
   used for both dendrometer and climate data.
 }
 \examples{
-plot_L1(data_L1 = dendro_data_L1, plot_period = "monthly",
+plot_L1(dendro_L1 = dendro_data_L1, plot_period = "monthly",
         plot_export = FALSE)
 
 }

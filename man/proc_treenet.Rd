@@ -23,7 +23,7 @@ proc_treenet(
   plot_export = TRUE,
   plot_name = "proc_L2_plot",
   plot_show = "all",
-  plot_cycle = FALSE,
+  plot_phase = FALSE,
   path_cred = NULL,
   year = "asis",
   iter_clean = 1,
@@ -35,8 +35,7 @@ proc_treenet(
 \item{site}{character, specify the site. String is not case sensitive.}
 
 \item{sensor_name}{character, specify the name of a single or
-multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}) of the
-same site.}
+multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}).}
 
 \item{from}{character, optional argument to select data after a specific
 date (\code{"YYYY-MM-DD"}).}
@@ -99,8 +98,8 @@ saved.}
 \code{L2} dendrometer data differ after data cleaning
 (\code{plot_show = "diff"}).}
 
-\item{plot_cycle}{logical, specify whether maxima and minima used for the
-calculation of the cycle statistics should be plotted.}
+\item{plot_phase}{logical, specify whether maxima and minima used for the
+calculation of the phase statistics should be plotted.}
 
 \item{path_cred}{optional argument to specify the full path to the
 file \code{config.yml} containing the database login data. File can
@@ -123,31 +122,7 @@ internally on the server. Changes \code{stop()} error messages to
 \code{message()} only.}
 }
 \value{
-The function returns a \code{data.frame} with processed dendrometer
- data containing the following columns:
-   \item{series}{name of the series.}
-   \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
-   \item{value}{dendrometer value.}
-   \item{max}{highest measured value up to this timestamp.}
-   \item{twd}{tree water deficit, i.e. the amount of stem shrinkage
-     expressed as the difference between \code{max} and \code{value}.}
-   \item{mds}{maximum daily shrinkage, calculated as the difference between
-     a local maximum that occurs before a local minimum during one day. If
-     there is no local maximum or minimum or if the minimum occurs prior to
-     the maximum, then \code{mds = NA}. This may occur on days with rain or
-     in winter (see Details for further information).}
-   \item{gro_yr}{growth since the beginning of the year. Also calculated
-     for years with missing data.}
-   \item{gro_start}{day of year at which growth starts. \code{gro_start} is
-     defined as the day of year at which 5\% of total yearly growth is
-     surpassed.}
-   \item{gro_end}{day of year at which growth stops. \code{gro_end} is
-     defined as the day of year at which 95\% of total yearly growth is
-     reached.}
-   \item{flags}{character vector specifying the changes that occurred
-     during the processing. For more details see the following vignette:
-     \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
-   \item{version}{package version that was used.}
+
 }
 \description{
 \code{proc_treenet} processes \code{L0} dendrometer data from the
@@ -155,11 +130,12 @@ The function returns a \code{data.frame} with processed dendrometer
   \code{L2} (i.e. cleaned \code{L1} data).
 }
 \details{
-\code{temp_data} is used to define periods in which frost shrinkage
-  is probable, e.g. when the temperature is <5°C. Without temperature data,
-  shrinkages due to frost may be classified as outliers.
+Time-aligned temperature data \code{temp_L1} is used to define
+  periods in which frost shrinkage is probable, e.g. when the temperature
+  is <5°C. Without temperature data, shrinkages due to frost may be
+  classified as outliers.
 
-  \code{temp_data} can also be attached to dendrometer data. In this case,
+  Temperature data can also be attached to dendrometer data. In this case,
   the \code{series} name of temperature data has to contain the string
   \code{temp}. In case no temperature dataset is specified, a sample
   temperature dataset will be used with a warning. The sample temperature
@@ -195,12 +171,8 @@ proc_treenet(site = "lens", plot_period = "monthly")
 
 proc_treenet(sensor_name = c("Alvaneu-2.dendrometer.ch0",
                              "Alvaneu-4.dendrometer.ch0"))
-
-# throws error
-proc_treenet(sensor_name = c("Alvaneu-2.dendrometer.ch0",
-                             "Alvaneu-4.dendrometer.ch0",
-                             "Bachtel-2.dendrometer.ch0"))
 }
+
 }
 \seealso{
 \code{\link{proc_L1}} to process dendrometer or climate data to

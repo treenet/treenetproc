@@ -5,7 +5,7 @@
 \title{Process Raw Dendrometer or Meteorological Data to L1}
 \usage{
 proc_L1(
-  data,
+  data_L0,
   reso = 10,
   year = "asis",
   input = "long",
@@ -14,7 +14,7 @@ proc_L1(
 )
 }
 \arguments{
-\item{data}{input \code{data.frame} containing raw dendrometer or
+\item{data_L0}{input \code{data.frame} containing raw dendrometer or
 meteorological data (see Details for formatting requirements).}
 
 \item{reso}{desired time resolution of output (in minutes). See
@@ -70,7 +70,7 @@ The input data needs to contain a timestamp column
   \href{../doc/Functionality-of-treenetproc.html}{\code{vignette("Functionality-of-treenetproc", package = "treenetproc")}}
 }
 \examples{
-proc_L1(data = dendro_data_L0)
-proc_L1(data = dendro_data_L0_wide, input = "wide")
+proc_L1(data_L0 = dendro_data_L0)
+proc_L1(data_L0 = dendro_data_L0_wide, input = "wide")
 
 }

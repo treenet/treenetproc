@@ -7,9 +7,6 @@
 forcejump(data_L2, force, n_days = 5)
 }
 \arguments{
-\item{data_L2}{processed dendrometer data as produced by
-\code{\link{proc_dendro_L2}}.}
-
 \item{force}{character vector, specify the dates after which jumps
 should occur. The largest value difference occurring in a
 period of \code{n_days} after the specified dates in \code{force} is
