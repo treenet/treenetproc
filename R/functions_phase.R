@@ -134,6 +134,9 @@ calcshrinkexpparam <- function(df, maxmin, mode) {
     dplyr::ungroup() %>%
     dplyr::rename(group = group)
 
+  # define minimum slope
+  min_slope <- 1e-5
+
   param <- df %>%
     dplyr::full_join(., maxmin_complete, by = "ts") %>%
     dplyr::mutate(fill_forw = fill_na(group)) %>%
@@ -158,6 +161,14 @@ calcshrinkexpparam <- function(df, maxmin, mode) {
     dplyr::slice(dplyr::n()) %>%
     dplyr::ungroup() %>%
     dplyr::select(ts, start, end, dur, amp, slope) %>%
+    # remove positive shrinkage and negative expansion slopes
+    dplyr::filter(if (mode == "shrink") {
+      slope < 0
+    } else {
+      slope > 0
+    }) %>%
+    # remove slopes that are almost straight lines
+    dplyr::filter(abs(slope) > min_slope) %>%
     stats::setNames(col_names)
 
   return(param)
