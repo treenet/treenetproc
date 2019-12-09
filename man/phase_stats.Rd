@@ -9,7 +9,7 @@ phase_stats(
   phase_wnd = 8,
   plot_phase = FALSE,
   plot_export = TRUE,
-  agg_daily = FALSE,
+  agg_daily = TRUE,
   tz = "UTC"
 )
 }

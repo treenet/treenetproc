@@ -4,7 +4,7 @@
 \alias{grow_seas}
 \title{Calculate Start and End of the Growing Season}
 \usage{
-grow_seas(dendro_L2, tol_seas = 0.05, agg_yearly = FALSE, tz = "UTC")
+grow_seas(dendro_L2, tol_seas = 0.05, agg_yearly = TRUE, tz = "UTC")
 }
 \arguments{
 \item{dendro_L2}{input \code{data.frame} containing cleaned \code{L2}
