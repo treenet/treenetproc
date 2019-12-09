@@ -74,13 +74,13 @@
 #'   occurs before a local minimum (i.e. if the stem shrinks during the day).
 #'
 #' @return The function returns a \code{data.frame} with processed dendrometer
-#'  data containing the following columns:
+#'   data containing the following columns:
 #'    \item{series}{name of the series.}
 #'    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
 #'    \item{value}{dendrometer value.}
 #'    \item{max}{highest measured value up to this timestamp.}
 #'    \item{twd}{tree water deficit, i.e. the amount of stem shrinkage
-#'      expressed as the difference between \code{max} and \code{value}.
+#'      expressed as the difference between \code{max} and \code{value}.}
 #'    \item{gro_yr}{growth since the beginning of the year. Also calculated
 #'      for years with missing data.}
 #'    \item{flags}{character vector specifying the changes that occurred
