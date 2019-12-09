@@ -86,7 +86,20 @@ process many times has an effect on the results.}
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \value{
-
+The function returns a \code{data.frame} with processed dendrometer
+  data containing the following columns:
+   \item{series}{name of the series.}
+   \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
+   \item{value}{dendrometer value.}
+   \item{max}{highest measured value up to this timestamp.}
+   \item{twd}{tree water deficit, i.e. the amount of stem shrinkage
+     expressed as the difference between \code{max} and \code{value}.}
+   \item{gro_yr}{growth since the beginning of the year. Also calculated
+     for years with missing data.}
+   \item{flags}{character vector specifying the changes that occurred
+     during the processing. For more details see the following vignette:
+     \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
+   \item{version}{package version that was used.}
 }
 \description{
 \code{proc_dendro_L2} processes time-aligned (\code{L1}) dendrometer data
