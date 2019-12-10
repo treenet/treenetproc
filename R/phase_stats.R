@@ -10,6 +10,8 @@
 #' @param phase_wnd numeric, specify the window length used to identify
 #'   local maxima and minima. A shorter window length leads to the
 #'   identification of more maxima and minima.
+#' @param plot_phase logical, specify whether maxima and minima used for the
+#'   calculation of the phase statistics should be plotted.
 #' @param agg_daily logical, specify whether phase statistics are appended
 #'   to the \code{L2} data or are exported as a daily aggregated
 #'   \code{data.frame}.
