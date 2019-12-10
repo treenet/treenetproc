@@ -7,9 +7,9 @@
 #' @param dendro_L2 input \code{data.frame} containing cleaned \code{L2}
 #'   dendrometer data (obtained from functions \code{\link{proc_dendro_L2}}
 #'   or \code{\link{corr_dendro_L2}}).
-#' @param phase_wnd numeric, specify the window length used to identify
-#'   local maxima and minima. A shorter window length leads to the
-#'   identification of more maxima and minima.
+#' @param phase_wnd numeric, specify the window length (in hours) used to
+#'   identify local maxima and minima. A shorter window length leads to the
+#'   identification of more local maxima and minima.
 #' @param plot_phase logical, specify whether maxima and minima used for the
 #'   calculation of the phase statistics should be plotted.
 #' @param agg_daily logical, specify whether phase statistics are appended
