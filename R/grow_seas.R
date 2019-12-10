@@ -5,11 +5,12 @@
 #'   calculation depends on the previous year (see Details for further
 #'   information on the calculation).
 #'
-#' @param tol_seas numeric, defines the amount of yearly growth that needs to be
-#'   surpassed for \code{gro_start} to be defined. \code{1 - tol_seas} is the
-#'   amount of yearly growth at which \code{gro_end} is defined.
-#' @param agg_yearly logical, specify whether growth start and end are appended
-#'   to the \code{L2} data or or are exported as a yearly aggregated
+#' @param tol_seas numeric, defines the amount of yearly growth
+#'   that needs to be surpassed before \code{gro_start} is defined.
+#'   Likewise, \code{1 - tol_seas} is the amount of yearly growth at which
+#'   \code{gro_end} is defined.
+#' @param agg_yearly logical, specify whether the output \code{data.frame} is
+#'   aggregated by year (\code{agg_yearly = TRUE}) or appended to the input
 #'   \code{data.frame}.
 #' @inheritParams proc_L1
 #' @inheritParams proc_dendro_L2
@@ -18,14 +19,17 @@
 #' @export
 #'
 #' @details \code{gro_start} is defined as the day of year at which the
-#'   maximum dendrometer value of the previous year is surpassed. Identically,
+#'   maximum dendrometer value of the previous year is surpassed.
 #'   \code{gro_end} is defined as the day of year at which the maximum
 #'   dendrometer value is reached. To reduce the influence of outliers in
-#'   the dendrometer data, a tolerance value (\code{tol_seas}) is added
-#'   \code{gro_start} or subtracted from \code{gro_end}.
+#'   the dendrometer data, a certain percentage of yearly growth
+#'   (\code{tol_seas}) has to be reached before \code{gro_start} is defined.
+#'   Likewise, \code{gro_end} is defined as soon as the maximum dendrometer
+#'   value reaches \code{100 - tol_seas}.
 #'
-#' @return The following additional variables are returned by
-#'   \code{grow_seas}:
+#' @return The following variables are returned by \code{grow_seas}:
+#'     \item{series}{name of the dendrometer series}
+#'     \item{year}{year}
 #'     \item{gro_start}{day of year at which growth starts}
 #'     \item{gro_end}{day of year at which growth ends}
 #'
