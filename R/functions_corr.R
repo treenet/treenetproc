@@ -1,13 +1,13 @@
-#' Removes Wrong Corrections in Data
+#' Reverses Wrong Corrections in Data
 #'
-#' \code{removecorr} removes wrong corrections in the dendrometer data.
+#' \code{reversecorr} reverses wrong corrections in the dendrometer data.
 #'
 #' @inheritParams corr_dendro_L2
 #' @inheritParams plot_proc_L2
 #'
 #' @keywords internal
 #'
-removecorr <- function(data_L1, data_L2, remove, tz) {
+reversecorr <- function(data_L1, data_L2, reverse, tz) {
 
   L1 <- data_L1 %>%
     dplyr::mutate(diff_L1 = c(NA, diff(value, lag = 1))) %>%
@@ -21,7 +21,7 @@ removecorr <- function(data_L1, data_L2, remove, tz) {
     dplyr::mutate(diff = diff_L1 - diff_L2) %>%
     dplyr::mutate(diff = ifelse(abs(diff) <= 0.1, 0, diff)) %>%
     dplyr::mutate(diff = ifelse(is.na(diff), 0, diff)) %>%
-    # add diff = 100 for removed outliers (flag = "out")
+    # add diff = 100 for reversed outliers (flag = "out")
     dplyr::mutate(diff = ifelse(grepl("out", flags), 100, diff)) %>%
     dplyr::mutate(diff_plot = abs(diff)) %>%
     dplyr::mutate(diff_nr = 0) %>%
@@ -34,38 +34,38 @@ removecorr <- function(data_L1, data_L2, remove, tz) {
   val <- df$value_L2
   diff <- df$diff
   ts <- df$ts
-  remove_row <- which(df$diff_nr %in% remove)
-  ts_rem <- df$ts[remove_row]
+  reverse_row <- which(df$diff_nr %in% reverse)
+  ts_rem <- df$ts[reverse_row]
   ts_rem <- as.POSIXct(paste(substr(as.character(ts_rem), 1, 10), "00:00:00"),
                        format = "%Y-%m-%d %H:%M:%S", tz = tz)
   flag_old <- df$flags
   flag <- as.vector(rep(FALSE, nrow(df)), mode = "logical")
-  for (r in 1:length(remove_row)) {
-    rem <- remove_row[r]
-    val_diff <- diff[rem]
+  for (r in 1:length(reverse_row)) {
+    rev <- reverse_row[r]
+    val_diff <- diff[rev]
 
-    # remove differences
-    if (grepl("jump", flag_old[rem])) {
-      val[rem:length(val)] <- val[rem:length(val)] + val_diff
+    # reverse differences
+    if (grepl("jump", flag_old[rev])) {
+      val[rev:length(val)] <- val[rev:length(val)] + val_diff
     }
     # restore deleted values
-    if (grepl("out", flag_old[rem])) {
-      val[rem] <- val[rem - 1] + diff_L1[rem]
+    if (grepl("out", flag_old[rev])) {
+      val[rev] <- val[rev - 1] + diff_L1[rev]
     }
 
-    flag[rem] <- TRUE
+    flag[rev] <- TRUE
   }
 
-  # removed changes as input for plotting
+  # reversed changes as input for plotting
   diff_old <- df %>%
-    dplyr::filter(diff_nr %in% remove) %>%
+    dplyr::filter(diff_nr %in% reverse) %>%
     dplyr::rename(diff_nr_old = diff_nr) %>%
     dplyr::rename(diff_old = diff_plot) %>%
     dplyr::select(ts, diff_old, diff_nr_old)
 
   df <- data_L2 %>%
     dplyr::mutate(value = val) %>%
-    dplyr::mutate(flagremovecorr = flag)
+    dplyr::mutate(flagreversecorr = flag)
 
   list_return <- list(df, diff_old)
 
@@ -164,13 +164,13 @@ deleteperiod <- function(df, delete) {
 #'
 #' @keywords internal
 #'
-summariseflagscorr <- function(df, remove = NULL, force = NULL,
+summariseflagscorr <- function(df, reverse = NULL, force = NULL,
                                delete = NULL) {
 
   list_flags <- vector("list", length = 3)
 
-  if (length(remove) != 0) {
-    list_flags[[1]] <- ifelse(df$flagremovecorr, "rem", NA)
+  if (length(reverse) != 0) {
+    list_flags[[1]] <- ifelse(df$flagreversecorr, "rev", NA)
   } else {
     list_flags[[1]] <- NA
   }
@@ -188,8 +188,8 @@ summariseflagscorr <- function(df, remove = NULL, force = NULL,
   flags <- do.call("paste", c(list_flags, sep = ", "))
   list_all <- list(df$flags, flags)
   flags <- do.call("paste", c(list_all, sep = ", "))
-  # remove flags of changes that were removed
-  flags <- ifelse(grepl("(.*out|.*fill|.*jump)(.*rem)", flags, perl = TRUE),
+  # remove flags of changes that were reversed
+  flags <- ifelse(grepl("(.*out|.*fill|.*jump)(.*rev)", flags, perl = TRUE),
                   gsub(".*out[[:digit:]]*|.*fill|.*jump[[:digit:]]*", "",
                        flags),
                   flags)

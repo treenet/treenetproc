@@ -5,12 +5,12 @@
 #'   in \code{\link{proc_dendro_L2}}.
 #'
 #' @param dendro_L1 time-aligned dendrometer data as produced by
-#'   \code{\link{proc_L1}}. Optional, only needed for \code{remove} and if
+#'   \code{\link{proc_L1}}. Optional, only needed for \code{reverse} and if
 #'   \code{plot = TRUE}.
-#' @param remove numeric vector, specify numbers of the changes that should
-#'   be removed. Numbers are displayed in the plots produced by
+#' @param reverse numeric vector, specify numbers of the changes that should
+#'   be reversed. Numbers are reported in the plots produced by
 #'   \code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers
-#'   are only displayed if \code{plot_period = "monthly"}).
+#'   are only reported if \code{plot_period = "monthly"}).
 #' @param force character vector, specify the dates after which jumps
 #'   should occur. The largest value difference occurring in a
 #'   period of \code{n_days} after the specified dates in \code{force} is
@@ -40,11 +40,11 @@
 #'
 #' @examples
 #' corr_dendro_L2(dendro_L1 = dendro_data_L1, dendro_L2 = dendro_data_L2,
-#'                remove = 59:61, force = "2013-08-12",
+#'                reverse = 59:61, force = "2013-08-12",
 #'                delete = c("2013-08-01", "2013-08-04"),
 #'                series = "site-1_dendro-3", plot_export = FALSE)
 #'
-corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, remove = NULL,
+corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, reverse = NULL,
                            force = NULL, delete = NULL, series = NULL,
                            n_days = 5, plot = TRUE, plot_export = TRUE,
                            tz = "UTC") {
@@ -77,9 +77,9 @@ corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, remove = NULL,
 
 
   # Check input data ----------------------------------------------------------
-  if (length(remove) != 0) {
-    if (!(is.numeric(remove))) {
-      stop("'remove' needs to be numeric.")
+  if (length(reverse) != 0) {
+    if (!(is.numeric(reverse))) {
+      stop("'reverse' needs to be numeric.")
     }
   }
   if (length(force) != 0) {
@@ -91,14 +91,14 @@ corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, remove = NULL,
     check_date_period(datevec = delete, datevec_name = "delete", df = df)
     check_delete(delete)
   }
-  if (length(remove) == 0 & length(force) == 0 & length(delete) == 0) {
-    stop("provide at least 'remove', 'force' or 'delete'.")
+  if (length(reverse) == 0 & length(force) == 0 & length(delete) == 0) {
+    stop("provide at least 'reverse', 'force' or 'delete'.")
   }
   if (length(dendro_L1) != 0) {
     check_data_L1(data_L1 = dendro_L1)
   }
-  if (length(dendro_L1) == 0 && length(remove) != 0) {
-    stop("you need to provide 'dendro_L1' along with 'remove'.")
+  if (length(dendro_L1) == 0 && length(reverse) != 0) {
+    stop("you need to provide 'dendro_L1' along with 'reverse'.")
   }
   check_data_L2(data_L2 = dendro_L2)
   if (plot & length(dendro_L1) == 0) {
@@ -107,17 +107,17 @@ corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, remove = NULL,
   }
   data_L1 <- dendro_L1
 
-  # Remove errors in processing -----------------------------------------------
+  # Reverse errors in processing ----------------------------------------------
   # remove leading and trailing NA's
   na_list <- remove_lead_trail_na(df = df)
   df <- na_list[[1]]
   lead_trail_na <- na_list[[2]]
 
-  if (length(remove) != 0) {
-    remove_list <- removecorr(data_L1 = data_L1, data_L2 = df,
-                              remove = remove, tz = tz)
-    df <- remove_list[[1]]
-    diff_old <- remove_list[[2]]
+  if (length(reverse) != 0) {
+    reverse_list <- reversecorr(data_L1 = data_L1, data_L2 = df,
+                                reverse = reverse, tz = tz)
+    df <- reverse_list[[1]]
+    diff_old <- reverse_list[[2]]
   }
   if (length(force) != 0) {
     df <- forcejump(data_L2 = df, force = force, n_days = n_days)
@@ -128,7 +128,7 @@ corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, remove = NULL,
 
   df <- calcmax(df = df)
   df <- calctwdgro(df = df, tz = tz)
-  df <- summariseflagscorr(df = df, remove = remove, force = force,
+  df <- summariseflagscorr(df = df, reverse = reverse, force = force,
                            delete = delete)
 
   df <- df %>%
@@ -145,7 +145,7 @@ corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, remove = NULL,
 
   if (plot) {
     data_L1 <- data_L1 %>%
-      # add diff_old to plot removed changes
+      # add diff_old to plot reversed changes
       dplyr::left_join(., diff_old, by = "ts") %>%
       dplyr::mutate(month_plot = 0) %>%
       dplyr::mutate(month = paste0(substr(ts, 1, 7), "-01"))
