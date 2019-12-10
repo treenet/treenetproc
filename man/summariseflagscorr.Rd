@@ -4,7 +4,7 @@
 \alias{summariseflagscorr}
 \title{Summarise Flags}
 \usage{
-summariseflagscorr(df, remove = NULL, force = NULL, delete = NULL)
+summariseflagscorr(df, reverse = NULL, force = NULL, delete = NULL)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}

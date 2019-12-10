@@ -18,7 +18,6 @@ proc_dendro_L2(
   plot_show = "all",
   plot_export = TRUE,
   plot_name = "proc_L2_plot",
-  plot_phase = FALSE,
   iter_clean = 1,
   tz = "UTC"
 )
@@ -47,8 +46,8 @@ classifiation in periods of probable frost (i.e. temperature <
 \code{lowtemp}). The thresholds are multiplied by the value provided.}
 
 \item{interpol}{numeric, length of gaps (in minutes) in which values are
-linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
-If \code{interpol = NULL} the default value is set to
+linearly interpolated after data cleaning. Set \code{interpol = 0} to
+disable gapfilling. If \code{interpol = NULL} the default value is set to
 \code{interpol = 2.1 * reso}.}
 
 \item{frag_len}{numeric, specifies the length of data fragments occurring
@@ -75,9 +74,6 @@ plot_period (\code{plot_period = "full"}), for each year separately
 
 \item{plot_name}{character, specify name of the PDF in which the plots are
 saved.}
-
-\item{plot_phase}{logical, specify whether maxima and minima used for the
-calculation of the phase statistics should be plotted.}
 
 \item{iter_clean}{numeric, specifies the number of times the cleaning
 process is repeated. Can be used to check whether running the cleaning

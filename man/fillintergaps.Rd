@@ -13,8 +13,8 @@ fillintergaps(df, reso, interpol = NULL, type = "linear", flag = FALSE)
 \code{Details} for more information on data aggregation.}
 
 \item{interpol}{numeric, length of gaps (in minutes) in which values are
-linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
-If \code{interpol = NULL} the default value is set to
+linearly interpolated after data cleaning. Set \code{interpol = 0} to
+disable gapfilling. If \code{interpol = NULL} the default value is set to
 \code{interpol = 2.1 * reso}.}
 
 \item{type}{specify type of interpolation between regular timesteps.}

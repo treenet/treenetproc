@@ -66,8 +66,8 @@ below which a value is classified as outlier (see Details for further
 information).}
 
 \item{interpol}{numeric, length of gaps (in minutes) in which values are
-linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
-If \code{interpol = NULL} the default value is set to
+linearly interpolated after data cleaning. Set \code{interpol = 0} to
+disable gapfilling. If \code{interpol = NULL} the default value is set to
 \code{interpol = 2.1 * reso}.}
 
 \item{frag_len}{numeric, specifies the length of data fragments occurring

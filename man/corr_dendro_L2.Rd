@@ -7,7 +7,7 @@
 corr_dendro_L2(
   dendro_L1 = NULL,
   dendro_L2,
-  remove = NULL,
+  reverse = NULL,
   force = NULL,
   delete = NULL,
   series = NULL,
@@ -19,16 +19,16 @@ corr_dendro_L2(
 }
 \arguments{
 \item{dendro_L1}{time-aligned dendrometer data as produced by
-\code{\link{proc_L1}}. Optional, only needed for \code{remove} and if
+\code{\link{proc_L1}}. Optional, only needed for \code{reverse} and if
 \code{plot = TRUE}.}
 
 \item{dendro_L2}{processed dendrometer data as produced by
 \code{\link{proc_dendro_L2}}.}
 
-\item{remove}{numeric vector, specify numbers of the changes that should
-be removed. Numbers are displayed in the plots produced by
+\item{reverse}{numeric vector, specify numbers of the changes that should
+be reversed. Numbers are reported in the plots produced by
 \code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers
-are only displayed if \code{plot_period = "monthly"}).}
+are only reported if \code{plot_period = "monthly"}).}
 
 \item{force}{character vector, specify the dates after which jumps
 should occur. The largest value difference occurring in a
@@ -68,7 +68,7 @@ The function returns a \code{data.frame} with corrected \code{L2}
 }
 \examples{
 corr_dendro_L2(dendro_L1 = dendro_data_L1, dendro_L2 = dendro_data_L2,
-               remove = 59:61, force = "2013-08-12",
+               reverse = 59:61, force = "2013-08-12",
                delete = c("2013-08-01", "2013-08-04"),
                series = "site-1_dendro-3", plot_export = FALSE)
 
