@@ -11,6 +11,7 @@
 #' @inheritParams proc_L1
 #' @inheritParams proc_dendro_L2
 #' @inheritParams plot_proc_L2
+#' @inheritParams phase_stats
 #'
 #' @inherit proc_dendro_L2 details
 #'
