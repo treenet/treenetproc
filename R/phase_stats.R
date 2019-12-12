@@ -132,46 +132,84 @@ phase_stats <- function(dendro_L2, phase_wnd = 8, plot_phase = FALSE,
       dplyr::select(ts, extrema, shrink_group, exp_group)
 
     # calculate parameters for shrinkage and expansion
-    shrink <- calcshrinkexpparam(df = df, maxmin = maxmin, mode = "shrink")
-    exp <- calcshrinkexpparam(df = df, maxmin = maxmin, mode = "exp")
+    shrink <- calcshrinkexpparam(df = df, maxmin = maxmin, mode = "shrink",
+                                 phase_wnd = phase_wnd, tz = tz)
+    exp <- calcshrinkexpparam(df = df, maxmin = maxmin, mode = "exp",
+                              phase_wnd = phase_wnd, tz = tz)
 
-    shrink_exp_stats <- df %>%
-      dplyr::full_join(., shrink, by = "ts") %>%
-      dplyr::full_join(., exp, by = "ts") %>%
-      dplyr::mutate(extrema = ifelse(!is.na(shrink_dur), "min",
-                                     ifelse(!is.na(exp_dur), "max", NA)))
-
-    # classify days as transpir (1) or inverted (-1)
-    phase_class <- shrink_exp_stats %>%
-      dplyr::filter(!is.na(shrink_start) | !is.na(exp_start)) %>%
-      dplyr::mutate(day = substr(ts, 1, 10)) %>%
-      dplyr::mutate(shrink_start_day = substr(shrink_start, 1, 10)) %>%
-      dplyr::mutate(shrink_end_day = substr(shrink_end, 1, 10)) %>%
-      dplyr::mutate(exp_start_day = substr(exp_start, 1, 10)) %>%
-      dplyr::mutate(exp_end_day = substr(exp_end, 1, 10)) %>%
-      dplyr::mutate(single_day_shrink = ifelse(day == shrink_start_day &
-                                                 day == shrink_end_day,
-                                               TRUE, FALSE)) %>%
-      dplyr::mutate(single_day_exp = ifelse(day == exp_start_day &
-                                              day == exp_end_day,
-                                            TRUE, FALSE)) %>%
-      dplyr::filter(single_day_shrink | single_day_exp) %>%
+    shrink_exp <- dplyr::full_join(shrink, exp, by = c("day", "doy")) %>%
+      dplyr::mutate(series = series_vec[s]) %>%
+      # overwrite duplicated shrinkage or expansion phases with NA
+      dplyr::mutate(shrink_start =
+                      replace(shrink_start, duplicated(shrink_start), NA)) %>%
+      dplyr::mutate_at(.vars = grep("shrink", colnames(.)),
+                       .funs = list(~ replace(., is.na(shrink_start), NA))) %>%
+      dplyr::mutate(exp_start =
+                      replace(exp_start, duplicated(exp_start), NA)) %>%
+      dplyr::mutate_at(.vars = grep("exp", colnames(.)),
+                       .funs = list(~ replace(., is.na(exp_start), NA))) %>%
+      # rearrange rows to reduce rows with NAs
       dplyr::group_by(day) %>%
-      dplyr::slice(1) %>%
+      dplyr::mutate_at(.vars = grep("shrink", colnames(.)),
+                       .funs =
+                         list(~ c(na.omit(.),
+                                  rep(NA, sum(is.na(shrink_start)))))) %>%
+      dplyr::mutate_at(.vars = grep("exp", colnames(.)),
+                       .funs = list(~ c(na.omit(.),
+                                        rep(NA, sum(is.na(exp_start)))))) %>%
       dplyr::ungroup() %>%
-      dplyr::mutate(phase_class = dplyr::if_else(single_day_shrink, 1, 0,
-                                                 missing = -1)) %>%
-      dplyr::mutate(mds = shrink_amp) %>%
-      dplyr::mutate(mde = exp_amp) %>%
-      dplyr::mutate(ts = as.POSIXct(day, tz = tz)) %>%
-      dplyr::select(ts, phase_class, mds, mde)
+      dplyr::filter(!(is.na(shrink_start) & is.na(exp_start))) %>%
+      # classify days as transpir (1) or inverted (-1)
+      dplyr::mutate(shrink_start_day =
+                      as.POSIXct(substr(shrink_start, 1, 10), tz = tz)) %>%
+      dplyr::mutate(exp_start_day =
+                      as.POSIXct(substr(exp_start, 1, 10), tz = tz)) %>%
+      dplyr::mutate(day_shrink = dplyr::if_else(shrink_start_day == day, 1, 0,
+                                                missing = 0)) %>%
+      dplyr::mutate(day_exp = dplyr::if_else(exp_start_day == day, -1, 0,
+                                             missing = 0)) %>%
+      dplyr::group_by(day) %>%
+      dplyr::mutate(phase_class = sum(max(day_shrink), min(day_exp))) %>%
+      dplyr::mutate(phase_class_2 = sum(day_shrink[1], day_exp[1])) %>%
+      dplyr::mutate(phase_class = ifelse(phase_class == 0, phase_class_2,
+                                         phase_class)) %>%
+      dplyr::mutate(phase_class =
+                      ifelse(phase_class == 0 &
+                               (day_shrink == 0 & day_exp == 0), NA,
+                    phase_class)) %>%
+      dplyr::mutate(phase_class =
+                      ifelse(phase_class == 0 & (shrink_start < exp_start),
+                             1, phase_class)) %>%
+      dplyr::mutate(phase_class =
+                      ifelse(phase_class == 0 & (exp_start < shrink_start),
+                             -1, phase_class)) %>%
+      dplyr::ungroup() %>%
+      dplyr::arrange(day) %>%
+      dplyr::select(series, day, doy, shrink_start, shrink_end, shrink_dur,
+                    shrink_amp, shrink_slope, exp_start, exp_end, exp_dur,
+                    exp_amp, exp_slope, phase_class)
 
-    shrink_exp_stats <- shrink_exp_stats %>%
-      dplyr::full_join(., phase_class, by = "ts")
+    # merge phases with df
+    shrink <- shrink_exp %>%
+      dplyr::select(shrink_start, shrink_end, shrink_dur, shrink_amp,
+                    shrink_slope, phase_class) %>%
+      dplyr::mutate(ts = shrink_end) %>%
+      dplyr::filter(!is.na(shrink_start))
+
+    exp <- shrink_exp %>%
+      dplyr::select(exp_start, exp_end, exp_dur, exp_amp, exp_slope,
+                    phase_class) %>%
+      dplyr::mutate(ts = exp_end) %>%
+      dplyr::filter(!is.na(exp_start))
+
+
+
+    message("merge phases with df, maybe first separate shrink and exp and
+            then merge both with shrink_end or exp_end, respectively")
 
     if (plot_phase) {
       print("plot phases...")
-      plot_phase(phase = shrink_exp_stats, plot_export = plot_export)
+      plot_phase(phase = shrink_exp, plot_export = plot_export)
     }
 
     list_phase[[s]] <- shrink_exp_stats
