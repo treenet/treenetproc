@@ -329,6 +329,19 @@ plot_phase <- function(phase, plot_export) {
     dplyr::select(shrink_start, shrink_end, shrink_dur, shrink_amp,
                   shrink_slope, exp_start, exp_end, exp_dur, exp_amp,
                   exp_slope)
+  # add extrema to df
+  extrema_start <- phase %>%
+    dplyr::mutate(extrema = mode) %>%
+    dplyr::mutate(extrema = ifelse(mode == "shrink", "max", "min")) %>%
+    dplyr::select(ts = start, extrema)
+
+  df <- phase %>%
+    dplyr::mutate(extrema = mode) %>%
+    dplyr::mutate(extrema = ifelse(mode == "shrink", "min", "max")) %>%
+    dplyr::select(ts = end, extrema) %>%
+    dplyr::full_join(., extrema_start, by = c("ts", "extrema")) %>%
+    dplyr::right_join(., df, by = "ts") %>%
+    dplyr::arrange(series, ts)
 
   for (p in 1:nrow(phase)) {
     phase_plot <- phase[p, ]
