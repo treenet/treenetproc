@@ -306,6 +306,7 @@ plot_interpol_points <- function(df) {
 #' \code{plot_phase} plots phases of shrinkage and expansion based on
 #'   selected maxima and minima and returns some statistics on the phases.
 #'
+#' @param df input \code{data.frame}.
 #' @param phase \code{data.frame} containing statistics on the shrinkage
 #'   phase and expansion phase.
 #'
@@ -314,7 +315,7 @@ plot_interpol_points <- function(df) {
 #'
 #' @keywords internal
 #'
-plot_phase <- function(phase, plot_export) {
+plot_phase <- function(df, phase, plot_export) {
 
   series <- unique(phase$series)
   if (plot_export) {
@@ -322,13 +323,21 @@ plot_phase <- function(phase, plot_export) {
                    width = 8.3, height = 5.8)
   }
 
-  df <- phase
+  shrink <- phase %>%
+    dplyr::mutate(mode = "shrink") %>%
+    dplyr::filter(!is.na(shrink_start)) %>%
+    dplyr::select(start = shrink_start, end = shrink_end, dur = shrink_dur,
+                  amp = shrink_amp, slope = shrink_slope, mode)
 
-  phase <- phase %>%
-    dplyr::filter(!is.na(shrink_start) | !(is.na(exp_start))) %>%
-    dplyr::select(shrink_start, shrink_end, shrink_dur, shrink_amp,
-                  shrink_slope, exp_start, exp_end, exp_dur, exp_amp,
-                  exp_slope)
+  exp <- phase %>%
+    dplyr::mutate(mode = "exp") %>%
+    dplyr::filter(!is.na(exp_start)) %>%
+    dplyr::select(start = exp_start, end = exp_end, dur = exp_dur,
+                  amp = exp_amp, slope = exp_slope, mode)
+
+  phase <- dplyr::bind_rows(shrink, exp) %>%
+    dplyr::arrange(start)
+
   # add extrema to df
   extrema_start <- phase %>%
     dplyr::mutate(extrema = mode) %>%
@@ -346,18 +355,6 @@ plot_phase <- function(phase, plot_export) {
   for (p in 1:nrow(phase)) {
     phase_plot <- phase[p, ]
 
-    if (!is.na(phase_plot$shrink_start)) {
-      mode <- "shrink"
-      phase_plot <- phase_plot %>%
-        dplyr::rename(start = shrink_start, end = shrink_end, dur = shrink_dur,
-                      amp = shrink_amp, slope = shrink_slope)
-    } else {
-      mode <- "exp"
-      phase_plot <- phase_plot %>%
-        dplyr::rename(start = exp_start, end = exp_end, dur = exp_dur,
-                      amp = exp_amp, slope = exp_slope)
-    }
-
     plot_start <- phase_plot$start - as.difftime(12, units = "hours")
     plot_end <- phase_plot$end + as.difftime(12, units = "hours")
 
@@ -370,7 +367,7 @@ plot_phase <- function(phase, plot_export) {
                                 as.Date(phase_plot$start), "to",
                                 as.Date(phase_plot$end)),
                    main = paste0(df_plot$series[1], "\n",
-                                 ifelse(mode == "shrink",
+                                 ifelse(phase_plot$mode == "shrink",
                                         "Shrinkage", "Expansion")))
     graphics::axis.POSIXct(1, x = df_plot$ts, format = "%H")
     graphics::abline(v = as.POSIXct(unique(as.Date(df_plot$ts))),
@@ -378,10 +375,10 @@ plot_phase <- function(phase, plot_export) {
 
     graphics::points(x = phase_plot$start,
                      y = df_plot$value[df_plot$ts == phase_plot$start],
-                     pch = ifelse(mode == "shrink", 16, 17))
+                     pch = ifelse(phase_plot$mode == "shrink", 16, 17))
     graphics::points(x = phase_plot$end,
                      y = df_plot$value[df_plot$ts == phase_plot$end],
-                     pch = ifelse(mode == "shrink", 17, 16))
+                     pch = ifelse(phase_plot$mode == "shrink", 17, 16))
     # plot adjacent maxima and minima
     graphics::points(x = df_plot$ts[df_plot$extrema == "max"],
                      y = df_plot$value[df_plot$extrema == "max"],
@@ -390,7 +387,8 @@ plot_phase <- function(phase, plot_export) {
                      y = df_plot$value[df_plot$extrema == "min"],
                      pch = 2)
 
-    graphics::legend(x = ifelse(mode == "shrink", "bottomleft", "bottomright"),
+    graphics::legend(x = ifelse(phase_plot$mode == "shrink",
+                                "bottomleft", "bottomright"),
                      legend = c(paste("Phase duration =",
                                       phase_plot$dur),
                                 paste("Amplitude =",
