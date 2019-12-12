@@ -170,19 +170,8 @@ phase_stats <- function(dendro_L2, phase_wnd = 8, plot_phase = FALSE,
                                              missing = 0)) %>%
       dplyr::group_by(day) %>%
       dplyr::mutate(phase_class = sum(max(day_shrink), min(day_exp))) %>%
-      dplyr::mutate(phase_class_2 = sum(day_shrink[1], day_exp[1])) %>%
-      dplyr::mutate(phase_class = ifelse(phase_class == 0, phase_class_2,
-                                         phase_class)) %>%
-      dplyr::mutate(phase_class =
-                      ifelse(phase_class == 0 &
-                               (day_shrink == 0 & day_exp == 0), NA,
-                    phase_class)) %>%
-      dplyr::mutate(phase_class =
-                      ifelse(phase_class == 0 & (shrink_start < exp_start),
-                             1, phase_class)) %>%
-      dplyr::mutate(phase_class =
-                      ifelse(phase_class == 0 & (exp_start < shrink_start),
-                             -1, phase_class)) %>%
+      dplyr::mutate(phase_class = ifelse(phase_class == 0,
+                                         NA, phase_class)) %>%
       dplyr::ungroup() %>%
       dplyr::arrange(day) %>%
       dplyr::select(series, day, doy, shrink_start, shrink_end, shrink_dur,
