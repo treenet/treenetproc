@@ -80,7 +80,7 @@ phase_stats <- function(dendro_L2, phase_wnd = 8, plot_phase = FALSE,
   # Calculate phase statistics ------------------------------------------------
   if ("phase_class" %in% colnames(df)) {
     df <- df %>%
-      dplyr::select_if(!grepl("phase|shrink|exp|mds|mde", colnames(.)))
+      dplyr::select_if(!grepl("phase|shrink|exp", colnames(.)))
   }
 
   series_vec <- unique(df$series)
@@ -178,58 +178,39 @@ phase_stats <- function(dendro_L2, phase_wnd = 8, plot_phase = FALSE,
                     shrink_amp, shrink_slope, exp_start, exp_end, exp_dur,
                     exp_amp, exp_slope, phase_class)
 
-    # merge phases with df
-    shrink <- shrink_exp %>%
-      dplyr::select(shrink_start, shrink_end, shrink_dur, shrink_amp,
-                    shrink_slope, phase_class) %>%
-      dplyr::mutate(ts = shrink_end) %>%
-      dplyr::filter(!is.na(shrink_start))
-
-    exp <- shrink_exp %>%
-      dplyr::select(exp_start, exp_end, exp_dur, exp_amp, exp_slope,
-                    phase_class) %>%
-      dplyr::mutate(ts = exp_end) %>%
-      dplyr::filter(!is.na(exp_start))
-
-
-
-    message("merge phases with df, maybe first separate shrink and exp and
-            then merge both with shrink_end or exp_end, respectively")
+    list_phase[[s]] <- shrink_exp
 
     if (plot_phase) {
       print("plot phases...")
-      plot_phase(phase = shrink_exp, plot_export = plot_export)
+      plot_phase(df = df, phase = shrink_exp, plot_export = plot_export)
     }
-
-    list_phase[[s]] <- shrink_exp_stats
   }
 
-  df <- dplyr::bind_rows(list_phase)
+  phase <- dplyr::bind_rows(list_phase)
 
-  if (agg_daily) {
-    df <- df %>%
-      dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), tz = tz)) %>%
-      dplyr::mutate(doy = as.numeric(strftime(day, format = "%j",
-                                              tz = tz)))
+  if (!agg_daily) {
+  # merge phases with df
+  shrink <- phase %>%
+    dplyr::select(series, shrink_start, shrink_end, shrink_dur, shrink_amp,
+                  shrink_slope) %>%
+    dplyr::mutate(ts = shrink_end) %>%
+    dplyr::filter(!is.na(shrink_start))
 
-    shrink <- df %>%
-      dplyr::filter(!is.na(shrink_start)) %>%
-      dplyr::select(series, day, doy, shrink_start, shrink_end, shrink_dur,
-                    shrink_amp, shrink_slope)
+  exp <- phase %>%
+    dplyr::select(series, exp_start, exp_end, exp_dur, exp_amp, exp_slope) %>%
+    dplyr::mutate(ts = exp_end) %>%
+    dplyr::filter(!is.na(exp_start))
 
-    exp <- df %>%
-      dplyr::filter(!is.na(exp_start)) %>%
-      dplyr::select(series, day, doy, exp_start, exp_end, exp_dur, exp_amp,
-                    exp_slope)
+  phase_class <- phase %>%
+    dplyr::select(series, day, phase_class) %>%
+    dplyr::select(series, ts = day, phase_class) %>%
+    dplyr::distinct()
 
-    mds_mde <- df %>%
-      dplyr::filter(!is.na(phase_class)) %>%
-      dplyr::select(series, day, doy, mds, mde, phase_class)
-
-    df <- dplyr::full_join(shrink, exp, by = c("series", "day", "doy")) %>%
-      dplyr::full_join(., mds_mde, by = c("series", "day", "doy")) %>%
-      dplyr::arrange(series, day)
+  phase <- dplyr::left_join(df, shrink, by = c("series", "ts")) %>%
+    dplyr::left_join(., exp, by = c("series", "ts")) %>%
+    dplyr::left_join(., phase_class, by = c("series", "ts")) %>%
+    dplyr::arrange(series, ts)
   }
 
-  return(df)
+  return(phase)
 }
