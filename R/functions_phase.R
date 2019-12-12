@@ -111,19 +111,21 @@ removeconsec <- function(df, remove, notremove, mode) {
 #' @param mode character, specify whether statistics for shrinkage
 #'   (\code{mode = "shrink"}) or expansion \code{mode = "exp"} are
 #'   calculated.
+#' @inheritParams phase_stats
+#' @inheritParams proc_L1
 #'
 #' @keywords internal
 #'
-calcshrinkexpparam <- function(df, maxmin, mode) {
+calcshrinkexpparam <- function(df, maxmin, mode, phase_wnd, tz) {
 
   if (mode == "shrink") {
     group <- "shrink_group"
-    col_names <- c("ts", "shrink_start", "shrink_end", "shrink_dur",
+    col_names <- c("day", "doy", "shrink_start", "shrink_end", "shrink_dur",
                    "shrink_amp", "shrink_slope")
   }
   if (mode == "exp") {
     group <- "exp_group"
-    col_names <- c("ts", "exp_start", "exp_end", "exp_dur", "exp_amp",
+    col_names <- c("day", "doy", "exp_start", "exp_end", "exp_dur", "exp_amp",
                    "exp_slope")
   }
 
