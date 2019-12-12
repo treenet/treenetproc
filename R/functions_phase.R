@@ -160,15 +160,21 @@ calcshrinkexpparam <- function(df, maxmin, mode) {
     dplyr::mutate(slope = stats::lm(value ~ ts)$coefficients[2]) %>%
     dplyr::slice(dplyr::n()) %>%
     dplyr::ungroup() %>%
-    dplyr::select(ts, start, end, dur, amp, slope) %>%
     # remove positive shrinkage and negative expansion slopes
     dplyr::filter(if (mode == "shrink") {
       slope < 0
     } else {
       slope > 0
     }) %>%
-    # remove slopes that are almost straight lines
+    # remove phases with slopes that are almost straight lines
     dplyr::filter(abs(slope) > min_slope) %>%
+    # remove phases with a short duration only
+    dplyr::filter(dur >= phase_wnd * 0.5 * 60) %>%
+    dplyr::mutate(day = as.POSIXct(substr(end, 1, 10), tz = tz)) %>%
+    dplyr::mutate(doy = as.numeric(strftime(day, format = "%j",
+                                            tz = tz))) %>%
+    # rename columns
+    dplyr::select(day, doy, start, end, dur, amp, slope) %>%
     stats::setNames(col_names)
 
   return(param)
