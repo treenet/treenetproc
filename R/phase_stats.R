@@ -133,7 +133,50 @@ phase_stats <- function(dendro_L2, phase_wnd = 8, plot_phase = FALSE,
                               phase_wnd = phase_wnd, tz = tz)
 
     shrink_exp <- dplyr::full_join(shrink, exp, by = c("day", "doy")) %>%
-      dplyr::mutate(series = series_vec[s]) %>%
+      # classify days as transpir (1) or inverted (-1)
+      dplyr::mutate(shrink_start_day =
+                      as.POSIXct(substr(shrink_start, 1, 10), tz = tz)) %>%
+      dplyr::mutate(exp_start_day =
+                      as.POSIXct(substr(exp_start, 1, 10), tz = tz)) %>%
+      dplyr::mutate(day_shrink = dplyr::if_else(shrink_start_day == day, 1, 0,
+                                                missing = 0)) %>%
+      dplyr::mutate(day_exp = dplyr::if_else(exp_start_day == day, -1, 0,
+                                             missing = 0)) %>%
+      dplyr::group_by(day) %>%
+      dplyr::mutate(phase_class = sum(max(day_shrink), min(day_exp))) %>%
+      dplyr::mutate(phase_class = ifelse(phase_class == 1 & shrink_dur > 720,
+                                         0, phase_class)) %>%
+      dplyr::mutate(phase_class = ifelse(phase_class == -1 & exp_dur > 720,
+                                         0, phase_class)) %>%
+      dplyr::mutate(phase_class = ifelse(phase_class == 0,
+                                         NA, phase_class)) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(-shrink_start_day, -exp_start_day, -day_shrink,
+                    -day_exp) %>%
+      # set phases with 0 slopes to NA (almost straight lines),
+      # classified in calcshrinkexpparam
+      dplyr::mutate(shrink_slope = ifelse(shrink_slope == 0,
+                                          NA, shrink_slope)) %>%
+      dplyr::mutate_at(.vars = grep("shrink", colnames(.)),
+                       .funs = list(~ replace(., is.na(shrink_slope), NA))) %>%
+      dplyr::mutate(exp_slope = ifelse(exp_slope == 0, NA, exp_slope)) %>%
+      dplyr::mutate_at(.vars = grep("exp", colnames(.)),
+                       .funs = list(~ replace(., is.na(exp_slope), NA))) %>%
+      # set phases with 0 duration to NA (too short durations)
+      # classified in calcshrinkexpparam
+      dplyr::mutate(shrink_dur = ifelse(shrink_dur == 0, NA, shrink_dur)) %>%
+      dplyr::mutate_at(.vars = grep("shrink", colnames(.)),
+                       .funs = list(~ replace(., is.na(shrink_dur), NA))) %>%
+      dplyr::mutate(exp_dur = ifelse(exp_dur == 0, NA, exp_dur)) %>%
+      dplyr::mutate_at(.vars = grep("exp", colnames(.)),
+                       .funs = list(~ replace(., is.na(exp_dur), NA))) %>%
+      # remove phase_class for removed phases
+      dplyr::mutate(
+        phase_class = ifelse(is.na(shrink_start) & phase_class == 1,
+                             NA, phase_class)) %>%
+      dplyr::mutate(
+        phase_class = ifelse(is.na(exp_start) & phase_class == -1,
+                             NA, phase_class)) %>%
       # overwrite duplicated shrinkage or expansion phases with NA
       dplyr::mutate(shrink_start =
                       replace(shrink_start, duplicated(shrink_start), NA)) %>%
@@ -154,25 +197,8 @@ phase_stats <- function(dendro_L2, phase_wnd = 8, plot_phase = FALSE,
                                         rep(NA, sum(is.na(exp_start)))))) %>%
       dplyr::ungroup() %>%
       dplyr::filter(!(is.na(shrink_start) & is.na(exp_start))) %>%
-      # classify days as transpir (1) or inverted (-1)
-      dplyr::mutate(shrink_start_day =
-                      as.POSIXct(substr(shrink_start, 1, 10), tz = tz)) %>%
-      dplyr::mutate(exp_start_day =
-                      as.POSIXct(substr(exp_start, 1, 10), tz = tz)) %>%
-      dplyr::mutate(day_shrink = dplyr::if_else(shrink_start_day == day, 1, 0,
-                                                missing = 0)) %>%
-      dplyr::mutate(day_exp = dplyr::if_else(exp_start_day == day, -1, 0,
-                                             missing = 0)) %>%
-      dplyr::group_by(day) %>%
-      dplyr::mutate(phase_class = sum(max(day_shrink), min(day_exp))) %>%
-      dplyr::mutate(phase_class = ifelse(phase_class == 1 & shrink_dur > 720,
-                                         0, phase_class)) %>%
-      dplyr::mutate(phase_class = ifelse(phase_class == -1 & exp_dur > 720,
-                                         0, phase_class)) %>%
-      dplyr::mutate(phase_class = ifelse(phase_class == 0,
-                                         NA, phase_class)) %>%
-      dplyr::ungroup() %>%
       dplyr::arrange(day) %>%
+      dplyr::mutate(series = series_vec[s]) %>%
       dplyr::select(series, day, doy, shrink_start, shrink_end, shrink_dur,
                     shrink_amp, shrink_slope, exp_start, exp_end, exp_dur,
                     exp_amp, exp_slope, phase_class)

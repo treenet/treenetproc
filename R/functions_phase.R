@@ -168,10 +168,10 @@ calcshrinkexpparam <- function(df, maxmin, mode, phase_wnd, tz) {
     } else {
       slope > 0
     }) %>%
-    # remove phases with slopes that are almost straight lines
-    dplyr::filter(abs(slope) > min_slope) %>%
-    # remove phases with a short duration only
-    dplyr::filter(dur >= phase_wnd * 0.5 * 60) %>%
+    # overwrite slopes with zero that are almost straight lines
+    dplyr::mutate(slope = ifelse(abs(slope) < min_slope, 0, slope)) %>%
+    # overwrite short durations with zero
+    dplyr::mutate(dur = ifelse(dur <= phase_wnd * 0.5 * 60, 0, dur)) %>%
     dplyr::mutate(day = as.POSIXct(substr(end, 1, 10), tz = tz)) %>%
     dplyr::mutate(doy = as.numeric(strftime(day, format = "%j",
                                             tz = tz))) %>%
