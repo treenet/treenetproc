@@ -84,7 +84,7 @@ process many times has an effect on the results.}
 \value{
 The function returns a \code{data.frame} with processed dendrometer
   data containing the following columns:
-   \item{series}{name of the series.}
+   \item{series}{name of the dendrometer series.}
    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
    \item{value}{dendrometer value.}
    \item{max}{highest measured value up to this timestamp.}

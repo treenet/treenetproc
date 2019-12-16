@@ -4,9 +4,11 @@
 \alias{plot_phase}
 \title{Plot Phases}
 \usage{
-plot_phase(phase, plot_export)
+plot_phase(df, phase, plot_export)
 }
 \arguments{
+\item{df}{input \code{data.frame}.}
+
 \item{phase}{\code{data.frame} containing statistics on the shrinkage
 phase and expansion phase.}
 }

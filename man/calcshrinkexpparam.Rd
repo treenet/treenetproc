@@ -4,7 +4,7 @@
 \alias{calcshrinkexpparam}
 \title{Calculate Phase Parameters}
 \usage{
-calcshrinkexpparam(df, maxmin, mode)
+calcshrinkexpparam(df, maxmin, mode, phase_wnd, tz)
 }
 \arguments{
 \item{df}{\code{data.frame} with dendrometer data}
@@ -15,6 +15,12 @@ and grouping variables for shrinkage and expansion phases.}
 \item{mode}{character, specify whether statistics for shrinkage
 (\code{mode = "shrink"}) or expansion \code{mode = "exp"} are
 calculated.}
+
+\item{phase_wnd}{numeric, specify the window length (in hours) used to
+identify local maxima and minima. A shorter window length leads to the
+identification of more local maxima and minima.}
+
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{calcshrinkexpparam} calculates parameters for phases of shrinkage and
