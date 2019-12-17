@@ -51,5 +51,6 @@ The following variables are returned by \code{grow_seas}:
   value reaches \code{100 - tol_seas}.
 }
 \examples{
+grow_seas(dendro_L2 = dendro_data_L2)
 
 }
