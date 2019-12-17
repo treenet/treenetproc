@@ -64,40 +64,72 @@ grow_seas <- function(dendro_L2, tol_seas = 0.05, agg_yearly = TRUE,
       dplyr::select(-gro_end)
   }
 
-  gro_season <- df %>%
-    dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
-    dplyr::group_by(year) %>%
-    dplyr::mutate(gro_tot = sum(gro_yr, na.rm = T)) %>%
-    dplyr::mutate(gro_start_tol = tol_seas * gro_tot) %>%
-    dplyr::mutate(gro_end_tol = (1 - tol_seas) * gro_tot) %>%
-    dplyr::mutate(gro_sum = cumsum(ifelse(is.na(gro_yr), 0, gro_yr))) %>%
-    dplyr::mutate(
-      gro_start_ind = dplyr::first(which(gro_sum >= gro_start_tol))) %>%
-    dplyr::mutate(
-      gro_start = as.numeric(strftime(ts[gro_start_ind], format = "%j"))) %>%
-    dplyr::mutate(
-      gro_end_ind = dplyr::last(which(gro_sum <= gro_end_tol))) %>%
-    dplyr::mutate(
-      gro_end = as.numeric(strftime(ts[gro_end_ind], format = "%j"))) %>%
-    dplyr::summarise(ts = ts[1],
-                     gro_start = gro_start[1],
-                     gro_end = gro_end[1]) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(year != is.na(year)) %>%
-    # remove first year (since results depend on values of previous year)
-    dplyr::slice(-1) %>%
-    dplyr::select(ts, gro_start, gro_end)
+  series_vec <- unique(df$series)
+  list_seas <- vector("list", length = length(series_vec))
+  df_seas <- df
+  for (s in 1:length(series_vec)) {
+    df <- df_seas %>%
+      dplyr::filter(series == series_vec[s])
 
-  df <- df %>%
-    dplyr::left_join(., gro_season, by = "ts")
+    if (difftime(dplyr::last(df$ts), df$ts[1], tz = tz, units = "days") <
+        700) {
+      message(paste0("The series '", series_vec[s], "' is too short to ",
+                     "calculate the start and end of growth. At least two ",
+                     "years of data are required."))
+      next
+    }
 
-  if (agg_yearly) {
-    df <- df %>%
-      dplyr::select(series, ts, gro_start, gro_end) %>%
-      dplyr::filter(!is.na(gro_start) | !(is.na(gro_end))) %>%
-      dplyr::mutate(year = as.numeric(substr(ts, 1, 4))) %>%
-      dplyr::arrange(series, year) %>%
-      dplyr::select(series, year, gro_start, gro_end)
+    grow_seas <- df %>%
+      dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
+      dplyr::group_by(year) %>%
+      dplyr::mutate(gro_tot = sum(gro_yr, na.rm = T)) %>%
+      dplyr::mutate(gro_start_tol = tol_seas * gro_tot) %>%
+      dplyr::mutate(gro_end_tol = (1 - tol_seas) * gro_tot) %>%
+      dplyr::mutate(gro_sum = cumsum(ifelse(is.na(gro_yr), 0, gro_yr))) %>%
+      dplyr::mutate(
+        gro_start_ind = dplyr::first(which(gro_sum >= gro_start_tol))) %>%
+      dplyr::mutate(
+        gro_start = as.numeric(strftime(ts[gro_start_ind], format = "%j"))) %>%
+      dplyr::mutate(
+        gro_end_ind = dplyr::last(which(gro_sum <= gro_end_tol))) %>%
+      dplyr::mutate(
+        gro_end = as.numeric(strftime(ts[gro_end_ind], format = "%j"))) %>%
+      dplyr::summarise(ts = ts[1],
+                       gro_start = gro_start[1],
+                       gro_end = gro_end[1]) %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(year != is.na(year)) %>%
+      # remove first year (since results depend on values of previous year)
+      dplyr::slice(-1) %>%
+      dplyr::mutate(series = series_vec[s]) %>%
+      dplyr::select(series, ts, gro_start, gro_end)
+
+    if (agg_yearly) {
+      grow_seas <- grow_seas %>%
+        dplyr::mutate(year = as.numeric(substr(ts, 1, 4))) %>%
+        dplyr::arrange(series, year) %>%
+        dplyr::select(series, year, gro_start, gro_end)
+    }
+
+    list_seas[[s]] <- grow_seas
+  }
+
+  df <- dplyr::bind_rows(list_seas)
+
+  if (!agg_yearly) {
+    if (length(df) == 0) {
+      df <- df_seas %>%
+        dplyr::mutate(gro_start = NA) %>%
+        dplyr::mutate(gro_end = NA)
+
+      return(df)
+    }
+    df <- dplyr::full_join(df_seas, df, by = c("series", "ts")) %>%
+      dplyr::arrange(series, ts)
+  }
+
+  if (length(df) == 0) {
+    stop("All series were too short to calculate growth start and end")
   }
 
   return(df)
