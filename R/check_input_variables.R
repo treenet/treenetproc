@@ -377,10 +377,10 @@ check_date_period <- function(datevec, datevec_name, df) {
 #'
 check_package <- function(pck_name) {
 
-      if (!requireNamespace(pck_name, quietly = TRUE)) {
-      stop(paste0("Package '", pck_name, "' is needed for this function to ",
-                  "work. Please install it."), call. = FALSE)
-    }
+  if (!requireNamespace(pck_name, quietly = TRUE)) {
+    stop(paste0("Package '", pck_name, "' is needed for this function to ",
+                "work. Please install it."), call. = FALSE)
+  }
 }
 
 
