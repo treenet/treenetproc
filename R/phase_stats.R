@@ -49,9 +49,21 @@
 #'   and are not only bound to the start or the end of the respective time
 #'   windows.
 #'
+#'   The often reported parameter maximum daily shrinkage (`mds`) can be
+#'   extracted from the output parameters. `mds` is equal to `shrink_amp` in
+#'   case `shrink_dur < 1440` (i.e. the shrinkage is shorter than 24 hours).
+#'   Example code on how to extract `mds` can be found in the vignette
+#'   \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}.
+#'
 #' @export
 #'
 #' @examples
+#' # Subset dataset for example
+#' library(dplyr)
+#' data_L2 <- dendro_data_L2 %>%
+#'    filter(series == "site-1_dendro-2")
+#'
+#' phase_stats(dendro_L2 = data_L2, plot_phase = TRUE, plot_export = FALSE)
 #'
 phase_stats <- function(dendro_L2, phase_wnd = 8, plot_phase = FALSE,
                         plot_export = TRUE, agg_daily = TRUE, tz = "UTC") {
