@@ -39,6 +39,7 @@
 #'   first timestamp of the year, all other values are set to \code{NA}.
 #'
 #' @examples
+#' grow_seas(dendro_L2 = dendro_data_L2)
 #'
 grow_seas <- function(dendro_L2, tol_seas = 0.05, agg_yearly = TRUE,
                       tz = "UTC") {
