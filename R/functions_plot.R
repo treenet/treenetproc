@@ -185,7 +185,7 @@ plot_gro_yr_print_vars <- function(data_plot, print_vars, tz) {
                                    "tz = ", passobj("tz_plot")))
     # print applied thresholds and values
     graphics::text(x = 0.3, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
-                   labels = "applied thresholds and values")
+                   labels = "applied thresholds")
     graphics::text(x = 0.3, y = 0.97, adj = c(0, 1), cex = 0.8,
                    labels = paste0("tol_jump = ",
                                    passobj("thr_jump_plot")[1], " / ",
@@ -202,11 +202,7 @@ plot_gro_yr_print_vars <- function(data_plot, print_vars, tz) {
                                    passobj("thr_out_plot")[1] *
                                      passobj("frost_thr_plot"), " / ",
                                    passobj("thr_out_plot")[2] *
-                                     passobj("frost_thr_plot"), "\n",
-                                   "interpol = ",
-                                   passobj("interpol_plot"), " min\n",
-                                   "frag_len = ",
-                                   passobj("frag_len_plot"), "\n"))
+                                     passobj("frost_thr_plot"), "\n"))
     # print amount of missing, deleted and interpolated data
     list_missing <- calcmissing(data_plot = data_plot)
     graphics::text(x = 0.8, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
