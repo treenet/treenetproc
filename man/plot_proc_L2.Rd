@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_proc_L2.R
 \name{plot_proc_L2}
 \alias{plot_proc_L2}
-\title{Plot Cleaned Dendrometer Data}
+\title{Plot Changes Between Time-aligned and Cleaned Dendrometer Data}
 \usage{
 plot_proc_L2(
   dendro_L1,

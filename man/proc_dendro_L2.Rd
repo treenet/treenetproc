@@ -2,7 +2,7 @@
 % Please edit documentation in R/proc_dendro_L2.R
 \name{proc_dendro_L2}
 \alias{proc_dendro_L2}
-\title{Clean Time-aligned (L1) Dendrometer Data}
+\title{Clean Time-aligned Dendrometer Data}
 \usage{
 proc_dendro_L2(
   dendro_L1,
