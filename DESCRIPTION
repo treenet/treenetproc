@@ -1,7 +1,7 @@
 Package: treenetproc
 Type: Package
 Title: Clean, Process and Visualize Dendrometer Data
-Version: 0.1.3.9008
+Version: 0.1.3.9009
 Date: 2019-06-17
 Authors@R: c(person("Simon", "Knüsel", email = "simon.knuesel@wsl.ch",
     role = c("aut")),
