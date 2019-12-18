@@ -1,8 +1,9 @@
 #' Manually Correct Time-Aligned Dendrometer Data
 #'
-#' \code{corr_dendro_L1} deletes values in periods with erroneous data of
-#'   time-aligned (\code{L1}) dendrometer or climate data. Values are
-#'   overwritten with \code{NA} without further notice.
+#' \code{corr_dendro_L1} deletes periods of erroneous dendrometer or
+#'   temperature data. The function takes time-aligned (\code{L1})
+#'   dendrometer or temperature data as input. Values are overwritten
+#'   with \code{NA} without further notice.
 #'
 #' @param plot logical, plots the corrected dataset with the original data
 #'   in the background in grey.
