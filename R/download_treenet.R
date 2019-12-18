@@ -12,7 +12,7 @@
 #'
 #' @return If \code{export = TRUE} each sensor is saved as an
 #'   \code{.RData}-file to the current working directory. Else,
-#'   \code{export = FALSE} data will be retured to the console either as a
+#'   \code{export = FALSE} data will be returned to the console either as a
 #'   \code{data.frame} (\code{bind_df = TRUE}), or as a \code{list} with each
 #'   sensor as a list element (\code{bind_df = FALSE}).
 #'
