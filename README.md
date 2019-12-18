@@ -9,8 +9,8 @@
 
 The package `treenetproc` cleans raw dendrometer data. The cleaning
 process aligns measurements at regular time intervals and removes jumps
-and outliers. All changes are flagged can be visually examined in the
-graphical outputs.
+and outliers. All changes are flagged and can be visually examined in
+the graphical outputs.
 
 ## Installation
 
@@ -70,14 +70,4 @@ citation("treenetproc")
 #>     year = {2019},
 #>     url = {https://github.com/treenet/treenetproc},
 #>   }
-```
-
-Consider citing all required packages as well. The package
-[`grateful`](https://github.com/Pakillo/grateful) is a helpful resource
-for this.
-
-``` r
-# install.packages("devtools")
-library(devtools)
-devtools::install_github("Pakillo/grateful")
 ```
