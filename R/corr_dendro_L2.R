@@ -1,8 +1,9 @@
 #' Manually Correct Processed Dendrometer Data
 #'
-#' \code{corr_dendro_L2} corrects errors in processed \code{L2} dendrometer
-#'   data that are easier to correct by hand than by changing parameter values
-#'   in \code{\link{proc_dendro_L2}}.
+#' \code{corr_dendro_L2} corrects remaining errors in cleaned \code{L2}
+#'   dendrometer data. Can be used for errors that are introduced during
+#'   data cleaning or that cannot be corrected by changing input parameter
+#'   values in \code{\link{proc_dendro_L2}}.
 #'
 #' @param dendro_L1 time-aligned dendrometer data as produced by
 #'   \code{\link{proc_L1}}. Optional, only needed for \code{reverse} and if
@@ -12,7 +13,7 @@
 #'   \code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers
 #'   are only reported if \code{plot_period = "monthly"}).
 #' @param force character vector, specify the dates after which jumps
-#'   should occur. The largest value difference occurring in a
+#'   should be corrected. The largest value difference occurring in a
 #'   period of \code{n_days} after the specified dates in \code{force} is
 #'   corrected. Dates need to be in a standard date or
 #'   datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).
@@ -26,7 +27,7 @@
 #' @param plot logical, specify whether changes between \code{L2} and
 #'   \code{L3} should be plotted.
 #' @param n_days numeric, length of the period (in days) following the dates
-#'   specified in \code{force} in which a jump is looked for. Increase if
+#'   specified in \code{force} in which a jump is corrected. Increase if
 #'   the gap in data is longer than the default (\code{n_days = 5}).
 #' @inheritParams proc_dendro_L2
 #' @inheritParams plot_proc_L2
