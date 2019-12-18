@@ -5,7 +5,7 @@ output:
     toc: true
     toc_float: true
     toc_depth: 2
-    number_sections: true
+    number_sections: false
     theme: paper
 vignette: >
   %\VignetteIndexEntry{Introduction to treenetproc}
@@ -58,19 +58,27 @@ library(dplyr)
 
 The package `treenetproc` cleans dendrometer data by removing outliers and 
 jumps in the data. The data is first aligned to regular time intervals 
-(level 1: `L1`) and then cleaned (level 2: `L2`).
+(level 1: `L1`) and then cleaned (level 2: `L2`). This vignette demonstrates
+the workflow of the package with sample code. For more information on the 
+functionality of the package, the user is referred to Knüsel et al. (2020, in
+prep).
 <br><br>
 
 
-# Format input data
-The raw dendrometer or climate data has to contain a timestamp column named
-`ts`. The timestamp can be in any standard date format (default is 
-`date_format = "%Y-%m-%d %H:%M:%S"`).
+# Data input
+Raw dendrometer and temperature data can be provided as input. Providing
+temperature data is optional. However, temperature data increases the quality
+of the cleaning process (cf. Step 2: Providing temperature data).
 
-Raw dendrometer or climate data can be provided in long format with 
-dendrometer names specified in a column named `series` (Table 1). 
-Alternatively the data can be provided in wide format with data series in 
-different columns (Table 2).
+The raw dendrometer or climate data can be provided in long (Table 1) or wide
+format (Table 2). In both cases the data has to contain a timestamp column
+named `ts`. The timestamp can be in any standard date format (default is 
+`date_format = "%Y-%m-%d %H:%M:%S"`). Data of multiple sensors can either be
+specified in a column named `series` to separate the sensors (long format, 
+Table 1) or as separate columns (wide format, Table 2). Dendrometer and 
+temperature data can also be provided in the same `data.frame`. In this case,
+the name of the temperature data series has to contain the string '`temp`' 
+(cf. Table 2).
 <br><br>
 
 ```{r Table 1 - head of dendro_data_L0, echo = FALSE, results = "asis"}
@@ -86,44 +94,46 @@ data("dendro_data_L0_wide")
 knitr::kable(dendro_data_L0_wide[1:5, ], caption = "**Table 2**: Raw 
              dendrometer and temperature data in `wide` format.")
 ```
-<br>
+<br><br>
 
 
-# Time-alignment (L1)
+# Step 1: Time-alignment (L1)
 After converting the data to the correct format (`long` or `wide`), it has 
 to be time-aligned to regular time intervals with the function `proc_L1`. 
 The resulting time resolution can be specified with the argument `reso` (in
-minutes).  
-How the time alignment works is documented in 
-([Functionality of treenetproc](Functionality-of-treenetproc.html), this 
-vignette is under development and not yet available).
+minutes). Temperature data can be time-aligned in the same way as dendrometer
+data. In case data is provided in `wide` format, this has to be specified
+with the argument `input = "wide"`.
 
 ```{r prepare data for proc_L1, echo = FALSE}
 # reduce size of dendro_data_L0 to make computing of proc_L1 faster
 data("dendro_data_L0")
-dendro_data_L0 <- dendro_data_L0[1:100, ]
+dendro_data_L0 <- dendro_data_L0[1:50, ]
+data("dendro_data_L0_wide")
+dendro_data_L0_wide <- dendro_data_L0_wide[1:50, ]
 ```
 
 ```{r examples of proc_L1, results = "hide"}
 # Data in long format (cf. Table 1)
-proc_L1(data_L0 = dendro_data_L0, reso = 10, input = "long")
+proc_L1(data_L0 = dendro_data_L0, reso = 10)
 
 # Data in wide format (cf. Table 2)
 proc_L1(data_L0 = dendro_data_L0_wide, reso = 10, input = "wide")
 ```
-<br>
+<br><br>
 
 
-# Data cleaning and processing (L2)
+# Step 2: Data cleaning (L2)
 Time-aligned dendrometer data can be cleaned with the function 
-`proc_dendro_L2`.
+`proc_dendro_L2`. Time-aligned temperature data can optionally be provided 
+along with dendrometer data to `temp_L1`.
 
 ```{r prepare for proc_dendro_L2, echo = FALSE}
 # reduce size of dendro_data_L1 to make computing of proc_dendro_L2 faster
 data("dendro_data_L1")
 dendro_data_L1 <- dendro_data_L1 %>% 
   filter(series == "site-1_dendro-1") %>% 
-  filter(ts <= "2013-06-01")
+  filter(ts <= "2013-05-02")
 ```
 
 ```{r process to L2, results = "hide", message = FALSE, warning = FALSE}
@@ -133,7 +143,7 @@ proc_dendro_L2(dendro_L1 = dendro_data_L1, temp_L1 = temp_data_L1,
 ```
 <br>
 
-## Output data
+### Output data
 The function returns a `data.frame` containing the cleaned dendrometer data
 (Table 3).
 
@@ -145,21 +155,15 @@ knitr::kable(dendro_data_L2[1:5, ], caption = "**Table 3**: Processed
 
 The output `data.frame` contains the following columns:
 
-* **series**: name of the series
+* **series**: name of the dendrometer series
 * **ts**: timestamp with format `%Y-%m-%d %H:%M:%S`
 * **value**: dendrometer value
 * **max**: highest measured dendrometer `value` up to this timestamp
 * **twd**: tree water deficit, i.e. the amount of stem shrinkage
   expressed as the difference between `max` and `value` (calculated according
   to Zweifel et al. 2016)
-* **mds**: maximum daily shrinkage (see Details section in the help file of
-  `proc_dendro_L2()` for more information)
 * **gro_yr**: growth since the beginning of the year (calculated according to
   Zweifel et al. 2016)
-* **gro_start**: day of year at which growth starts. `gro_start` is defined
-  as the day of year at which 5% of total yearly growth is surpassed
-* **gro_end**: day of year at which growth stops. `gro_end` is defined as 
-  the day of year at which 95% of total yearly growth is reached
 * **frost**: indicates periods of probable frost (i.e. periods where the 
   temperature < `lowtemp`)
 * **flags**: documentation of all changes that occurred during data cleaning, 
@@ -178,15 +182,17 @@ of the cleaning process the changes occurred:
   interpolated can be specified with the argument `interpol`)
 <br><br>
 
-## Output plots
-By default all changes are plotted (`plot = TRUE`) and saved to a PDF file
-in the current working directory (`plot_export = TRUE`). 
+
+## Evaluation of data cleaning
+The visual checking of the results remains an essential step in dendrometer 
+data cleaning. By default all changes are plotted (`plot = TRUE`) and saved to
+a PDF file in the current working directory (`plot_export = TRUE`). 
 
 ```{r process to L2 first_plot, fig.asp = 0.9, fig.retina = 2, fig.keep = "first", results = "hide", message = FALSE, warning = FALSE}
 # Load dataset
 data("dendro_data_L1")
 
-# Subset dataset for example
+# Subset dendrometer dataset for example
 dendro_L1 <- dendro_data_L1 %>% 
   filter(series == "site-1_dendro-1") %>% 
   filter(ts < "2014-12-31")
@@ -218,8 +224,8 @@ As a summary for each dendrometer series, an additional plot shows the yearly
 growth curves aligned by the day of year. The first year is shown as a grey
 line since growth starts as soon as the measurements start and does not 
 necessarily represent sensible values.  
-Beneath the plot all input values as well as the package version used for data 
-cleaning are printed.
+Beneath the plot all input values, some growth statistics as well as the 
+package version used for data cleaning are printed.
 
 
 ```{r process to L2 last_plot, fig.asp = 1.4, fig.retina = 2, fig.keep = "last", echo = FALSE, results = "hide", message = FALSE}
@@ -228,28 +234,28 @@ proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1,
 ```
 
 
-# Adjust data cleaning
+## Adjustments to data cleaning parameters
 
-## Rigidity of data cleaning
+### Rigidity of data cleaning
 The rigidity of the data cleaning can be adjusted with the variables
 `tol_out` and `tol_jump`. Both variables control the thresholds used for
 the classification of outliers and jumps.
 
-An increase of the variable `tol_out` makes sense if values are deleted 
-(i.e. classified as outliers) that are not outliers. A  decrease, in contrast,
-is appropriate if outliers are not detected as such.
-Similarly, an increase of the value of `tol_jump` makes sense if a dendrometer
+An increase in the value of the variable `tol_out` makes sense if values are
+deleted (i.e. classified as outliers) that are not outliers. A  decrease, in
+contrast, is appropriate if outliers are not detected as such.
+Similarly, an increase in the value of `tol_jump` makes sense if a dendrometer
 series is flattened during processing (see example below). A decrease, in
 contrast, is appropriate if obvious jumps are not corrected.
 <br>
 
 
-### Example of too rigid data cleaning
-```{r shrinking example code, fig.asp = 0.9, fig.show="hide", results="hide", message = FALSE, warning = FALSE}
+#### Example of too rigid data cleaning
+```{r shrinking example code, fig.asp=0.9, fig.show="hide", message=FALSE, warning=FALSE, results="hide"}
 # Load dataset
 data("dendro_data_L1")
 
-# Subset dataset for example
+# Subset dendrometer dataset for example
 dendro_L1 <- dendro_data_L1 %>% 
   filter(series == "site-1_dendro-2")
 
@@ -259,10 +265,6 @@ proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1,
 ```
 
 ```{r shrinking example plot, fig.asp = 0.5, fig.retina = 2, out.width = "70%", echo=FALSE}
-data("dendro_data_L1")
-dendro_L1 <- dendro_data_L1 %>% 
-  filter(series == "site-1_dendro-2")
-
 data_shrink_L2 <- proc_dendro_L2(dendro_L1 = dendro_L1, 
                                  temp_L1 = temp_data_L1, 
                                  tol_jump = 1, tol_out = 10, plot = FALSE)
@@ -284,12 +286,11 @@ proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1,
                tol_jump = 50, tol_out = 10, plot_export = FALSE)
 ```
 
-```{r shrinking example higher tol code #2, fig.asp = 0.9, fig.show="hide", echo=FALSE, results = "hide", message = FALSE, warning = FALSE}
-dendro_L2 <- proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1, 
-                          tol_jump = 50, tol_out = 10, plot_export = FALSE)
-```
-
 ```{r shrinking example higher tol plot, fig.asp = 0.5, fig.retina=2, out.width = "70%", echo=FALSE}
+data("dendro_data_L2")
+dendro_L2 <- dendro_data_L2 %>% 
+  filter(series == "site-1_dendro-2")
+
 par(mar = c(2.1, 4, 1, 2))
 plot(data = dendro_L2, value ~ ts, type = "n", ylab = "L2", 
      las = 1)
@@ -299,21 +300,20 @@ lines(data = dendro_L2, value ~ ts, col = "#08519c")
 <br><br>
 
 
-## Benefit of temperature data
-Including temperature data measured on site ensures that frost events are 
-not treated as outliers during data cleaning. Frost is assumed as soon as
-the temperature drops below the value specified in `lowtemp`. Temperature 
-data  can either be provided along with the dendrometer data (series name 
-has to  contain `temp`), or it can be provided separately to the argument
-`temp_data` in `proc_dendro_L2()`.
+### Providing temperature data
+Providing temperature data along with dendrometer data ensures that frost 
+events are not treated as outliers during data cleaning. In periods of probable
+frost (i.e. when the temperature < `lowtemp`) the threshold for outlier 
+detection is multiplied by `frost_thr`.
 
-In periods of probable frost (temperature < `lowtemp`) the threshold for 
-outlier detection is multiplied by `frost_thr`.
-<br>
+Temperature data can either be provided along with the dendrometer data 
+(series name has to  contain the string `temp`), or it can be provided 
+separately to the argument `temp_L1` in the function `proc_dendro_L2()`.
+<br><br>
 
 
-### Example without temperature data
-If no tempearture data is provided, a sample temperature dataset is used.
+#### Example without temperature data
+If no temperature data is provided, a sample temperature dataset is used.
 The sample temperature dataset assumes frost in the months December,
 January and February; i.e. the temperature is set to 0°C in Dec-Feb and to 
 10°C in all other months.
@@ -344,25 +344,20 @@ lines(data = dendro_L2, value ~ ts, col = "#08519c")
 The sample temperature dataset does not assume frost after the end of 
 February, therefore many values during the frost shrinkage are classified as
 outliers and deleted.
-<br>
+<br><br>
 
 
-### Example with temperature data
+#### Example with temperature data
 ```{r frost with temp data_1, fig.asp = 0.9, fig.show="hide", results="hide", message=FALSE, warning=FALSE}
-# Load temperature data
-data("temp_data_L0")
-
-# Time-align temperature data
-temp_L1 <- proc_L1(data_L0 = temp_data_L0)
+# Load time-aligned temperature data
+data("temp_data_L1")
 
 # Clean dendrometer data (with temperature data)
-proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_L1, 
+proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1, 
                plot_export = FALSE)
 ```
 
 ```{r frost with temp data_2, fig.asp = 0.5, fig.retina = 2, out.width = "70%", echo=FALSE, results="hide", warning=FALSE, message=FALSE}
-# Load dataset
-data("temp_data_L1")
 dendro_L2 <- proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1, 
                           plot = FALSE)
 
@@ -377,18 +372,16 @@ data_L2_frost <- dendro_L2 %>%
 plot_frost_period(df = data_L2_frost)
 ```
 
-Including the temperature dataset reveals that the temperatures were indeed
-lower than `lowtemp` during the frost shrinkage. Periods of probable frost 
-(i.e. temperature < `lowtemp`) are indicated with a horizontal line in the 
-plot.
+Including the temperature dataset increases the thresholds for jump and outlier
+detection in periods of probable frost (i.e. temperature < `lowtemp`), which 
+are indicated with a horizontal light-blue line in the plot.
 
-The increase of the thresholds for outlier detection in periods of probable
-frost prevented the classification of the values during the frost shrinkage as
-outliers.
+The increase of the thresholds for outlier detection prevented the 
+classification of the values during the frost shrinkage as outliers.
 <br><br>
 
 
-# Manual corrections (L3)
+## Manual corrections
 If not all errors in data cleaning can be removed by adjusting the default 
 values of `tol_jump` and/or `tol_out`, remaining errors can be removed using
 the function `corr_dendro_L2()`. There are three possibilities to reverse 
@@ -398,13 +391,13 @@ wrong changes:
   Remaining changes are renumbered starting at 1.
 * **force**: force a jump in the data that was not corrected for by 
   specifying a point in time prior (but close to) where the jump should occur.
-* **delete**: delete an entire region of erroneous data by specifying a
+* **delete**: delete an entire period of erroneous data by specifying a
   date range. This can also be done for `L1` data with the function 
   `corr_dendro_L1()`.
 <br>
 
 
-## Example of manual corrections
+#### Example of manual corrections
 ```{r corr_dendro_L2 example_1, fig.asp = 0.9, fig.keep = "first",  fig.retina=2, results="hide", message=FALSE, warning=FALSE}
 # Load dataset
 data("dendro_data_L1")
@@ -426,7 +419,7 @@ The following errors remained after data cleaning:
 3. Not all erroneous data is removed at the beginning (August 1-4)
 <br>
 
-Correct the above-described errors:
+Correction of the above-described errors:
 
 
 ```{r corr_dendro_L2 example_3, fig.asp = 0.9, fig.keep = "first", fig.retina=2, results="hide", message=FALSE, warning=FALSE}
@@ -438,11 +431,9 @@ corr_dendro_L2(dendro_L1 = dendro_L1, dendro_L2 = dendro_L2,
                series = "site-1_dendro-3", plot_export = FALSE)
 ```
 
-All three errors have been corrected successfully. In addition, the 
-remaining corrections were renumbered, starting at 1.
-
-The corrections are also reflected in the returned `data.frame` and all 
-changes are added to the column `flags` as:
+All three errors have been corrected successfully. The corrections are also
+reflected in the returned `data.frame` and all changes are added to the column
+`flags` as:
 
 * `"rev"`: for reversed corrections with the argument `reverse`
 * `"fjump"`: for forced jumps with the argument `force`
@@ -450,9 +441,107 @@ changes are added to the column `flags` as:
 <br><br>
 
 
+# Step 3: Data aggregation (optional)
+After data cleaning and the removal of remaining errors, additional functions
+can be used to calculate the start and end of the growing season as well as
+several characteristics of shrinkage and expansion phases.
+<br>
+
+
+### Growing season
+The start and end of the growing season can be calculated with the function 
+`grow_seas`. 
+
+```{r example grow_seas, results = "hide", message = FALSE, warning = FALSE}
+# Load dataset
+data("dendro_data_L2")
+
+# Subset dataset for example
+dendro_L2 <- dendro_data_L2 %>% 
+  filter(series == "site-1_dendro-1")
+
+# Calculate growing season start and end
+grow_seas(dendro_L2 = dendro_L2)
+```
+
+The function returns a `data.frame` containing the day of year (`doy`) of the 
+start and end of the growing season (Table 4). Values are 
+returned starting from the second year only, since `gro_start` and `gro_end` 
+depend on the values from the previous year.
+
+```{r Table 4, echo = FALSE, message=FALSE, warning=FALSE}
+# calculate grow_seas
+grow_seas <- grow_seas(dendro_L2 = dendro_L2)
+knitr::kable(grow_seas, caption = "**Table 4**: Growth start and 
+             end.")
+```
+<br><br>
+
+
+### Phase statistics
+Several characteristics of shrinkage and expansion phases can be calculated
+with the function `phase_stats`. 
+
+```{r example phase_stats, fig.show = "hide", results = "hide", message = FALSE, warning = FALSE}
+# Load dataset
+data("dendro_data_L2")
+
+# Subset dataset for example
+dendro_L2 <- dendro_data_L2 %>% 
+  filter(series == "site-1_dendro-2")
+
+# Calculate phase statistics
+phase_stats(dendro_L2 = dendro_L2, plot_phase = TRUE, plot_export = FALSE)
+```
+
+The function returns a `data.frame` containing the timing, duration, amplitude
+and slope of the shrinkage (`shrink`) and expansion (`exp`) phases (Table 5). 
+In addition, the parameter `phase_class` identifies days on which radial change
+is likely  driven by transpiration (`phase_class = 1`) or temperature 
+(`phase_class = -1`).
+
+```{r Table 5, echo = FALSE, message=FALSE, warning=FALSE}
+# calculate phase_stats
+phase_stats <- phase_stats(dendro_L2 = dendro_L2)
+knitr::kable(phase_stats[1:5, ], caption = "**Table 5**: Characteristics of 
+             shrinkage (`shrink`) and expansion (`exp`) phases.")
+```
+<br>
+
+To evaluate the identification of shrinkage and expansion phases, all phases 
+can be plotted by setting `plot_phase = TRUE`. The plot shows the 
+maximum (filled circle) and minimum (filled triangle) of the respective phase
+and reports its statistics. Empty circles and triangles show maxima or minima
+of previous or subsequent phases.
+
+```{r phase_stats figure, echo = FALSE, fig.keep = "first", fig.retina=2, results="hide", message=FALSE, warning=FALSE}
+phase_stats(dendro_L2 = dendro_L2, plot_phase = TRUE, plot_export = FALSE)
+```
+<br>
+
+
+The often reported parameter maximum daily shrinkage (`mds`) is equivalent to the
+parameter `shrink_amp` in case `shrink_dur` is shorter than 24 hours. The 
+following example demonstrates how `mds` can be extracted from the phase
+statistics:
+```{r extraction of mds, echo = TRUE, message=FALSE, warning=FALSE}
+# Calculate phase statistics
+phase_stats <- phase_stats(dendro_L2 = dendro_L2)
+
+# Calculate maximum daily shrinkage (mds)
+mds <- phase_stats %>% 
+  mutate(mds = ifelse(shrink_dur < 1440, shrink_amp, NA))
+```
+<br><br>
+
+
 # References
+Knüsel S, Haeni M, Wilhelm M, Peters R, Zweifel R (2020) treenetproc: An R
+package to clean, process and visualise dendrometer data. In prep.
+
 [Zweifel R, Haeni M, Buchmann N, Eugster W (2016) Are trees able to grow in 
 periods of stem shrinkage? New Phytol. 211:839-49.](https://doi.org/10.1111/nph.13995)
+<br>
 
 
 # Citation
@@ -460,13 +549,4 @@ To cite `treenetproc` in a publication use:
 
 ```{r citation, echo = TRUE, warning=FALSE}
 citation("treenetproc")
-```
-
-Consider citing all required packages as well. The package 
-[`grateful`](https://github.com/Pakillo/grateful) is a helpful resource for 
-this.
-
-```{r cite all dependencies, echo = TRUE, results="hide", warning = FALSE, message = FALSE}
-# install.packages("devtools")
-devtools::install_github("Pakillo/grateful")
 ```
