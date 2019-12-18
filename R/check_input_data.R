@@ -63,7 +63,7 @@ check_ts <- function(df, date_format, tz) {
 
 #' Format Input Data
 #'
-#' \code{format_input} formats input data. Wide format is convertet to long
+#' \code{format_input} formats input data. Wide format is converted to long
 #'   and correct column classes are assigned.
 #'
 #' @param df input \code{data.frame}.
@@ -235,7 +235,7 @@ ts_overlap_check <- function(df, tem) {
 #' \code{create_temp_dummy} creates a dummy temperature dataset if local
 #'   temperature measurements are missing. Temperatures in the months December,
 #'   January and February are 0°C (i.e. frost shrinkage is possible).
-#'   Tempeartures in the other months are 10°C (i.e. no frost shrinkage
+#'   Temperatures in the other months are 10°C (i.e. no frost shrinkage
 #'   assumed).
 #'
 #' @param df input \code{data.frame} of dendrometer data.
