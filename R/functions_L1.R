@@ -199,7 +199,7 @@ fillintergaps <- function(df, reso, interpol = NULL, type = "linear",
 #'
 #' \code{fillintergaps_prec} interpolates gaps between irregular and regular
 #'   timesteps for precipitation data. In contrast to \code{fillintergaps}
-#'   the values are summed up and not lineraly interpolated.
+#'   the values are summed up and not linearly interpolated.
 #'
 #' @param df input \code{data.frame}.
 #' @inheritParams proc_L1
