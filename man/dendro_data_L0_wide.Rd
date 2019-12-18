@@ -9,7 +9,7 @@
   \item{ts}{timestamp of the measurements}
   \item{site-1_dendro-1}{measurements of first dendrometer series}
   \item{site-1_dendro-2}{measurements of second dendrometer series.}
-  \item{site-1_dendro-3}{measurements of thrid dendrometer series.}
+  \item{site-1_dendro-3}{measurements of third dendrometer series.}
   \item{site-1_temperature}{temperature measurements}
 }}
 \usage{

@@ -18,7 +18,7 @@ recognition.}
 }
 \description{
 \code{get_decentlab} generates a query to download a specified
-  series from the decentlab servers.
+  series from the Decentlab servers.
 }
 \keyword{internal,}
 \keyword{treenet}

@@ -17,9 +17,9 @@ plotting_proc_L2(
 \item{data_plot}{input \code{data.frame} containing both \code{L1} and
 \code{L2} data as well as changes in \code{L2} for plotting.}
 
-\item{plot_period}{specify whether plots should be displayed over the whole
-plot_period (\code{plot_period = "full"}), for each year separately
-(\code{plot_period = "yearly"}) or for each month
+\item{plot_period}{character, specify whether plots should be displayed for
+the whole period (\code{plot_period = "full"}), or separately for each
+year (\code{plot_period = "yearly"}) or for each month
 (\code{plot_period = "monthly"}).}
 
 \item{plot_add}{logical, specify whether \code{L1} data should be plotted

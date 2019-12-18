@@ -10,13 +10,14 @@ The \code{treenetproc} package contains three main functions:
 }
 \section{\code{proc_L1()}}{
 
-  The function \code{proc_L1} aligns the dendrometer measurements to
-  regular time intervals.
+  The function \code{proc_L1} aligns raw dendrometer and temperature
+  measurements to regular time intervals.
 }
 
 \section{\code{proc_dendro_L2()}}{
 
-  The function \code{proc_dendro_L2} removes jumps and outliers.
+  The function \code{proc_dendro_L2} removes jumps and outliers in
+  time-aligned dendrometer data.
 }
 
 \section{\code{corr_dendro_L2()}}{

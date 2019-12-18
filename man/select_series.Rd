@@ -9,7 +9,7 @@ select_series(site, sensor_class, sensor_name, path_cred)
 \arguments{
 \item{site}{character, specify the site. String is not case sensitive.}
 
-\item{sensor_class}{charcter, specify a single or multiple sensor
+\item{sensor_class}{character, specify a single or multiple sensor
 classes. String does not have to contain the full name of the sensor
 class, i.e. \code{"dendro"} works for \code{"dendrometer"}. String is not
 case sensitive.}

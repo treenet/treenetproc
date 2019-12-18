@@ -9,7 +9,7 @@ reso_check_L0(df, reso)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{reso}{desired time resolution of output (in minutes). See
+\item{reso}{numeric, desired output time resolution (in minutes). See
 \code{Details} for more information on data aggregation.}
 }
 \description{

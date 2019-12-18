@@ -22,7 +22,7 @@ corr_dendro_L2(
 \code{\link{proc_L1}}. Optional, only needed for \code{reverse} and if
 \code{plot = TRUE}.}
 
-\item{dendro_L2}{processed dendrometer data as produced by
+\item{dendro_L2}{cleaned dendrometer data as produced by
 \code{\link{proc_dendro_L2}}.}
 
 \item{reverse}{numeric vector, specify numbers of the changes that should
@@ -31,7 +31,7 @@ be reversed. Numbers are reported in the plots produced by
 are only reported if \code{plot_period = "monthly"}).}
 
 \item{force}{character vector, specify the dates after which jumps
-should occur. The largest value difference occurring in a
+should be corrected. The largest value difference occurring in a
 period of \code{n_days} after the specified dates in \code{force} is
 corrected. Dates need to be in a standard date or
 datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).}
@@ -46,7 +46,7 @@ for which changes should be made. Data of other series is left unchanged.
 Not needed if only a single series is provided.}
 
 \item{n_days}{numeric, length of the period (in days) following the dates
-specified in \code{force} in which a jump is looked for. Increase if
+specified in \code{force} in which a jump is corrected. Increase if
 the gap in data is longer than the default (\code{n_days = 5}).}
 
 \item{plot}{logical, specify whether changes between \code{L2} and
@@ -62,9 +62,10 @@ The function returns a \code{data.frame} with corrected \code{L2}
   dendrometer data. The corrections are added to \code{flags}.
 }
 \description{
-\code{corr_dendro_L2} corrects errors in processed \code{L2} dendrometer
-  data that are easier to correct by hand than by changing parameter values
-  in \code{\link{proc_dendro_L2}}.
+\code{corr_dendro_L2} corrects remaining errors in cleaned \code{L2}
+  dendrometer data. Can be used for errors that are introduced during
+  data cleaning or that cannot be corrected by changing input parameter
+  values in \code{\link{proc_dendro_L2}}.
 }
 \examples{
 corr_dendro_L2(dendro_L1 = dendro_data_L1, dendro_L2 = dendro_data_L2,

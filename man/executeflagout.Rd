@@ -16,7 +16,7 @@ difference threshold has to be exceeded for flagging.}
 in-between missing data that are automatically deleted during data
 cleaning. This can be helpful to remove short fragments of erroneous data
 within a period of missing data, i.e. after jumps. If
-\code{frag_len = NULL} the devault value is set to \code{frag_len = 2.1}.}
+\code{frag_len = NULL} the default value is set to \code{frag_len = 2.1}.}
 
 \item{plot_density}{logical, defines whether density plots should be drawn
 in the console. Can be used to check outlier thresholds and removal.}
@@ -25,7 +25,7 @@ in the console. Can be used to check outlier thresholds and removal.}
 \code{PDF} file to the working directory or are plotted in the console.}
 
 \item{frost_thr}{numeric, increases the thresholds for outlier
-classifiation in periods of probable frost (i.e. temperature <
+and jump detection in periods of probable frost (i.e. temperature <
 \code{lowtemp}). The thresholds are multiplied by the value provided.}
 }
 \description{

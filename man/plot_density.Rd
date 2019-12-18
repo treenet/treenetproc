@@ -20,7 +20,7 @@ The x-axis limits are drawn at \code{limit_val * threshold}. Threshold
 values are inherited of the function \code{\link{calcflagmad}}.}
 
 \item{frost_thr}{numeric, increases the thresholds for outlier
-classifiation in periods of probable frost (i.e. temperature <
+and jump detection in periods of probable frost (i.e. temperature <
 \code{lowtemp}). The thresholds are multiplied by the value provided.}
 
 \item{ran}{numeric, range of rows in df considered for the density plot.

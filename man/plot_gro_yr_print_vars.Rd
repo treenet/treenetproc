@@ -7,9 +7,9 @@
 plot_gro_yr_print_vars(data_plot, print_vars, tz)
 }
 \arguments{
-\item{print_vars}{logical, specifies whether used variables should be
-plotted in the first panel. Command is only used internally in the
-function \code{\link{proc_dendro_L2}}.}
+\item{print_vars}{logical, specifies whether values of used variables should
+be plotted. Command is only used internally in the function
+\code{\link{proc_dendro_L2}}.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }

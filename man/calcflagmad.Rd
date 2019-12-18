@@ -22,7 +22,7 @@ calcflagmad(
 frost periods or other periods.}
 
 \item{frost_thr}{numeric, increases the thresholds for outlier
-classifiation in periods of probable frost (i.e. temperature <
+and jump detection in periods of probable frost (i.e. temperature <
 \code{lowtemp}). The thresholds are multiplied by the value provided.}
 
 \item{save_thr}{logical, specifies whether the applied thresholds are

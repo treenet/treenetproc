@@ -4,7 +4,7 @@
 \name{dendro_data_L1}
 \alias{dendro_data_L1}
 \title{Time-aligned Dendrometer Data}
-\format{A data frame with 13642 rows and 4 variables.}
+\format{A data frame with 151236 rows and 4 variables.}
 \usage{
 data(dendro_data_L1)
 }
@@ -15,7 +15,7 @@ a \code{data.frame} with measurements aligned to regular time
    \item{series}{name of the series.}
    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
    \item{value}{dendrometer value.}
-   \item{version}{package version that was used.}
+   \item{version}{package version number.}
 }
 \description{
 A dataset containing time aligned (\code{L1}) dendrometer data.

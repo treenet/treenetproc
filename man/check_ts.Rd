@@ -9,8 +9,8 @@ check_ts(df, date_format, tz)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{date_format}{specify a custom date format if it is not
-\code{\%Y-\%m-\%d \%H:\%M:\%S}.}
+\item{date_format}{character, specify a custom date format if it is not
+\code{"\%Y-\%m-\%d \%H:\%M:\%S"}.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }

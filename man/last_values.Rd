@@ -13,7 +13,7 @@ last_values(df, last, reso, tz)
 values. If \code{last} is specified \code{from} and \code{to} need to
 be empty.}
 
-\item{reso}{desired time resolution of output (in minutes). See
+\item{reso}{numeric, desired output time resolution (in minutes). See
 \code{Details} for more information on data aggregation.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}

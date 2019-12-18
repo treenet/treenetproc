@@ -8,7 +8,7 @@ forcejump(data_L2, force, n_days = 5)
 }
 \arguments{
 \item{force}{character vector, specify the dates after which jumps
-should occur. The largest value difference occurring in a
+should be corrected. The largest value difference occurring in a
 period of \code{n_days} after the specified dates in \code{force} is
 corrected. Dates need to be in a standard date or
 datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).}

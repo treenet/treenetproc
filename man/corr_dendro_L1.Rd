@@ -39,9 +39,10 @@ The function returns a \code{data.frame} with corrected \code{L1}
   dendrometer data.
 }
 \description{
-\code{corr_dendro_L1} deletes values in periods with erroneous data of
-  time-aligned (\code{L1}) dendrometer or climate data. Values are
-  overwritten with \code{NA} without further notice.
+\code{corr_dendro_L1} deletes periods of erroneous dendrometer or
+  temperature data. The function takes time-aligned (\code{L1})
+  dendrometer or temperature data as input. Values are overwritten
+  with \code{NA} without further notice.
 }
 \examples{
 corr_dendro_L1(dendro_L1 = dendro_data_L1,

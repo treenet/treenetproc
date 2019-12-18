@@ -9,7 +9,7 @@ calcgroperiods(df, reso, tz)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{reso}{desired time resolution of output (in minutes). See
+\item{reso}{numeric, desired output time resolution (in minutes). See
 \code{Details} for more information on data aggregation.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}

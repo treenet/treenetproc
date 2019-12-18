@@ -47,7 +47,7 @@ be empty.}
 \code{data.frame} (\code{bind_df = TRUE}) or as a named list
 \code{bind_df = FALSE}.}
 
-\item{reso}{desired time resolution of output (in minutes). See
+\item{reso}{numeric, desired output time resolution (in minutes). See
 \code{Details} for more information on data aggregation.}
 
 \item{path_cred}{optional argument to specify the full path to the
@@ -68,8 +68,8 @@ internally on the server. Changes \code{stop()} error messages to
 \code{message()} only.}
 }
 \description{
-\code{download_series} downloads specified series from treenet or
-  decentlab server
+\code{download_series} downloads specified series from TreeNet or
+  Decentlab server
 }
 \keyword{internal,}
 \keyword{treenet}

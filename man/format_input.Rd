@@ -12,7 +12,7 @@ format_input(df, input, tz)
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
-\code{format_input} formats input data. Wide format is convertet to long
+\code{format_input} formats input data. Wide format is converted to long
   and correct column classes are assigned.
 }
 \keyword{internal}

@@ -11,7 +11,7 @@ createflagfragment(df, frag_len = NULL)
 in-between missing data that are automatically deleted during data
 cleaning. This can be helpful to remove short fragments of erroneous data
 within a period of missing data, i.e. after jumps. If
-\code{frag_len = NULL} the devault value is set to \code{frag_len = 2.1}.}
+\code{frag_len = NULL} the default value is set to \code{frag_len = 2.1}.}
 
 \item{out}{logical, vector with outlier flags.}
 }

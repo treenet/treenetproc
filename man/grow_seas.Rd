@@ -30,25 +30,28 @@ The following variables are returned by \code{grow_seas}:
     \item{gro_end}{day of year at which growth ends}
 
   In case data is not aggregated to yearly values
-  (\code{agg_yearly = FALSE}), all columns are appended to \code{dendro_L2}.
-  Both values \code{gro_start} and \code{gro_end} are only pasted at the
-  first timestamp of the year, all other values are set to \code{NA}.
+  (\code{agg_yearly = FALSE}), all columns are appended to the input data.
+  The values of \code{gro_start} and \code{gro_end} are only pasted at the
+  first timestamp of the year, all other rows are set to \code{NA}.
 }
 \description{
 \code{grow_seas} returns the day of year at which growth starts
-  or ends. Values are returned starting from the second year, since their
-  calculation depends on the previous year (see Details for further
+  or ends. Values are returned starting from the second year only, since
+  the calculation depends on the previous year (see Details for further
   information on the calculation).
 }
 \details{
 \code{gro_start} is defined as the day of year at which the
   maximum dendrometer value of the previous year is surpassed.
   \code{gro_end} is defined as the day of year at which the maximum
-  dendrometer value is reached. To reduce the influence of outliers in
-  the dendrometer data, a certain percentage of yearly growth
-  (\code{tol_seas}) has to be reached before \code{gro_start} is defined.
-  Likewise, \code{gro_end} is defined as soon as the maximum dendrometer
-  value reaches \code{100 - tol_seas}.
+  dendrometer value is reached.
+
+  To reduce the influence of potential remaining outliers on
+  \code{gro_start} and \code{gro_end}, an adjustable tolerance
+  \code{tol_seas} value is used to define growth start and cessation.
+  That is, by default \code{gro_start} represents the day of year at which
+  5% of yearly growth is surpassed. Likewise, \code{gro_end} represents the
+  day of year at which 95% of yearly growth is reached.
 }
 \examples{
 grow_seas(dendro_L2 = dendro_data_L2)

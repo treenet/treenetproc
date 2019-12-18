@@ -13,7 +13,7 @@ createflagmad(df, reso, wnd, tol, save_thr, frost_thr, correction)
 saved for later plotting or not.}
 
 \item{frost_thr}{numeric, increases the thresholds for outlier
-classifiation in periods of probable frost (i.e. temperature <
+and jump detection in periods of probable frost (i.e. temperature <
 \code{lowtemp}). The thresholds are multiplied by the value provided.}
 }
 \description{

@@ -3,8 +3,8 @@
 \docType{data}
 \name{dendro_data_L2}
 \alias{dendro_data_L2}
-\title{Processed Dendrometer Data}
-\format{A data frame with 13642 rows and 4 variables.}
+\title{Cleaned Dendrometer Data}
+\format{A data frame with 151236 rows and 4 variables.}
 \usage{
 data(dendro_data_L2)
 }
@@ -22,9 +22,9 @@ The function returns a \code{data.frame} with processed dendrometer
    \item{flags}{character vector specifying the changes that occurred
      during the processing. For more details see the following vignette:
      \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
-   \item{version}{package version that was used.}
+   \item{version}{package version number.}
 }
 \description{
-A dataset containing processed (\code{L2}) dendrometer data.
+A dataset containing cleaned (\code{L2}) dendrometer data.
 }
 \keyword{datasets}

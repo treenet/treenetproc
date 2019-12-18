@@ -2,7 +2,7 @@
 % Please edit documentation in R/proc_dendro_L2.R
 \name{proc_dendro_L2}
 \alias{proc_dendro_L2}
-\title{Process L1 Dendrometer Data to L2}
+\title{Clean Time-aligned (L1) Dendrometer Data}
 \usage{
 proc_dendro_L2(
   dendro_L1,
@@ -30,22 +30,23 @@ data. Output of function \code{\link{proc_L1}}.}
 Output of function \code{\link{proc_L1}} (see Details for further
 information).}
 
-\item{tol_out}{numeric, defines the tolerance of the threshold above or
-below which a value is classified as outlier (see Details for further
-information).}
+\item{tol_out}{numeric, defines the rigidity of the threshold above or
+below which a value is classified as an outlier. Lower values
+increase the rigidity (see Details for further information).}
 
-\item{tol_jump}{numeric, defines the tolerance of the threshold above or
-below which a value is flagged for jump correction.}
+\item{tol_jump}{numeric, defines the rigidity of the threshold above or
+below which a value is flagged for jump correction. Lower values
+increase the rigidity (see Details for further information).}
 
-\item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
-in stem diameter due to frost is expected. Default value is set to
+\item{lowtemp}{numeric, specifies the temperature in °C below which frost
+shrinkage or expansion is expected. Default value is set to
 \code{5°C} due to hysteresis shortly before or after frost events.}
 
 \item{frost_thr}{numeric, increases the thresholds for outlier
-classifiation in periods of probable frost (i.e. temperature <
+and jump detection in periods of probable frost (i.e. temperature <
 \code{lowtemp}). The thresholds are multiplied by the value provided.}
 
-\item{interpol}{numeric, length of gaps (in minutes) in which values are
+\item{interpol}{numeric, length of gaps (in minutes) for which values are
 linearly interpolated after data cleaning. Set \code{interpol = 0} to
 disable gapfilling. If \code{interpol = NULL} the default value is set to
 \code{interpol = 2.1 * reso}.}
@@ -54,25 +55,24 @@ disable gapfilling. If \code{interpol = NULL} the default value is set to
 in-between missing data that are automatically deleted during data
 cleaning. This can be helpful to remove short fragments of erroneous data
 within a period of missing data, i.e. after jumps. If
-\code{frag_len = NULL} the devault value is set to \code{frag_len = 2.1}.}
+\code{frag_len = NULL} the default value is set to \code{frag_len = 2.1}.}
 
-\item{plot}{logical, specify whether a comparison of \code{L1} and \code{L2}
-data should be plotted.}
+\item{plot}{logical, specify whether the changes that occurred during data
+cleaning should be plotted.}
 
-\item{plot_period}{specify whether plots should be displayed over the whole
-plot_period (\code{plot_period = "full"}), for each year separately
-(\code{plot_period = "yearly"}) or for each month
+\item{plot_period}{character, specify whether plots should be displayed for
+the whole period (\code{plot_period = "full"}), or separately for each
+year (\code{plot_period = "yearly"}) or for each month
 (\code{plot_period = "monthly"}).}
 
-\item{plot_show}{specify whether all periods should be plotted
-(\code{plot_show = "all"}) or only those periods in which \code{L1} and
-\code{L2} dendrometer data differ after data cleaning
-(\code{plot_show = "diff"}).}
+\item{plot_show}{character, specify whether all periods should be plotted
+(\code{plot_show = "all"}) or only those periods in which \code{L1}
+dendrometer data changed during data cleaning (\code{plot_show = "diff"}).}
 
 \item{plot_export}{logical, specifies whether the plots are exported as a
 \code{PDF} file to the working directory or are plotted in the console.}
 
-\item{plot_name}{character, specify name of the PDF in which the plots are
+\item{plot_name}{character, specify name of the PDF to which the plots are
 saved.}
 
 \item{iter_clean}{numeric, specifies the number of times the cleaning
@@ -95,50 +95,41 @@ The function returns a \code{data.frame} with processed dendrometer
    \item{flags}{character vector specifying the changes that occurred
      during the processing. For more details see the following vignette:
      \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
-   \item{version}{package version that was used.}
+   \item{version}{package version number.}
 }
 \description{
-\code{proc_dendro_L2} processes time-aligned (\code{L1}) dendrometer data
-  to processed (\code{L2}) dendrometer data. It removes jumps, corrects
-  small gaps and calculates growth, tree water deficit and maximum daily
-  shrinkage.
+\code{proc_dendro_L2} cleans time-aligned (\code{L1}) dendrometer data
+  by removing outliers and correcting jumps / shifts in the data.
 }
 \details{
 Time-aligned temperature data \code{temp_L1} is used to define
   periods in which frost shrinkage is probable, e.g. when the temperature
-  is <5°C. Without temperature data, shrinkages due to frost may be
-  classified as outliers.
+  is < \code{lowtemp}. Without temperature data, frost shrinkages may be
+  classified as outliers. For more details and an example see the following
+  vignette:
+  \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}.
 
-  Temperature data can also be attached to dendrometer data. In this case,
-  the \code{series} name of temperature data has to contain the string
+  Temperature data can also be provided along with dendrometer data. In this
+  case, the name of the temperature series has to contain the string
   \code{temp}. In case no temperature dataset is specified, a sample
   temperature dataset will be used with a warning. The sample temperature
-  dataset assumes probable frost shringkage in the months December, January
+  dataset assigns permanent frost to the three months December, January
   and February.
 
-  Outliers are classified based on the value difference (referred to as
-  \code{diff}) between two timesteps. A \code{diff} is classified as an
-  outlier if it deviates more than a threshold value from the first
-  or third quartile of all \code{diff}. Thresholds are calculated as:\cr
-  \code{threshold_low = quantile(diff, probs = 0.25) + tol *
-  \link[stats]{mad}(diff)}\cr
-  \code{threshold_high = quantile(diff, probs = 0.75) + tol *
-  \link[stats]{mad}(diff)}
-
-  Thus, \code{tol} describes the number of times \code{\link[stats]{mad}}
-  is added to the first or third quartile of \code{diff}, before a
-  \code{diff} is classified as an outlier. \code{tol} is increased to
-  \code{tol * frost_thr} in periods of probable frost (i.e. in periods
-  where the air temperature is below \code{lowtemp}).
-
-  The maximum daily shrinkage \code{mds} is calculated similarly as in
-  the function \code{\link[dendrometeR]{phase_def}} in the package
-  \code{dendrometeR}. First, local maxima and minima are identified
-  using a moving window. \code{mds} is only calculated if a local maximum
-  occurs before a local minimum (i.e. if the stem shrinks during the day).
+  Outliers and jumps are identified when exceeding a lower or upper
+  threshold. Thresholds are obtained on the basis of density distributions
+  of differences between neighbouring data points. The rigidity of the
+  thresholds can be controlled with the arguments \code{tol_jump} and
+  \code{tol_out}. For more information on the calculation of the thresholds
+  the user is referred to Knüsel et al. (2020, in prep).
 }
 \examples{
 proc_dendro_L2(dendro_L1 = dendro_data_L1, plot_period = "monthly",
                plot_export = FALSE)
 
+}
+\references{
+Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020.
+  treenetproc - An R package to clean, process and visualise dendrometer
+  data. In preparation.
 }

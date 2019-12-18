@@ -27,7 +27,7 @@ download_treenet(
 \item{sensor_name}{character, specify the name of a single or
 multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}).}
 
-\item{sensor_class}{charcter, specify a single or multiple sensor
+\item{sensor_class}{character, specify a single or multiple sensor
 classes. String does not have to contain the full name of the sensor
 class, i.e. \code{"dendro"} works for \code{"dendrometer"}. String is not
 case sensitive.}
@@ -76,7 +76,7 @@ internally on the server. Changes \code{stop()} error messages to
 \value{
 If \code{export = TRUE} each sensor is saved as an
   \code{.RData}-file to the current working directory. Else,
-  \code{export = FALSE} data will be retured to the console either as a
+  \code{export = FALSE} data will be returned to the console either as a
   \code{data.frame} (\code{bind_df = TRUE}), or as a \code{list} with each
   sensor as a list element (\code{bind_df = FALSE}).
 }

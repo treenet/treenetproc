@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_proc_L2.R
 \name{plot_proc_L2}
 \alias{plot_proc_L2}
-\title{Plot Processed Dendrometer Data}
+\title{Plot Cleaned Dendrometer Data}
 \usage{
 plot_proc_L2(
   dendro_L1,
@@ -19,44 +19,48 @@ plot_proc_L2(
 \item{dendro_L1}{time-aligned dendrometer data as produced by
 \code{\link{proc_L1}}.}
 
-\item{dendro_L2}{processed dendrometer data as produced by
+\item{dendro_L2}{cleaned dendrometer data as produced by
 \code{\link{proc_dendro_L2}}.}
 
-\item{plot_period}{specify whether plots should be displayed over the whole
-plot_period (\code{plot_period = "full"}), for each year separately
-(\code{plot_period = "yearly"}) or for each month
+\item{plot_period}{character, specify whether plots should be displayed for
+the whole period (\code{plot_period = "full"}), or separately for each
+year (\code{plot_period = "yearly"}) or for each month
 (\code{plot_period = "monthly"}).}
 
-\item{plot_show}{specify whether all periods should be plotted
-(\code{plot_show = "all"}) or only those periods in which \code{L1} and
-\code{L2} dendrometer data differ after data cleaning
-(\code{plot_show = "diff"}).}
+\item{plot_show}{character, specify whether all periods should be plotted
+(\code{plot_show = "all"}) or only those periods in which \code{L1}
+dendrometer data changed during data cleaning (\code{plot_show = "diff"}).}
 
 \item{plot_export}{logical, specifies whether the plots are exported as a
 \code{PDF} file to the working directory or are plotted in the console.}
 
-\item{plot_name}{character, specify name of the PDF in which the plots are
+\item{plot_name}{character, specify name of the PDF to which the plots are
 saved.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 
-\item{print_vars}{logical, specifies whether used variables should be
-plotted in the first panel. Command is only used internally in the
-function \code{\link{proc_dendro_L2}}.}
+\item{print_vars}{logical, specifies whether values of used variables should
+be plotted. Command is only used internally in the function
+\code{\link{proc_dendro_L2}}.}
 }
 \value{
-Plots are saved in a PDF to current working directory as
+Plots are saved in a PDF to the current working directory as
   \code{proc_L2_plot.pdf} or as specified in \code{plot_name}.
 
   The first panel shows the \code{L1} data, the second panel the
-  processed \code{L2} data with the \code{L1} data in the background. The
-  third panel shows the absolute value of the differences between \code{L1}
-  and \code{L2} data. Large differences without an apparent jump in the
-  data indicate problems in the processing.
+  cleaned \code{L2} data (in blue) with the \code{L1} data (in grey) in the
+  background. Blue circles indicate interpolated points. Horizontal cyan
+  lines at the bottom of the panel indicate frost periods. The third panel
+  shows the changes (red) as well as the deleted values (pink) on a
+  logarithmic scale. In case \code{plot_period = "monthly"}, the changes
+  that occurred are numbered. The numbers facilitate the reversal of wrong
+  or unwanted corrections with \code{\link{corr_dendro_L2}}. The last panel
+  shows the tree-water deficit (twd).
 }
 \description{
-\code{plot_proc_L2} provides plots of time-aligned (\code{L1}) and
-  processed (\code{L2}) dendrometer data to visually assess the processing.
+\code{plot_proc_L2} plots changes between time-aligned (\code{L1}) and
+  cleaned (\code{L2}) dendrometer data to visually evaluate the data
+  cleaning.
 }
 \examples{
 plot_proc_L2(dendro_L1 = dendro_data_L1, dendro_L2 = dendro_data_L2,

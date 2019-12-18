@@ -22,8 +22,8 @@ or \code{\link{corr_dendro_L2}}).}
 identify local maxima and minima. A shorter window length leads to the
 identification of more local maxima and minima.}
 
-\item{plot_phase}{logical, specify whether maxima and minima used for the
-calculation of the phase statistics should be plotted.}
+\item{plot_phase}{logical, specify whether identified phases should be
+plotted.}
 
 \item{plot_export}{logical, specifies whether the plots are exported as a
 \code{PDF} file to the working directory or are plotted in the console.}
@@ -46,16 +46,16 @@ The following additional variables are returned by
    \item{shrink_amp/exp_amp}{amplitude of the shrinkage or expansion phase.}
    \item{shrink_slope/exp_slope}{slope of the shrinkage or expansion phase.}
    \item{phase_class}{days are classified into days on which a single
-     shrinkage occurrs during the day \code{(1)}, i.e. where stem radius
+     shrinkage occurs during the day \code{(1)}, i.e. where stem radius
      change is likely driven by transpiration; and days on which a single
      expansion occurs \code{(-1)}, i.e. where the stem radius change is
      likely driven by temperature.}
 
   In case data is not aggregated to daily values
-  (\code{agg_daily = FALSE}), all columns are appended to \code{dendro_L2}.
+  (\code{agg_daily = FALSE}), all columns are appended to the input data.
   All parameters related to shrinkage or expansion phases are pasted at
   the timestamp corresponding to the end of the respective phases
-  (\code{shrink_end} or \code{exp_end}). All other values are set to
+  (\code{shrink_end} or \code{exp_end}). All other rows are set to
   \code{NA}.
 }
 \description{
@@ -65,7 +65,7 @@ The following additional variables are returned by
 }
 \details{
 The identification of local maxima and minima in the function
-  \code{phase_stats} is inspired by the function
+  \code{phase_stats} is based on the functionality of
   \code{\link[dendrometeR]{phase_def}} in the package \code{dendrometeR}.
   Overlapping sets of time windows are used to identify local maxima and
   minima, i.e. maxima or minima that appear in both overlapping time windows
