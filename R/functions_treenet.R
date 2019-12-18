@@ -34,7 +34,7 @@ load_credentials <- function(path_cred = NULL) {
 #'   series.
 #'
 #' @param site character, specify the site. String is not case sensitive.
-#' @param sensor_class charcter, specify a single or multiple sensor
+#' @param sensor_class character, specify a single or multiple sensor
 #'   classes. String does not have to contain the full name of the sensor
 #'   class, i.e. \code{"dendro"} works for \code{"dendrometer"}. String is not
 #'   case sensitive.
@@ -183,8 +183,8 @@ select_temp_data <- function(meta_list) {
 
 #' Download Series from Server
 #'
-#' \code{download_series} downloads specified series from treenet or
-#'   decentlab server
+#' \code{download_series} downloads specified series from TreeNet or
+#'   Decentlab server
 #'
 #' @param meta_series \code{data.frame}, contains the names of the series to
 #'   download including the reference temperature dataset for each series.
@@ -429,7 +429,7 @@ last_values <- function(df, last, reso, tz) {
 #' Generate Query for Data from Decentlab Server
 #'
 #' \code{get_decentlab} generates a query to download a specified
-#'   series from the decentlab servers.
+#'   series from the Decentlab servers.
 #'
 #' @param series_single character, name of the sensor to download.
 #' @inheritParams select_series
