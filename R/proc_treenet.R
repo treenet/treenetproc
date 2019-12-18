@@ -1,7 +1,7 @@
-#' Process Treenet Data to L1 or L2
+#' Process TreeNet Data to L1 or L2
 #'
 #' \code{proc_treenet} processes \code{L0} dendrometer data from the
-#'   treenet server directly to \code{L1} (i.e. time-aligned data) or
+#'   TreeNet server directly to \code{L1} (i.e. time-aligned data) or
 #'   \code{L2} (i.e. cleaned \code{L1} data).
 #'
 #' @param proc_to character, specify to which level the data should be

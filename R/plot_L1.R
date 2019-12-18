@@ -1,7 +1,7 @@
 #' Plot L1 Data
 #'
-#' \code{plot_L1} plots \code{L1} data divided into specified periods. Can be
-#'   used for both dendrometer and climate data.
+#' \code{plot_L1} plots time-aligned (\code{L1}) dendrometer or temperature
+#'   data for specified time windows.
 #'
 #' @param dendro_L1_orig optional, used in \code{\link{corr_dendro_L1}}. Can be
 #'   used to plot a previous version of \code{data_L1} in the background.
