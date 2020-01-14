@@ -3,9 +3,29 @@ citHeader("To cite treenetproc in publications use:")
 citEntry(
   entry       = "Manual",
   title       = "treenetproc - Clean, process and visualise dendrometer data",
+  author      = c(person("Simon", "Knüsel"), person("Matthias", "Haeni"),
+  person("Micah", "Wilhelm"), person("Richard L.", "Peters"), person("Roman", "Zweifel")),
+  year        = "2020",
+  url         = "https://github.com/treenet/treenetproc",
+  textVersion = "Haeni M., Knüsel S., Wilhelm M., Peters R.L., Zweifel R. 2020. treenetproc: An R package to clean, process and visualise dendrometer data. Submitted to Tree Physiology."
+)
+
+citEntry(
+  entry       = "Manual",
+  title       = "treenetproc: An R package to clean, process and visualise dendrometer data",
   author      = c(person("Matthias", "Haeni"), person("Simon", "Knüsel"),
-  person("Micah", "Wilhelm"), person("Roman", "Zweifel")),
+  person("Micah", "Wilhelm"), person("Richard L.", "Peters"), person("Roman", "Zweifel")),
   year        = "2019",
   url         = "https://github.com/treenet/treenetproc",
-  textVersion = "Haeni M., Knüsel S., Wilhelm M., Zweifel R. 2019. treenetproc - Clean, process and visualise dendrometer data. Github repository: https://github.com/treenet/treenetproc"
+  textVersion = "Haeni M., Knüsel S., Wilhelm M., Peters R.L., Zweifel R. 2020. treenetproc: An R package to clean, process and visualise dendrometer data. Github repository: https://github.com/treenet/treenetproc"
+)
+
+citEntry(
+  entry       = "Manual",
+  title       = "dplyr: A Grammar of Data Manipulation",
+  author      = c(person("Hadley", "Wickham"), person("Romain", "François"), person( "Lionel", "Henry"), person("Kirill", "Müller")),
+  year        = "2019",
+  note        = "R package version 0.8.3",
+  url         = "https://CRAN.R-project.org/package=dplyr",
+  textVersion = "Hadley Wickham, Romain François, Lionel Henry and Kirill Müller (2019). dplyr: A Grammar of Data Manipulation. R package version 0.8.3. https://CRAN.R-project.org/package=dplyr"
 )
