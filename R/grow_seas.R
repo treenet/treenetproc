@@ -73,7 +73,8 @@ grow_seas <- function(dendro_L2, tol_seas = 0.05, agg_yearly = TRUE,
   df_seas <- df
   for (s in 1:length(series_vec)) {
     df <- df_seas %>%
-      dplyr::filter(series == series_vec[s])
+      dplyr::filter(series == series_vec[s]) %>%
+      dplyr::mutate(year = as.numeric(substr(ts, 1, 4)))
 
     # find complete years
     complete_yrs <- df %>%
@@ -86,20 +87,18 @@ grow_seas <- function(dendro_L2, tol_seas = 0.05, agg_yearly = TRUE,
       unlist(use.names = FALSE)
 
     grow_seas <- df %>%
-      dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
       dplyr::group_by(year) %>%
-      dplyr::mutate(gro_tot = sum(gro_yr, na.rm = T)) %>%
+      dplyr::mutate(gro_tot = max(gro_yr, na.rm = T)) %>%
       dplyr::mutate(gro_start_tol = tol_seas * gro_tot) %>%
       dplyr::mutate(gro_end_tol = (1 - tol_seas) * gro_tot) %>%
-      dplyr::mutate(gro_sum = cumsum(ifelse(is.na(gro_yr), 0, gro_yr))) %>%
       dplyr::mutate(
-        gro_start_ind = dplyr::first(which(gro_sum >= gro_start_tol))) %>%
+        gro_start = ts[dplyr::first(which(gro_yr > gro_start_tol))]) %>%
       dplyr::mutate(
-        gro_start = as.numeric(strftime(ts[gro_start_ind], format = "%j"))) %>%
+        gro_start = as.numeric(strftime(gro_start, format = "%j"))) %>%
       dplyr::mutate(
-        gro_end_ind = dplyr::last(which(gro_sum <= gro_end_tol))) %>%
+        gro_end = ts[dplyr::last(which(gro_yr < gro_end_tol))]) %>%
       dplyr::mutate(
-        gro_end = as.numeric(strftime(ts[gro_end_ind], format = "%j"))) %>%
+        gro_end = as.numeric(strftime(gro_end, format = "%j"))) %>%
       dplyr::summarise(ts = ts[1],
                        gro_start = gro_start[1],
                        gro_end = gro_end[1]) %>%
@@ -107,6 +106,8 @@ grow_seas <- function(dendro_L2, tol_seas = 0.05, agg_yearly = TRUE,
       dplyr::filter(year != is.na(year)) %>%
       # remove first year (since results depend on values of previous year)
       dplyr::slice(-1) %>%
+      # remove incomplete years
+      dplyr::filter(year %in% complete_yrs) %>%
       dplyr::mutate(series = series_vec[s]) %>%
       dplyr::select(series, ts, gro_start, gro_end)
 
