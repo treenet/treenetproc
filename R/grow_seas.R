@@ -75,13 +75,15 @@ grow_seas <- function(dendro_L2, tol_seas = 0.05, agg_yearly = TRUE,
     df <- df_seas %>%
       dplyr::filter(series == series_vec[s])
 
-    if (difftime(dplyr::last(df$ts), df$ts[1], tz = tz, units = "days") <
-        700) {
-      message(paste0("The series '", series_vec[s], "' is too short to ",
-                     "calculate the start and end of growth. At least two ",
-                     "years of data are required."))
-      next
-    }
+    # find complete years
+    complete_yrs <- df %>%
+      dplyr::group_by(year) %>%
+      dplyr::summarise(n_days = difftime(dplyr::last(ts), ts[1], tz = tz,
+                                         units = "days")) %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(n_days > 362) %>%
+      dplyr::select(year) %>%
+      unlist(use.names = FALSE)
 
     grow_seas <- df %>%
       dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
