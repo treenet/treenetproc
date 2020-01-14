@@ -136,7 +136,7 @@ check_missing <- function(df) {
     df <- df %>%
       dplyr::filter(!(series %in% series_missing))
 
-    message(paste0("the following series were excluded due to missing data",
+    message(paste0("the following series were excluded due to missing data ",
                    "over the entire period: ",
                    paste0(series_missing, collapse = ", "), "."))
   }
