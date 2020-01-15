@@ -248,9 +248,12 @@ plot_gro_yr_print_vars <- function(data_plot, print_vars, tz) {
 #'
 plot_frost_period <- function(df) {
 
+  df <- df %>%
+    dplyr::mutate(frost = ifelse(is.na(frost), FALSE, frost))
+
   if (sum(df$frost, na.rm = TRUE) > 0) {
     x0 <- df %>%
-      dplyr::mutate(frost_group = cumsum(frost)) %>%
+      dplyr::mutate(frost_group = cumsum(!frost)) %>%
       dplyr::filter(frost == TRUE) %>%
       dplyr::group_by(frost_group) %>%
       dplyr::slice(1) %>%
@@ -259,7 +262,7 @@ plot_frost_period <- function(df) {
     x0 <- x0$ts
 
     x1 <- df %>%
-      dplyr::mutate(frost_group = cumsum(frost)) %>%
+      dplyr::mutate(frost_group = cumsum(!frost)) %>%
       dplyr::filter(frost == TRUE) %>%
       dplyr::group_by(frost_group) %>%
       dplyr::slice(dplyr::n()) %>%
