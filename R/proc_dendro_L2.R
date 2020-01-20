@@ -1,7 +1,8 @@
 #' Clean Time-aligned Dendrometer Data
 #'
 #' \code{proc_dendro_L2} cleans time-aligned (\code{L1}) dendrometer data
-#'   by removing outliers and correcting jumps / shifts in the data.
+#'   by removing outliers and correcting for erroneous jumps or shifts in
+#'   the data.
 #'
 #' @param dendro_L1 \code{data.frame} with time-aligned dendrometer
 #'   data. Output of function \code{\link{proc_L1}}.
@@ -23,7 +24,7 @@
 #' @param interpol numeric, length of gaps (in minutes) for which values are
 #'   linearly interpolated after data cleaning. Set \code{interpol = 0} to
 #'   disable gapfilling. If \code{interpol = NULL} the default value is set to
-#'   \code{interpol = 2.1 * reso}.
+#'   \code{interpol = 2.1 * reso} (i.e. two timestamps).
 #' @param frag_len numeric, specifies the length of data fragments occurring
 #'   in-between missing data that are automatically deleted during data
 #'   cleaning. This can be helpful to remove short fragments of erroneous data
@@ -33,20 +34,21 @@
 #'   cleaning should be plotted.
 #' @param iter_clean numeric, specifies the number of times the cleaning
 #'   process is repeated. Can be used to check whether running the cleaning
-#'   process many times has an effect on the results.
+#'   process multiple times has an effect on the results. In most cases, a
+#'   single iteration is sufficient.
 #' @inheritParams proc_L1
 #' @inheritParams plot_proc_L2
 #'
 #' @details Time-aligned temperature data \code{temp_L1} is used to define
 #'   periods in which frost shrinkage is probable, e.g. when the temperature
-#'   is < \code{lowtemp}. Without temperature data, frost shrinkages may be
+#'   is below \code{lowtemp}. Without temperature data, frost shrinkages may be
 #'   classified as outliers. For more details and an example see the following
 #'   vignette:
 #'   \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}.
 #'
 #'   Temperature data can also be provided along with dendrometer data. In this
 #'   case, the name of the temperature series has to contain the string
-#'   \code{temp}. In case no temperature dataset is specified, a sample
+#'   \code{"temp"}. In case no temperature dataset is specified, a sample
 #'   temperature dataset will be used with a warning. The sample temperature
 #'   dataset assigns permanent frost to the three months December, January
 #'   and February.
@@ -68,6 +70,8 @@
 #'      expressed as the difference between \code{max} and \code{value}.}
 #'    \item{gro_yr}{growth since the beginning of the year. Also calculated
 #'      for years with missing data.}
+#'    \item{frost}{indicates frost periods (i.e. periods in which the
+#'      temperature is below \code{lowtemp}).}
 #'    \item{flags}{character vector specifying the changes that occurred
 #'      during the processing. For more details see the following vignette:
 #'      \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
