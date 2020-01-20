@@ -36,7 +36,7 @@ check_input_variables <- function(list) {
   }
 
   # temp_name
-  if ("temp_name"%in% var_names) {
+  if ("temp_name" %in% var_names) {
     if (length(list$temp_name) > 1) {
       stop("Provide single temperature dataset in 'temp_name'.")
     }
@@ -81,7 +81,7 @@ check_input_variables <- function(list) {
 
   # year
   if ("year" %in% var_names) {
-    if (!(list$year %in% c("asis", "full"))){
+    if (!(list$year %in% c("asis", "full"))) {
       stop("Variable 'year' needs to be 'asis' or 'full'.")
     }
   }
