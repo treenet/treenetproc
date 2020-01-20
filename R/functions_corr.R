@@ -129,7 +129,7 @@ forcejump <- function(data_L2, force, n_days = 5) {
 #'
 deleteperiod <- function(df, delete) {
 
-  if ( (length(delete) %% 2) != 0) {
+  if ((length(delete) %% 2) != 0) {
     stop("provide an even number of dates in 'delete'.")
   }
 
