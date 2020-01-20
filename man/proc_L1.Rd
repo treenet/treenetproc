@@ -24,8 +24,7 @@ temperature data (see Details for formatting requirements).}
 (\code{data_L0}). Can either be in \code{"long"} format (i.e. sensors
 below each other with a \code{series} column separating the sensors)
 or in \code{"wide"} format (i.e. one sensor per column). See Details
-for more information on formatting requirements.
-\href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}.}
+for more information on formatting requirements.}
 
 \item{date_format}{character, specify a custom date format if it is not
 \code{"\%Y-\%m-\%d \%H:\%M:\%S"}.}
@@ -63,8 +62,9 @@ Data of multiple sensors can either be in \code{long}
   The time-alignment uses a linear interpolation between the two closest
   measurement points in the raw dataset to obtain the values at the
   specified time resolution. The linear interpolation is restricted to gaps
-  that are smaller than \code{2.1 * reso}. If data is already provided at
-  regular time steps, the corresponding values are selected.
+  that are smaller than \code{2.1 * reso} (i.e. two timestamps). If data is
+  already provided at regular time steps, the corresponding values are
+  selected.
 }
 \examples{
 # Input data in 'long' format

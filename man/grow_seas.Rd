@@ -2,7 +2,7 @@
 % Please edit documentation in R/grow_seas.R
 \name{grow_seas}
 \alias{grow_seas}
-\title{Calculate Start and End of the Growing Season}
+\title{Calculate the Start and End of the Growing Season}
 \usage{
 grow_seas(dendro_L2, tol_seas = 0.05, agg_yearly = TRUE, tz = "UTC")
 }
@@ -16,9 +16,9 @@ that needs to be surpassed before \code{gro_start} is defined.
 Likewise, \code{1 - tol_seas} is the amount of yearly growth at which
 \code{gro_end} is defined.}
 
-\item{agg_yearly}{logical, specify whether the output \code{data.frame} is
-aggregated by year (\code{agg_yearly = TRUE}) or appended to the input
-\code{data.frame}.}
+\item{agg_yearly}{logical, specify whether the output is aggregated by year
+(\code{agg_yearly = TRUE}) or appended to the \code{L2} data
+(\code{agg_yearly = FALSE}).}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
@@ -30,7 +30,7 @@ The following variables are returned by \code{grow_seas}:
     \item{gro_end}{day of year at which growth ends}
 
   In case data is not aggregated to yearly values
-  (\code{agg_yearly = FALSE}), all columns are appended to the input data.
+  (\code{agg_yearly = FALSE}), all columns are appended to the output data.
   The values of \code{gro_start} and \code{gro_end} are only pasted at the
   first timestamp of the year, all other rows are set to \code{NA}.
 }
@@ -51,9 +51,15 @@ The following variables are returned by \code{grow_seas}:
   \code{tol_seas} value is used to define growth start and cessation.
   That is, by default \code{gro_start} represents the day of year at which
   5% of yearly growth is surpassed. Likewise, \code{gro_end} represents the
-  day of year at which 95% of yearly growth is reached.
+  day of year at which 95% of yearly growth is reached. See Knüsel et al.
+  (2020) for a graphical example.
 }
 \examples{
 grow_seas(dendro_L2 = dendro_data_L2)
 
+}
+\references{
+Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020.
+  treenetproc - An R package to clean, process and visualise dendrometer
+  data. In preparation.
 }

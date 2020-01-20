@@ -19,6 +19,8 @@ The function returns a \code{data.frame} with processed dendrometer
      expressed as the difference between \code{max} and \code{value}.}
    \item{gro_yr}{growth since the beginning of the year. Also calculated
      for years with missing data.}
+   \item{frost}{indicates frost periods (i.e. periods in which the
+     temperature is below \code{lowtemp}).}
    \item{flags}{character vector specifying the changes that occurred
      during the processing. For more details see the following vignette:
      \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
