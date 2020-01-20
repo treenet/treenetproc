@@ -7,10 +7,13 @@
 
 <!-- badges: end -->
 
-The package `treenetproc` cleans raw dendrometer data. The cleaning
-process aligns measurements at regular time intervals and removes jumps
-and outliers. All changes are flagged and can be visually examined in
-the graphical outputs.
+The package `treenetproc` cleans, processes and visualises highly
+resolved time series of dendrometer data. In two steps, raw dendrometer
+data is aligned to regular time intervals and cleaned.
+
+Further, the package offers functions to extract the day of the year of
+the start and end of the growing season as well as several
+characteristics of shrinkage and expansion phases.
 
 ## Installation
 
@@ -31,8 +34,8 @@ Below you can see a basic example of a processing result.
 
 <img src="man/figures/README-Fig_1-1.png" width="100%" /> <br>
 
-For more information on the functionality of the package please see the
-package vignettes:
+For sample code and a demonstration of an exemplary workflow, see the
+vignette ‘Introduction to treenetproc’:
 
 ``` r
 browseVignettes("treenetproc")
