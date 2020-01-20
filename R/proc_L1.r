@@ -12,7 +12,6 @@
 #'   below each other with a \code{series} column separating the sensors)
 #'   or in \code{"wide"} format (i.e. one sensor per column). See Details
 #'   for more information on formatting requirements.
-#'   \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}.
 #' @param date_format character, specify a custom date format if it is not
 #'   \code{"\%Y-\%m-\%d \%H:\%M:\%S"}.
 #' @param year character, if \code{year = "asis"} the output
@@ -33,8 +32,9 @@
 #'   The time-alignment uses a linear interpolation between the two closest
 #'   measurement points in the raw dataset to obtain the values at the
 #'   specified time resolution. The linear interpolation is restricted to gaps
-#'   that are smaller than \code{2.1 * reso}. If data is already provided at
-#'   regular time steps, the corresponding values are selected.
+#'   that are smaller than \code{2.1 * reso} (i.e. two timestamps). If data is
+#'   already provided at regular time steps, the corresponding values are
+#'   selected.
 #'
 #' @return a \code{data.frame} with measurements aligned to regular time
 #'   intervals (interval specified in \code{reso}) containing the following

@@ -1,8 +1,9 @@
-#' Calculate Phase Statistics
+#' Calculate Parameters of Shrinkage and Expansion Phases
 #'
-#' \code{phase_stats} calculates different statistics of shrinkage and
-#'   expansion phases. To identify the phases local maxima and minima are
-#'   identified using two overlapping sets of time windows.
+#' \code{phase_stats} calculates the timing, duration, amplitude and the rate
+#'   of change of shrinkage and expansion phases. In addition, days on which
+#'   radial change is likely driven by transpiration or temperature are
+#'   identified.
 #'
 #' @param dendro_L2 input \code{data.frame} containing cleaned \code{L2}
 #'   dendrometer data (obtained from functions \code{\link{proc_dendro_L2}}
@@ -12,14 +13,17 @@
 #'   identification of more local maxima and minima.
 #' @param plot_phase logical, specify whether identified phases should be
 #'   plotted.
-#' @param agg_daily logical, specify whether phase statistics are appended
-#'   to the \code{L2} data or are exported as a daily aggregated
-#'   \code{data.frame}.
+#' @param agg_daily logical, specify whether phase statistics are aggregated
+#'   by day (\code{agg_daily = TRUE}) or appended to the \code{L2} data
+#'   (\code{agg_daily = FALSE}).
 #' @inheritParams proc_L1
 #' @inheritParams proc_dendro_L2
 #'
 #' @return The following additional variables are returned by
 #'   \code{phase_stats}:
+#'    \item{day}{day on which the respective phase ends
+#'      (format \code{%Y-%m-%d}).}
+#'    \item{doy}{day of year on which the respective phase ends.}
 #'    \item{shrink_start/exp_start}{timestamp of the start of the shrinkage
 #'      or expansion phase.}
 #'    \item{shrink_end/exp_end}{timestamp of the end of the shrinkage or
@@ -28,11 +32,9 @@
 #'      expansion phase.}
 #'    \item{shrink_amp/exp_amp}{amplitude of the shrinkage or expansion phase.}
 #'    \item{shrink_slope/exp_slope}{slope of the shrinkage or expansion phase.}
-#'    \item{phase_class}{days are classified into days on which a single
-#'      shrinkage occurs during the day \code{(1)}, i.e. where stem radius
-#'      change is likely driven by transpiration; and days on which a single
-#'      expansion occurs \code{(-1)}, i.e. where the stem radius change is
-#'      likely driven by temperature.}
+#'    \item{phase_class}{Days are classified as \code{1} if a shrinkage occurs
+#'      during the day, and as \code{-1} if there is an expansion during the
+#'      day. On all other days phase_class is set to NA.}
 #'
 #'   In case data is not aggregated to daily values
 #'   (\code{agg_daily = FALSE}), all columns are appended to the input data.
@@ -42,7 +44,7 @@
 #'   \code{NA}.
 #'
 #' @details The identification of local maxima and minima in the function
-#'   \code{phase_stats} is based on the functionality of
+#'   \code{phase_stats} is inspired by the functionality of
 #'   \code{\link[dendrometeR]{phase_def}} in the package \code{dendrometeR}.
 #'   Overlapping sets of time windows are used to identify local maxima and
 #'   minima, i.e. maxima or minima that appear in both overlapping time windows
