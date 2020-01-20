@@ -1,17 +1,18 @@
 #' Manually Correct Processed Dendrometer Data
 #'
 #' \code{corr_dendro_L2} corrects remaining errors in cleaned \code{L2}
-#'   dendrometer data. Can be used for errors that are introduced during
-#'   data cleaning or that cannot be corrected by changing input parameter
-#'   values in \code{\link{proc_dendro_L2}}.
+#'   dendrometer data. Can be used to manually correct errors that cannot
+#'   be removed by changing input parameter values in
+#'   \code{\link{proc_dendro_L2}} or to reverse errors that are introduced
+#'   during data cleaning.
 #'
 #' @param dendro_L1 time-aligned dendrometer data as produced by
 #'   \code{\link{proc_L1}}. Optional, only needed for \code{reverse} and if
 #'   \code{plot = TRUE}.
 #' @param reverse numeric vector, specify numbers of the changes that should
 #'   be reversed. Numbers are reported in the plots produced by
-#'   \code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} (numbers
-#'   are only reported if \code{plot_period = "monthly"}).
+#'   \code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} with the
+#'   argument \code{plot_period = "monthly"}.
 #' @param force character vector, specify the dates after which jumps
 #'   should be corrected. The largest value difference occurring in a
 #'   period of \code{n_days} after the specified dates in \code{force} is
@@ -19,8 +20,9 @@
 #'   datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).
 #' @param delete character vector, specify pairs of dates between which
 #'   all dendrometer data will be deleted (i.e. 4 dates will result in two
-#'   periods: 1-2 and 3-4 in which data is deleted). Dates need to be in a
-#'   standard date or datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).
+#'   periods: 1-2 and 3-4 in which data is deleted). Dates need to be in the
+#'   same standard date or datetime format
+#'   (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).
 #' @param series character, specify the name of a single dendrometer series
 #'   for which changes should be made. Data of other series is left unchanged.
 #'   Not needed if only a single series is provided.
@@ -33,7 +35,8 @@
 #' @inheritParams plot_proc_L2
 #'
 #' @return The function returns a \code{data.frame} with corrected \code{L2}
-#'   dendrometer data. The corrections are added to \code{flags}.
+#'   dendrometer data. The corrections are dcoumented in the column
+#'   \code{flags}.
 #'
 #' @seealso \code{\link{corr_dendro_L1}} to correct \code{L1} data.
 #'
