@@ -281,7 +281,7 @@ calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
 
     if (save_thr) {
       if (!is.na(low) && low != 0) {
-        if (low > thr_min){
+        if (low > thr_min) {
           thr_min <- round(low, 2)
         }
       }
