@@ -21,20 +21,20 @@
 #'
 #' @return The following additional variables are returned by
 #'   \code{phase_stats}:
-#'    \item{day}{day on which the respective phase ends
-#'      (format \code{%Y-%m-%d}).}
-#'    \item{doy}{day of year on which the respective phase ends.}
-#'    \item{shrink_start/exp_start}{timestamp of the start of the shrinkage
-#'      or expansion phase.}
-#'    \item{shrink_end/exp_end}{timestamp of the end of the shrinkage or
-#'      expansion phase.}
-#'    \item{shrink_dur/exp_dur}{duration (in minutes) of the shrinkage or
-#'      expansion phase.}
-#'    \item{shrink_amp/exp_amp}{amplitude of the shrinkage or expansion phase.}
-#'    \item{shrink_slope/exp_slope}{slope of the shrinkage or expansion phase.}
-#'    \item{phase_class}{Days are classified as \code{1} if a shrinkage occurs
-#'      during the day, and as \code{-1} if there is an expansion during the
-#'      day. On all other days phase_class is set to NA.}
+#'     \item{day}{day on which the respective phase ends (format
+#'       \code{\%Y-\%m-\%d}.}
+#'     \item{doy}{day of year on which the respective phase ends.}
+#'     \item{shrink_start/exp_start}{timestamp of the start of the shrinkage
+#'       or expansion phase.}
+#'     \item{shrink_end/exp_end}{timestamp of the end of the shrinkage or
+#'       expansion phase.}
+#'     \item{shrink_dur/exp_dur}{duration (in minutes) of the shrinkage or
+#'       expansion phase.}
+#'     \item{shrink_amp/exp_amp}{amplitude of the shrinkage or expansion phase.}
+#'     \item{shrink_slope/exp_slope}{slope of the shrinkage or expansion phase.}
+#'     \item{phase_class}{days are classified as \code{1} if a shrinkage occurs
+#'       during the day, and as \code{-1} if there is an expansion during the
+#'       day. On all other days phase_class is set to NA.}
 #'
 #'   In case data is not aggregated to daily values
 #'   (\code{agg_daily = FALSE}), all columns are appended to the input data.
