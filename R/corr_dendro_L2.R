@@ -35,7 +35,7 @@
 #' @inheritParams plot_proc_L2
 #'
 #' @return The function returns a \code{data.frame} with corrected \code{L2}
-#'   dendrometer data. The corrections are dcoumented in the column
+#'   dendrometer data. The corrections are documented in the column
 #'   \code{flags}.
 #'
 #' @seealso \code{\link{corr_dendro_L1}} to correct \code{L1} data.
