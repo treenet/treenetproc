@@ -51,9 +51,9 @@ plotting_proc_L2 <- function(data_plot, plot_period, plot_add = TRUE,
   # plot diff
   graphics::par(mar = c(0, 5, 0, 2.1))
   options(warn = -1)
-  graphics::plot(data = data_plot, value_L2 ~ ts, type = "n", xlab = "", log = "y",
-                 yaxt = "n", xaxt = "n", ylab = "", ylim = c(0.1, 1200),
-                 las = 1)
+  graphics::plot(data = data_plot, value_L2 ~ ts, type = "n", xlab = "",
+                 log = "y", yaxt = "n", xaxt = "n", ylab = "",
+                 ylim = c(0.1, 1200), las = 1)
   graphics::abline(h = c(0.1, 1, 10, 100, 1000), col = "grey70")
   graphics::lines(data = data_plot, diff_old ~ ts, type = "h", lwd = 1.5,
                   col = "grey70")
