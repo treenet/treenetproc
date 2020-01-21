@@ -4,14 +4,11 @@
 \alias{calcmissing}
 \title{Calculates Percentages of Interpolated, Deleted and Missing Data}
 \usage{
-calcmissing(data_L1, data_L2)
+calcmissing(data_plot)
 }
 \arguments{
-\item{data_L1}{time-aligned dendrometer data as produced by
-\code{\link{proc_L1}}.}
-
-\item{data_L2}{processed dendrometer data as produced by
-\code{\link{proc_dendro_L2}}.}
+\item{data_plot}{input \code{data.frame} containing both \code{L1} and
+\code{L2} data as well as changes in \code{L2} for plotting.}
 }
 \value{
 a list of length = 3 with percentages of interpolated, deleted,

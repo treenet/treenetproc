@@ -2,29 +2,37 @@
 % Please edit documentation in R/proc_L1.r
 \name{proc_L1}
 \alias{proc_L1}
-\title{Process Raw Dendrometer or Meteorological Data to L1}
+\title{Time-align Raw Dendrometer or Temperature Data}
 \usage{
-proc_L1(data, reso = 10, year = "asis", input = "long",
-  date_format = "\%Y-\%m-\%d \%H:\%M:\%S", tz = "UTC")
+proc_L1(
+  data_L0,
+  reso = 10,
+  input = "long",
+  date_format = "\%Y-\%m-\%d \%H:\%M:\%S",
+  year = "asis",
+  tz = "UTC"
+)
 }
 \arguments{
-\item{data}{input \code{data.frame} containing raw dendrometer or
-meteorological data (see Details for formatting requirements).}
+\item{data_L0}{input \code{data.frame} containing raw dendrometer or
+temperature data (see Details for formatting requirements).}
 
-\item{reso}{desired time resolution of output (in minutes). See
+\item{reso}{numeric, desired output time resolution (in minutes). See
 \code{Details} for more information on data aggregation.}
 
-\item{year}{if \code{year = "full"} then the output \code{data.frame}
-contains data of complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}; if
-\code{year = "asis"} the output \code{data.frame} covers the same period
-as the input data.}
+\item{input}{character, specify the structure of the input data
+(\code{data_L0}). Can either be in \code{"long"} format (i.e. sensors
+below each other with a \code{series} column separating the sensors)
+or in \code{"wide"} format (i.e. one sensor per column). See Details
+for more information on formatting requirements.}
 
-\item{input}{specify the way the input \code{data.frame} is structured. Can
-be either in \code{"long"} format (i.e. sensors below each other with a
-\code{series}) or in \code{"wide"} format (i.e. one sensor per column).}
+\item{date_format}{character, specify a custom date format if it is not
+\code{"\%Y-\%m-\%d \%H:\%M:\%S"}.}
 
-\item{date_format}{specify a custom date format if it is not
-\code{\%Y-\%m-\%d \%H:\%M:\%S}.}
+\item{year}{character, if \code{year = "asis"} the output
+\code{data.frame} covers the same period as the input data;
+if \code{year = "full"} then the output \code{data.frame} is expanded to
+complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
@@ -35,31 +43,34 @@ a \code{data.frame} with measurements aligned to regular time
    \item{series}{name of the series.}
    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
    \item{value}{dendrometer value.}
-   \item{version}{processing version.}
+   \item{version}{package version number.}
 }
 \description{
-\code{proc_L1} processes raw dendrometer and raw meteorological data to
-  time-aligned data.
+\code{proc_L1} aligns raw dendrometer and raw temperature data to
+  regular time steps.
 }
 \details{
-The input data needs to contain a timestamp column
-  (named \code{ts}). If \code{ts} is not provided in the standard format
-  (\code{\%Y-\%m-\%d \%H:\%M:\%S}) the format needs to be specified in
-  \code{format_date}.\cr
-  Data of multiple sensors can either be in \code{long}
+Data of multiple sensors can either be in \code{long}
   format (\code{input = "long"}) with a column named \code{series} to
   differentiate the sensors or in \code{wide} format (\code{input = "wide"})
-  with sensors in separate columns.\cr
-  Temperature and precipitation data must contain \code{temp} or
-  \code{prec}, respectively, somewhere in their series name.
+  with sensors in separate columns. If temperature data is provided
+  in the same \code{data.frame} as dendrometer data, the name of the
+  temperature sensor must contain the string \code{temp}. See the following
+  vignette for examples of input data:
+  \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}.
 
-  To align data at regular time intervals defined in \code{reso}, the data
-  is linearly interpolated between the two values measured closest to the
-  regular time intervals. If data is already provided at regular time steps,
-  the corresponding values are selected.
+  The time-alignment uses a linear interpolation between the two closest
+  measurement points in the raw dataset to obtain the values at the
+  specified time resolution. The linear interpolation is restricted to gaps
+  that are smaller than \code{2.1 * reso} (i.e. two timestamps). If data is
+  already provided at regular time steps, the corresponding values are
+  selected.
 }
 \examples{
-proc_L1(data = dendro_data_L0)
-proc_L1(data = dendro_data_L0_wide, input = "wide")
+# Input data in 'long' format
+proc_L1(data_L0 = dendro_data_L0)
+
+# Input data in 'wide' format
+proc_L1(data_L0 = dendro_data_L0_wide, input = "wide")
 
 }

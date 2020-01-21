@@ -2,8 +2,10 @@
 
 export("%>%")
 export(corr_dendro_L1)
-export(corr_dendro_L3)
+export(corr_dendro_L2)
 export(download_treenet)
+export(grow_seas)
+export(phase_stats)
 export(plot_L1)
 export(plot_frost_period)
 export(plot_proc_L2)

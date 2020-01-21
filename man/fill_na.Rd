@@ -4,7 +4,7 @@
 \alias{fill_na}
 \title{Fills NA's With Last Non-NA Value}
 \usage{
-fill_na(x)
+fill_na(x, from_last = FALSE)
 }
 \arguments{
 \item{x}{input \code{vector}.}

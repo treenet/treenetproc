@@ -43,7 +43,7 @@ check_format <- function(df, input) {
 check_ts <- function(df, date_format, tz) {
 
   if (!("ts" %in% colnames(df))) {
-    stop("column with time stamps (named 'ts') missing.")
+    stop("column with time stamps (named 'ts') is missing.")
   }
 
   ts <- as.character(df$ts)
@@ -63,7 +63,7 @@ check_ts <- function(df, date_format, tz) {
 
 #' Format Input Data
 #'
-#' \code{format_input} formats input data. Wide format is convertet to long
+#' \code{format_input} formats input data. Wide format is converted to long
 #'   and correct column classes are assigned.
 #'
 #' @param df input \code{data.frame}.
@@ -136,7 +136,7 @@ check_missing <- function(df) {
     df <- df %>%
       dplyr::filter(!(series %in% series_missing))
 
-    message(paste0("the following series were excluded due to missing data",
+    message(paste0("the following series were excluded due to missing data ",
                    "over the entire period: ",
                    paste0(series_missing, collapse = ", "), "."))
   }
@@ -145,15 +145,46 @@ check_missing <- function(df) {
 }
 
 
-#' Check Time Resolution of Input Data
+#' Check Time Resolution of L0 Input Data
 #'
-#' \code{reso_check} checks time resolution of input \code{data.frame}.
+#' \code{reso_check} extracts the median time resolution of \code{L0} data
+#'   and compares it to the user-specified \code{reso}. If \code{2.1 * reso}
+#'   is smaller than the median time resolution, a warning message is printed.
+#'
+#' @param df input \code{data.frame}.
+#' @inheritParams proc_L1
+#'
+#' @keywords internal
+#'
+reso_check_L0 <- function(df, reso) {
+
+  # calculate median resolution of input data
+  reso_med <- df %>%
+    dplyr::mutate(reso = as.numeric(difftime(ts, dplyr::lag(ts, 1),
+                                             units = "mins"))) %>%
+    dplyr::summarise(reso_med = stats::median(reso, na.rm = TRUE)) %>%
+    dplyr::select(reso_med) %>%
+    unlist(use.names = FALSE)
+
+  if (2.1 * reso < reso_med) {
+    message(paste("The specified 'reso' is very small compared to the",
+                  "median time resolution of the input data. The",
+                  "time-alignment may therefore not work properly.",
+                  "Please increase the value of 'reso'."))
+  }
+}
+
+
+#' Check Time Resolution of L1 Input Data
+#'
+#' \code{reso_check} checks time resolution of \code{L1} input
+#'   \code{data.frame}.
 #'
 #' @param df input \code{data.frame}.
 #'
 #' @keywords internal
 #'
-reso_check <- function(df) {
+reso_check_L1 <- function(df) {
   reso_check <- df %>%
     dplyr::group_by(series) %>%
     dplyr::mutate(reso_check = as.numeric(difftime(ts, dplyr::lag(ts, 1),
@@ -204,11 +235,10 @@ ts_overlap_check <- function(df, tem) {
 #' \code{create_temp_dummy} creates a dummy temperature dataset if local
 #'   temperature measurements are missing. Temperatures in the months December,
 #'   January and February are 0°C (i.e. frost shrinkage is possible).
-#'   Tempeartures in the other months are 10°C (i.e. no frost shrinkage
+#'   Temperatures in the other months are 10°C (i.e. no frost shrinkage
 #'   assumed).
 #'
 #' @param df input \code{data.frame} of dendrometer data.
-#' @inheritParams proc_L1
 #'
 #' @keywords internal
 #'

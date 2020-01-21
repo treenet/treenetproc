@@ -17,13 +17,17 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The package `treenetproc` cleans raw dendrometer data. The cleaning process 
-aligns measurements at regular time intervals and removes jumps and outliers.
-All changes are flagged can be visually examined in the graphical outputs.
+The package `treenetproc` cleans, processes and visualises highly resolved time
+series of dendrometer data. In two steps, raw dendrometer data is aligned to
+regular time intervals and cleaned.
+
+Further, the package offers functions to extract the day of the year of the 
+start and end of the growing season as well as several characteristics of
+shrinkage and expansion phases.
 
 ## Installation
 
-You can install the development version of the package from 
+You can install the latest stable version of the package from 
 [GitHub](https://github.com/) with:
 
 ``` {r install packge, echo = TRUE, results = "hide", message=FALSE, warning=FALSE}
@@ -60,8 +64,8 @@ lines(data = example_L2, value ~ ts, col = "#08519c")
 ```
 <br>
 
-For more information on the functionality of the package please see the 
-package vignettes:
+For sample code and a demonstration of an exemplary workflow, see the vignette
+'Introduction to treenetproc':
 
 ```{r install vignettes, results="hide", message=FALSE, warning=FALSE}
 browseVignettes("treenetproc")
@@ -82,14 +86,4 @@ To cite `treenetproc` in a publication use:
 
 ```{r citation, echo = TRUE, message=FALSE, warning=FALSE}
 citation("treenetproc")
-```
-
-Please consider citing all required packages as well. The package 
-[`grateful`](https://github.com/Pakillo/grateful) is a helpful resource for 
-this.
-
-```{r cite all dependencies, echo = TRUE, results="hide", message=FALSE, warning=FALSE}
-# install.packages("devtools")
-library(devtools)
-devtools::install_github("Pakillo/grateful")
 ```

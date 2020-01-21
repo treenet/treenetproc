@@ -9,9 +9,9 @@ axis_labels_period(df, plot_period, tz)
 \arguments{
 \item{df}{input \code{data.frame}}
 
-\item{plot_period}{specify whether plots should be displayed over the whole
-plot_period (\code{plot_period = "full"}), for each year separately
-(\code{plot_period = "yearly"}) or for each month
+\item{plot_period}{character, specify whether plots should be displayed for
+the whole period (\code{plot_period = "full"}), or separately for each
+year (\code{plot_period = "yearly"}) or for each month
 (\code{plot_period = "monthly"}).}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}

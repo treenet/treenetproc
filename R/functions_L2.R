@@ -66,11 +66,20 @@ creategapflag <- function(df, reso, gaple = 12 * (60 / reso)) {
 #'
 #' @keywords internal
 #'
-fill_na <- function(x) {
+fill_na <- function(x, from_last = FALSE) {
+
+  if (from_last) {
+    x <- rev(x)
+  }
+
   nonaid <- !is.na(x)
   val_nona <- c(NA, x[nonaid])
   fillid <- cumsum(nonaid) + 1
   x <- val_nona[fillid]
+
+  if (from_last) {
+    x <- rev(x)
+  }
 
   return(x)
 }
@@ -157,26 +166,37 @@ calcdiff <- function(df, reso) {
 #' @keywords internal
 #'
 createfrostflag <- function(df, tem, lowtemp = 5, sample_temp) {
-  df <- tem %>%
+  temp_series <- df$temp_ref[1]
+
+  df_frost <- tem %>%
+    dplyr::filter(series == temp_series) %>%
     dplyr::mutate(frost = ifelse(value < lowtemp, TRUE, FALSE)) %>%
     dplyr::select(ts, frost) %>%
-    dplyr::left_join(df, ., by = "ts") %>%
+    dplyr::right_join(., df, by = "ts") %>%
     dplyr::arrange(ts)
 
   # print amount of missing temperature data (not if sample temperature
   # dataset is used)
   if (!passobj("sample_temp")) {
-    na_temp <- sum(is.na(df$frost))
-    na_perc <- round(na_temp / nrow(df) * 100, 1)
-    if (na_perc > 0.98) {
+    na_temp <- sum(is.na(df_frost$frost))
+    na_perc <- round(na_temp / nrow(df_frost) * 100, 2)
+    if (na_perc < 0.1) {
       message("No temperature data is missing.")
     } else {
       message(paste0(na_perc, "% of temperature data is missing."))
     }
   }
 
-  df <- df %>%
-    dplyr::mutate(frost = fill_na(frost))
+  if (all(is.na(df_frost$frost))) {
+    df <- df_frost %>%
+      dplyr::mutate(frost = FALSE)
+
+    return(df)
+  }
+
+  df <- df_frost %>%
+    dplyr::mutate(frost = fill_na(frost)) %>%
+    dplyr::mutate(frost = fill_na_lead(frost))
 
   return(df)
 }
@@ -261,7 +281,7 @@ calcflagmad <- function(df, reso, wnd = NULL, tol = 10, frost,
 
     if (save_thr) {
       if (!is.na(low) && low != 0) {
-        if (low > thr_min){
+        if (low > thr_min) {
           thr_min <- round(low, 2)
         }
       }
@@ -636,262 +656,107 @@ calctwdgro  <- function(df, tz) {
 }
 
 
-#' Find Maximum and Minimum in Time Window
-#'
-#' \code{findmaxmin} identifies maxima and minima in a specified time window.
-#'   It is a helper function of \code{\link{calcmds}}.
-#'
-#' @param df input \code{data.frame}
-#' @param span width of the time window. Relative to \code{reso}.
-#' @param st starting row of the first time window.
-#' @param en ending row of the last time window.
-#'
-#' @keywords internal
-#'
-findmaxmin <- function(df, reso, st) {
-
-  span <- 60 / reso * 6
-  by <- 2 * span
-  if (st != 1) {
-    st <- span
-  }
-  en <- nrow(df)
-  steps <- seq(from = st, to = en, by = by)
-
-  max1 <- as.vector(rep(0, nrow(df)), mode = "numeric")
-  min1 <- as.vector(rep(0, nrow(df)), mode = "numeric")
-  for (s in 1:(length(steps) - 1)) {
-    ran <- steps[s]:steps[s + 1]
-    max_row <- which.max(df$value[ran]) + ran[1] - 1
-    if (length(max_row) > 0) {
-      max1[max_row] <- 1
-    }
-    min_row <- which.min(df$value[ran]) + ran[1] - 1
-    if (length(min_row) > 0) {
-      min1[min_row] <- 1
-    }
-  }
-
-  return(list(max1, min1))
-}
-
-
-#' Remove Consecutive Maxima or Minima
-#'
-#' \code{removeconsec} removes consecutive maxima or minima and keeps only
-#'   the higher or lower value, respectively. The function makes sure no two
-#'   maxima or minima appear consecutively. It is a helper function of
-#'   \code{\link{calcmds}}.
-#'
-#' @param df input \code{data.frame}.
-#' @param remove numeric, in which consecutive values are removed
-#'   (i.e. maxima or minima).
-#' @param notremove numeric, in which consecutive values are not removed
-#'   (i.e. maxima or minima).
-#'
-#' @keywords internal
-#'
-removeconsec <- function(df, remove, notremove) {
-
-  options(warn = -1)
-  rem <- df %>%
-    dplyr::mutate(rem = remove) %>%
-    dplyr::mutate(norem = notremove) %>%
-    dplyr::filter(rem == 2 | norem == 2) %>%
-    dplyr::mutate(rem2 = rep(rle(rem)[[1]], times = rle(rem)[[1]])) %>%
-    dplyr::mutate(rem = ifelse(rem == 2, value, NA)) %>%
-    dplyr::mutate(iscons = ifelse(rem2 > 1 & !is.na(rem), TRUE, FALSE)) %>%
-    dplyr::mutate(cons = cumsum(iscons)) %>%
-    dplyr::mutate(y = c(0, diff(cons, lag = 1))) %>%
-    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
-    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
-    dplyr::mutate(cons_nr = cumsum(z)) %>%
-    dplyr::group_by(cons_nr) %>%
-    dplyr::mutate(rem2 = max(rem, na.rm = T)) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(rem = dplyr::case_when(iscons & rem == rem2 ~ rem,
-                                         !iscons ~ rem)) %>%
-    dplyr::group_by(cons_nr) %>%
-    dplyr::mutate(rem_cons = length(unique(rem))) %>%
-    dplyr::ungroup()
-  options(warn = 0)
-
-  rem_noconsec <- rem %>%
-    dplyr::filter(!(iscons == TRUE & rem_cons == 1)) %>%
-    dplyr::select(ts, rem)
-
-  rem_cons <- rem %>%
-    dplyr::filter(iscons == TRUE & rem_cons == 1)
-
-  # select first of consecutive identical values
-  if (nrow(rem_cons) > 0) {
-    rem_cons <- rem_cons %>%
-      dplyr::group_by(cons_nr, rem_cons) %>%
-      dplyr::summarise(ts = ts[1],
-                       rem = rem[1]) %>%
-      dplyr::ungroup() %>%
-      dplyr::select(ts, rem)
-
-    rem_noconsec <-
-      dplyr::full_join(rem_noconsec, rem_cons, by = c("ts", "rem"))
-  }
-
-  rem_noconsec <- rem_noconsec %>%
-    dplyr::filter(!(is.na(rem)))
-
-  return(rem_noconsec)
-}
-
-
-#' Calculate Maximum Daily Shrinkage (MDS)
-#'
-#' \code{calcmds} calculates the maximum daily shrinkage (\code{mds}).
-#'   \code{mds} is defined as the largest daily shrinkage. First, local
-#'   maxima and minima are identified using a moving window. \code{mds} is
-#'   only calculated if a local maximum occurs before a local minimum
-#'   (i.e. if the stem shrinks during the day).
-#'
-#' @param df input \code{data.frame}.
-#' @inheritParams proc_dendro_L2
-#'
-#' @details \code{calcmds} is inspired by the function
-#'   \code{\link[dendrometeR]{phase_def}} in the package \code{dendrometeR}.
-#'
-#' @keywords internal
-#'
-calcmds <- function(df, reso, tz, plot_mds = FALSE, plot_export) {
-
-  if ("mds" %in% colnames(df)) {
-    df <- df %>%
-      dplyr::select(-mds)
-  }
-  nc <- ncol(df)
-
-  maxmin1 <- findmaxmin(df = df, reso = reso, st = 1)
-  maxmin2 <- findmaxmin(df = df, reso = reso, st = 2)
-
-  max_wnd <- maxmin1[[1]] + maxmin2[[1]]
-  min_wnd <- maxmin1[[2]] + maxmin2[[2]]
-
-  max1 <- removeconsec(df = df, remove = max_wnd, notremove = min_wnd) %>%
-    dplyr::mutate(max1 = rem) %>%
-    dplyr::select(-rem)
-  min1 <- removeconsec(df = df, remove = min_wnd, notremove = max_wnd) %>%
-    dplyr::mutate(min1 = rem) %>%
-    dplyr::select(-rem)
-
-  maxmin <- dplyr::full_join(max1, min1, by = "ts") %>%
-    dplyr::arrange(ts)
-
-  if (plot_mds) {
-    print("plot mds...")
-    plot_mds(df = df, maxmin = maxmin, plot_export = plot_export)
-  }
-
-  maxmin <- maxmin %>%
-    dplyr::mutate(min_lag = dplyr::lead(min1, n = 1)) %>%
-    dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
-                                   tz = tz)) %>%
-    dplyr::group_by(day) %>%
-    dplyr::mutate(mds = max1 - min_lag) %>%
-    dplyr::filter(!is.na(mds)) %>%
-    dplyr::mutate(mds = max(mds, na.rm = T)) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(mds = ifelse(mds >= 0, mds, NA)) %>%
-    dplyr::group_by(day) %>%
-    dplyr::summarise(mds = mds[1]) %>%
-    dplyr::ungroup()
-
-  df <- df %>%
-    dplyr::mutate(day = as.POSIXct(substr(ts, 1, 10), format = "%Y-%m-%d",
-                                   tz = tz)) %>%
-    dplyr::full_join(., maxmin, by = "day") %>%
-    dplyr::arrange(ts) %>%
-    dplyr::select(1:nc, mds)
-
-  return(df)
-}
-
-
-#' Calculate Start and End of Yearly Growth
-#'
-#' \code{grostartend} returns the day of the year at which growth starts
-#'   or ends.
-#'
-#' @param df input \code{data.frame}.
-#' @param tol numeric, defines the amount of yearly growth that needs to be
-#'   surpassed for \code{gro_start} to be defined. \code{1 - tol} is the
-#'   amount of yearly growth at which \code{gro_end} is defined.
-#' @inheritParams proc_dendro_L2
-#'
-#' @keywords internal
-#'
-grostartend <- function(df, tol = 0.05, tz) {
-
-  nc <- ncol(df)
-
-  df <- df %>%
-    dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
-    dplyr::group_by(year) %>%
-    dplyr::mutate(gro_tot = sum(gro_yr, na.rm = T)) %>%
-    dplyr::mutate(gro_start_tol = tol * gro_tot) %>%
-    dplyr::mutate(gro_end_tol = (1 - tol) * gro_tot) %>%
-    dplyr::mutate(gro_sum = cumsum(ifelse(is.na(gro_yr), 0, gro_yr))) %>%
-    dplyr::mutate(
-      gro_start_ind = dplyr::first(which(gro_sum <= gro_start_tol))) %>%
-    dplyr::mutate(
-      gro_start = as.numeric(strftime(ts[gro_start_ind], format = "%j"))) %>%
-    dplyr::mutate(
-      gro_end_ind = dplyr::first(which(gro_sum >= gro_end_tol))) %>%
-    dplyr::mutate(
-      gro_end = as.numeric(strftime(ts[gro_end_ind], format = "%j"))) %>%
-    dplyr::ungroup() %>%
-    dplyr::select(1:nc, gro_start, gro_end)
-
-  return(df)
-}
-
-
 #' Calculates Percentages of Interpolated, Deleted and Missing Data
 #'
 #' \code{calcmissing} calculates the percentage of interpolated, deleted and
 #'   missing data.
 #'
-#' @inheritParams plot_proc_L2
+#' @inheritParams plotting_proc_L2
 #'
 #' @return a list of length = 3 with percentages of interpolated, deleted,
 #'   and missing data.
 #'
 #' @keywords internal
 #'
-calcmissing <- function(data_L1, data_L2) {
+calcmissing <- function(data_plot) {
 
-  len <- nrow(data_L2)
-  interpol_L2 <- data_L2 %>%
+  len <- nrow(data_plot)
+  interpol <- data_plot %>%
     dplyr::slice(grep("fill", flags))
-  interpol_perc <- round(nrow(interpol_L2) / len * 100, 2)
+  interpol_perc <- round(nrow(interpol) / len * 100, 2)
 
-  deleted_L2 <- data_L2 %>%
-    dplyr::select(value_L2 = value) %>%
-    dplyr::mutate(value_L1 = data_L1$value) %>%
-    dplyr::mutate(deleted = ifelse(!is.na(value_L1) & is.na(value_L2),
-                                   1, 0)) %>%
-    dplyr::summarise(deleted = sum(deleted)) %>%
-    unlist(., use.names = FALSE)
-  deleted_perc <- round(deleted_L2 / len * 100, 2)
+  deleted <- data_plot %>%
+    dplyr::slice(grep("out", flags))
+  deleted_perc <- round(nrow(deleted) / len * 100, 2)
 
-  missing_L2 <- data_L2 %>%
-    dplyr::select(value_L2 = value) %>%
-    dplyr::mutate(value_L1 = data_L1$value) %>%
+  missing <- data_plot %>%
     dplyr::mutate(missing = ifelse(is.na(value_L1) & is.na(value_L2),
                                    1, 0)) %>%
     dplyr::summarise(missing = sum(missing)) %>%
     unlist(., use.names = FALSE)
-  missing_perc <- round(missing_L2 / len * 100, 2)
+  missing_perc <- round(missing / len * 100, 2)
 
   list_missing <- list(interpol_perc, deleted_perc, missing_perc)
 
   return(list_missing)
+}
+
+
+#' Calculate Growth for Different Time Periods
+#'
+#' \code{calcgroperiods} calculates the minimum, median and maximum growth
+#'   for different time periods. The periods are selected depending on the
+#'   resolution. Growth values are calculated after removing periods without
+#'   growth (i.e. growth = 0).
+#'
+#' @param df input \code{data.frame}.
+#' @inheritParams proc_L1
+#'
+#' @keywords internal
+#'
+calcgroperiods <- function(df, reso, tz) {
+
+  # add grouping variables
+  df <- df %>%
+    dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
+    dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
+    dplyr::mutate(week = strftime(ts, format = "%V", tz = tz)) %>%
+    dplyr::mutate(day = strftime(ts, format = "%d", tz = tz)) %>%
+    dplyr::mutate(hour = strftime(ts, format = "%H", tz = tz)) %>%
+    dplyr::mutate(diff_gro = c(NA, diff(max)))
+
+  # define grouping variables
+  list_gro <- vector("list", length = 4)
+  list_cond <- vector("list", length = 4)
+  if (reso > 43800) {
+    return(NULL)
+  }
+  if (reso <= 43800) {
+    list_cond[[1]] <- c("year", "month")
+  }
+  if (reso <= 10080) {
+    list_cond[[2]] <- c("year", "week")
+  }
+  if (reso <= 1440) {
+    list_cond[[3]] <- c("year", "week", "day")
+  }
+  if (reso <= 60) {
+    list_cond[[4]] <- c("year", "week", "day", "hour")
+  }
+  # remove empty list elements
+  list_cond <- Filter(f = length, x = list_cond)
+
+  # calculate growth for different periods
+  options(warn = -1)
+  for (l in 1:length(list_cond)) {
+    gro_period <- df %>%
+      dplyr::group_by_at(list_cond[[l]]) %>%
+      dplyr::summarise(gro = sum(diff_gro, na.rm = TRUE)) %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(gro > 0) %>%
+      dplyr::summarise(gro_max = round(max(gro, na.rm = TRUE), 2),
+                       gro_med = round(stats::median(gro, na.rm = TRUE), 2),
+                       gro_min = round(min(gro, na.rm = TRUE), 2)) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(period = dplyr::last(list_cond[[l]]))
+
+    list_gro[[l]] <- gro_period
+  }
+  options(warn = 0)
+
+  gro_period <- dplyr::bind_rows(list_gro)
+
+  return(gro_period)
 }
 
 
@@ -900,7 +765,6 @@ calcmissing <- function(data_L1, data_L2) {
 #' \code{summariseflags} summarises all previously created flags in one column.
 #'
 #' @param df input \code{data.frame}.
-#' @inheritParams proc_dendro_L2
 #'
 #' @keywords internal
 #'
@@ -928,10 +792,8 @@ summariseflags <- function(df) {
   }
 
   flags <- do.call("paste", c(list_flags, sep = ", "))
-  flags <- gsub(", NA", "", flags)
-  flags <- gsub("NA, ", "", flags)
-  flags <- gsub(", $", "", flags)
-  flags <- ifelse(flags == "NA", NA, flags)
+  flags <- gsub(", NA|NA, |, $", "", flags)
+  flags <- ifelse(flags %in% c("NA", ""), NA, flags)
 
   df$flags <- flags
 

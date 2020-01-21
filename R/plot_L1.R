@@ -1,9 +1,9 @@
 #' Plot L1 Data
 #'
-#' \code{plot_L1} plots \code{L1} data divided into specified periods. Can be
-#'   used for both dendrometer and climate data.
+#' \code{plot_L1} plots time-aligned (\code{L1}) dendrometer or temperature
+#'   data for specified time windows.
 #'
-#' @param data_L1_orig optional, used in \code{\link{corr_dendro_L1}}. Can be
+#' @param dendro_L1_orig optional, used in \code{\link{corr_dendro_L1}}. Can be
 #'   used to plot a previous version of \code{data_L1} in the background.
 #' @inheritParams plot_proc_L2
 #' @inheritParams proc_L1
@@ -14,19 +14,22 @@
 #' @export
 #'
 #' @examples
-#' plot_L1(data_L1 = dendro_data_L1, plot_period = "monthly",
+#' plot_L1(dendro_L1 = dendro_data_L1, plot_period = "monthly",
 #'         plot_export = FALSE)
 #'
-plot_L1 <- function(data_L1, data_L1_orig = NULL, plot_period = "full",
+plot_L1 <- function(dendro_L1, dendro_L1_orig = NULL, plot_period = "full",
                     plot_export = TRUE, plot_name = "L1_plot",
                     tz = "UTC") {
 
   # Check input variables -----------------------------------------------------
+  list_inputs <- mget(ls())
+  check_input_variables(list = list_inputs)
+
+
+  # Check input data ----------------------------------------------------------
+  data_L1 <- dendro_L1
+  data_L1_orig <- dendro_L1_orig
   check_data_L1(data_L1 = data_L1)
-  if (!(plot_period %in% c("full", "yearly", "monthly"))) {
-    stop("plot_period needs to be either 'full', 'yearly' or 'monthly'.")
-  }
-  check_logical(var = plot_export, var_name = "plot_export")
 
 
   # Plot L1 data --------------------------------------------------------------

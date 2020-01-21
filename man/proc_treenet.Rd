@@ -2,22 +2,40 @@
 % Please edit documentation in R/proc_treenet.R
 \name{proc_treenet}
 \alias{proc_treenet}
-\title{Process Treenet Data to L1 or L2}
+\title{Process TreeNet Data to L1 or L2}
 \usage{
-proc_treenet(site = NULL, sensor_name = NULL, from = NULL,
-  to = NULL, reso = 10, temp_name = NULL, frost_thr = 5,
-  lowtemp = 5, tol_jump = 50, tol_out = 10, interpol = NULL,
-  frag_len = NULL, version = "L2", plot = TRUE,
-  plot_period = "full", plot_export = TRUE,
-  plot_name = "proc_L2_plot", plot_show = "all", plot_mds = FALSE,
-  path_cred = NULL, year = "asis", tz = "Etc/GMT-1")
+proc_treenet(
+  site = NULL,
+  sensor_name = NULL,
+  from = NULL,
+  to = NULL,
+  last = NULL,
+  reso = 10,
+  frost_thr = 5,
+  lowtemp = 5,
+  tol_jump = 50,
+  tol_out = 10,
+  interpol = NULL,
+  frag_len = NULL,
+  proc_to = "L2",
+  plot = TRUE,
+  plot_period = "full",
+  plot_export = TRUE,
+  plot_name = "proc_L2_plot",
+  plot_show = "all",
+  plot_phase = FALSE,
+  path_cred = NULL,
+  year = "asis",
+  iter_clean = 1,
+  tz = "Etc/GMT-1",
+  use_intl = FALSE
+)
 }
 \arguments{
 \item{site}{character, specify the site. String is not case sensitive.}
 
 \item{sensor_name}{character, specify the name of a single or
-multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}) of the
-same site.}
+multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}).}
 
 \item{from}{character, optional argument to select data after a specific
 date (\code{"YYYY-MM-DD"}).}
@@ -25,64 +43,62 @@ date (\code{"YYYY-MM-DD"}).}
 \item{to}{character, optional argument to select data up to a specific
 date (\code{"YYYY-MM-DD"}).}
 
-\item{reso}{desired time resolution of output (in minutes). See
+\item{last}{numeric, optional argument to specify the number of latest
+values. If \code{last} is specified \code{from} and \code{to} need to
+be empty.}
+
+\item{reso}{numeric, desired output time resolution (in minutes). See
 \code{Details} for more information on data aggregation.}
 
-\item{temp_name}{character, optional argument to specify the series name
-of a temperature dataset. Needed if there are no or multiple on-site air
-temperature measurements. If \code{temp_name} is not specified and no
-temperature dataset is found on the server, a sample dataset will be
-used with a warning.}
-
 \item{frost_thr}{numeric, increases the thresholds for outlier
-classifiation in periods of probable frost (i.e. temperature <
+and jump detection in periods of probable frost (i.e. temperature <
 \code{lowtemp}). The thresholds are multiplied by the value provided.}
 
-\item{lowtemp}{numeric, specifies temperature in °C below which shrinkage
-in stem diameter due to frost is expected. Default value is set to
+\item{lowtemp}{numeric, specifies the temperature in °C below which frost
+shrinkage or expansion is expected. Default value is set to
 \code{5°C} due to hysteresis shortly before or after frost events.}
 
-\item{tol_jump}{numeric, defines the tolerance of the threshold above or
-below which a value is flagged for jump correction.}
+\item{tol_jump}{numeric, defines the rigidity of the threshold above or
+below which a value is flagged for jump correction. Lower values
+increase the rigidity (see Details for further information).}
 
-\item{tol_out}{numeric, defines the tolerance of the threshold above or
-below which a value is classified as outlier (see Details for further
-information).}
+\item{tol_out}{numeric, defines the rigidity of the threshold above or
+below which a value is classified as an outlier. Lower values
+increase the rigidity (see Details for further information).}
 
-\item{interpol}{numeric, length of gaps (in minutes) in which values are
-linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
-If \code{interpol = NULL} the default value is set to
-\code{interpol = 2.1 * reso}.}
+\item{interpol}{numeric, length of gaps (in minutes) for which values are
+linearly interpolated after data cleaning. Set \code{interpol = 0} to
+disable gapfilling. If \code{interpol = NULL} the default value is set to
+\code{interpol = 2.1 * reso} (i.e. two timestamps).}
 
-\item{frag_len}{numeric, specifying the length of non-\code{NA} data in
-between \code{NA} data. This is often the case if there is erroneous data
-in between jumps. If \code{frag_len = NULL} the devault value is set to
-\code{frag_len = 2.1}.}
+\item{frag_len}{numeric, specifies the length of data fragments occurring
+in-between missing data that are automatically deleted during data
+cleaning. This can be helpful to remove short fragments of erroneous data
+within a period of missing data, i.e. after jumps. If
+\code{frag_len = NULL} the default value is set to \code{frag_len = 2.1}.}
 
-\item{version}{character, specify to which level the data should be
+\item{proc_to}{character, specify to which level the data should be
 processed. Can be one of \code{L0, L1} or \code{L2}.}
 
-\item{plot}{logical, specify whether a comparison of \code{L1} and \code{L2}
-data should be plotted.}
+\item{plot}{logical, specify whether the changes that occurred during data
+cleaning should be plotted.}
 
-\item{plot_period}{specify whether plots should be displayed over the whole
-plot_period (\code{plot_period = "full"}), for each year separately
-(\code{plot_period = "yearly"}) or for each month
+\item{plot_period}{character, specify whether plots should be displayed for
+the whole period (\code{plot_period = "full"}), or separately for each
+year (\code{plot_period = "yearly"}) or for each month
 (\code{plot_period = "monthly"}).}
 
 \item{plot_export}{logical, specifies whether the plots are exported as a
 \code{PDF} file to the working directory or are plotted in the console.}
 
-\item{plot_name}{character, specify name of the PDF in which the plots are
+\item{plot_name}{character, specify name of the PDF to which the plots are
 saved.}
 
-\item{plot_show}{specify whether all periods should be plotted
-(\code{plot_show = "all"}) or only those periods in which \code{L1} and
-\code{L2} dendrometer data differ after processing
-(\code{plot_show = "diff"}).}
+\item{plot_show}{character, specify whether all periods should be plotted
+(\code{plot_show = "all"}) or only those periods in which \code{L1}
+dendrometer data changed during data cleaning (\code{plot_show = "diff"}).}
 
-\item{plot_mds}{logical, specify whether maxima and minima used for the
-calculation of the maximum daily shrinkage (\code{mds}) should be
+\item{plot_phase}{logical, specify whether identified phases should be
 plotted.}
 
 \item{path_cred}{optional argument to specify the full path to the
@@ -90,78 +106,66 @@ file \code{config.yml} containing the database login data. File can
 also be copied to the main folder of the package for automatic
 recognition.}
 
-\item{year}{if \code{year = "full"} then the output \code{data.frame}
-contains data of complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}; if
-\code{year = "asis"} the output \code{data.frame} covers the same period
-as the input data.}
+\item{year}{character, if \code{year = "asis"} the output
+\code{data.frame} covers the same period as the input data;
+if \code{year = "full"} then the output \code{data.frame} is expanded to
+complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}.}
+
+\item{iter_clean}{numeric, specifies the number of times the cleaning
+process is repeated. Can be used to check whether running the cleaning
+process multiple times has an effect on the results. In most cases, a
+single iteration is sufficient.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+
+\item{use_intl}{logical, specify whether this function is used
+internally on the server. Changes \code{stop()} error messages to
+\code{message()} only.}
 }
 \value{
 The function returns a \code{data.frame} with processed dendrometer
- data containing the following columns:
-   \item{series}{name of the series.}
+  data containing the following columns:
+   \item{series}{name of the dendrometer series.}
    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
    \item{value}{dendrometer value.}
    \item{max}{highest measured value up to this timestamp.}
    \item{twd}{tree water deficit, i.e. the amount of stem shrinkage
      expressed as the difference between \code{max} and \code{value}.}
-   \item{mds}{maximum daily shrinkage, calculated as the difference between
-     a local maximum that occurs before a local minimum during one day. If
-     there is no local maximum or minimum or if the minimum occurs prior to
-     the maximum, then \code{mds = NA}. This may occur on days with rain or
-     in winter (see Details for further information).}
    \item{gro_yr}{growth since the beginning of the year. Also calculated
      for years with missing data.}
-   \item{gro_start}{day of year at which growth starts. \code{gro_start} is
-     defined as the day of year at which 5\% of total yearly growth is
-     surpassed.}
-   \item{gro_end}{day of year at which growth stops. \code{gro_end} is
-     defined as the day of year at which 95\% of total yearly growth is
-     reached.}
+   \item{frost}{indicates frost periods (i.e. periods in which the
+     temperature is below \code{lowtemp}).}
    \item{flags}{character vector specifying the changes that occurred
      during the processing. For more details see the following vignette:
      \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
-   \item{version}{processing version.}
+   \item{version}{package version number.}
 }
 \description{
 \code{proc_treenet} processes \code{L0} dendrometer data from the
-  treenet server directly to \code{L1} (i.e. time-aligned data) or
+  TreeNet server directly to \code{L1} (i.e. time-aligned data) or
   \code{L2} (i.e. cleaned \code{L1} data).
 }
 \details{
-\code{temp_data} is used to define periods in which frost shrinkage
-  is probable, i.e. when temperature is <5°C. Without temperature data,
-  frost shrinkage may be classified as outliers.
+Time-aligned temperature data \code{temp_L1} is used to define
+  periods in which frost shrinkage is probable, e.g. when the temperature
+  is below \code{lowtemp}. Without temperature data, frost shrinkages may be
+  classified as outliers. For more details and an example see the following
+  vignette:
+  \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}.
 
-  \code{temp_data} can also contain other climate data. In this case, the
-  \code{series} name of temperature data has to contain the string
-  \code{temp}. In case no temperature dataset is specified, a sample
+  Temperature data can also be provided along with dendrometer data. In this
+  case, the name of the temperature series has to contain the string
+  \code{"temp"}. In case no temperature dataset is specified, a sample
   temperature dataset will be used with a warning. The sample temperature
-  dataset assumes probable frost shringkage in the months December, January
+  dataset assigns permanent frost to the three months December, January
   and February.
 
-  Outliers are classified based on the value difference (referred to as
-  \code{diff}) between two timesteps. A \code{diff} is classified as an
-  outlier if it deviates more than a threshold value from the first
-  or third quartile of all \code{diff} in a specific time window.
-  Thresholds are calculated as:\cr
-  \code{threshold_low = quantile(diff, probs = 0.25) + tol *
-  \link[stats]{mad}(diff)}\cr
-  \code{threshold_high = quantile(diff, probs = 0.75) + tol *
-  \link[stats]{mad}(diff)}
-
-  Thus, \code{tol} describes the number of times \code{\link[stats]{mad}}
-  is added to the first or third quartile of \code{diff} in a specific time
-  window until \code{diff} is classified as an outlier. \code{tol} is
-  increased to \code{tol * 15} in periods of probable frost (i.e. in
-  periods where the air temperature is below \code{lowtemp}).
-
-  The maximum daily shrinkage \code{mds} is calculated similarly as in
-  the function \code{\link[dendrometeR]{phase_def}} in the package
-  \code{dendrometeR}. First, local maxima and minima are identified
-  using a moving window. \code{mds} is only calculated if a local maximum
-  occurs before a local minimum (i.e. if the stem shrinks during the day).
+  Outliers and jumps are identified when exceeding a lower or upper
+  threshold. Thresholds are obtained on the basis of density distributions
+  of differences between neighbouring data points. The rigidity of the
+  thresholds can be controlled with the arguments \code{tol_jump} and
+  \code{tol_out}. For more information on the calculation of the thresholds
+  the user is referred to Knüsel et al. (2020, in prep).
 }
 \examples{
 \dontrun{
@@ -171,12 +175,8 @@ proc_treenet(site = "lens", plot_period = "monthly")
 
 proc_treenet(sensor_name = c("Alvaneu-2.dendrometer.ch0",
                              "Alvaneu-4.dendrometer.ch0"))
-
-# throws error
-proc_treenet(sensor_name = c("Alvaneu-2.dendrometer.ch0",
-                             "Alvaneu-4.dendrometer.ch0",
-                             "Bachtel-2.dendrometer.ch0"))
 }
+
 }
 \seealso{
 \code{\link{proc_L1}} to process dendrometer or climate data to
@@ -184,6 +184,6 @@ proc_treenet(sensor_name = c("Alvaneu-2.dendrometer.ch0",
   \code{\link{proc_dendro_L2}} to process dendrometer data from \code{L1}
   to \code{L2}.\cr
   \code{\link{corr_dendro_L1}} to correct errors before processing.\cr
-  \code{\link{corr_dendro_L3}} to correct errors after processing.
+  \code{\link{corr_dendro_L2}} to correct errors after processing.
 }
 \keyword{treenet}

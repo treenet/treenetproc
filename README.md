@@ -7,14 +7,17 @@
 
 <!-- badges: end -->
 
-The package `treenetproc` cleans raw dendrometer data. The cleaning
-process aligns measurements at regular time intervals and removes jumps
-and outliers. All changes are flagged can be visually examined in the
-graphical outputs.
+The package `treenetproc` cleans, processes and visualises highly
+resolved time series of dendrometer data. In two steps, raw dendrometer
+data is aligned to regular time intervals and cleaned.
+
+Further, the package offers functions to extract the day of the year of
+the start and end of the growing season as well as several
+characteristics of shrinkage and expansion phases.
 
 ## Installation
 
-You can install the development version of the package from
+You can install the latest stable version of the package from
 [GitHub](https://github.com/) with:
 
 ``` r
@@ -31,8 +34,8 @@ Below you can see a basic example of a processing result.
 
 <img src="man/figures/README-Fig_1-1.png" width="100%" /> <br>
 
-For more information on the functionality of the package please see the
-package vignettes:
+For sample code and a demonstration of an exemplary workflow, see the
+vignette ‘Introduction to treenetproc’:
 
 ``` r
 browseVignettes("treenetproc")
@@ -56,27 +59,18 @@ To cite `treenetproc` in a publication use:
 ``` r
 citation("treenetproc")
 #> 
-#> To cite package 'treenetproc' in publications use:
+#> To cite treenetproc in publications use:
 #> 
-#>   Simon Knüsel and Matthias Haeni (2019). treenetproc: Process Raw
-#>   Dendrometer Data. R package version 0.1.3.9000.
+#>   Haeni M., Knüsel S., Wilhelm M., Zweifel R. 2019. treenetproc -
+#>   Clean, process and visualise dendrometer data. Github repository:
+#>   https://github.com/treenet/treenetproc
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
 #>   @Manual{,
-#>     title = {treenetproc: Process Raw Dendrometer Data},
-#>     author = {Simon Knüsel and Matthias Haeni},
+#>     title = {treenetproc - Clean, process and visualise dendrometer data},
+#>     author = {Matthias Haeni and Simon Knüsel and Micah Wilhelm and Roman Zweifel},
 #>     year = {2019},
-#>     note = {R package version 0.1.3.9000},
+#>     url = {https://github.com/treenet/treenetproc},
 #>   }
-```
-
-Please consider citing all required packages as well. The package
-[`grateful`](https://github.com/Pakillo/grateful) is a helpful resource
-for this.
-
-``` r
-# install.packages("devtools")
-library(devtools)
-devtools::install_github("Pakillo/grateful")
 ```

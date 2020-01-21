@@ -4,7 +4,7 @@
 \name{temp_data_L1}
 \alias{temp_data_L1}
 \title{Time-aligned Temperature Data}
-\format{A data frame with 2879 rows and 4 variables.}
+\format{A data frame with 147782 rows and 4 variables.}
 \usage{
 data(temp_data_L1)
 }
@@ -15,9 +15,9 @@ a \code{data.frame} with measurements aligned to regular time
    \item{series}{name of the series.}
    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
    \item{value}{dendrometer value.}
-   \item{version}{processing version.}
+   \item{version}{package version number.}
 }
 \description{
-A dataset containing time aligned (\code{L1}) temperature data.
+A dataset containing time-aligned (\code{L1}) temperature data.
 }
 \keyword{datasets}

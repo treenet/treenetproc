@@ -4,11 +4,10 @@
 \alias{plot_interpol_points}
 \title{Plot Interpolated Points}
 \usage{
-plot_interpol_points(data_L2)
+plot_interpol_points(df)
 }
 \arguments{
-\item{data_L2}{processed dendrometer data as produced by
-\code{\link{proc_dendro_L2}}.}
+\item{df}{input \code{data.frame}}
 }
 \description{
 \code{plot_interpol_points} adds points on top of line graph to show

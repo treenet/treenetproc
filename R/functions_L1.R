@@ -1,4 +1,4 @@
-#' Time-Alignement of Measurements to Regular Time Intervals
+#' Time-Alignment of Measurements to Regular Time Intervals
 #'
 #' \code{tsalign} aligns measurements to regular time intervals by
 #'   interpolating between irregular time intervals. If precipitation data
@@ -16,18 +16,13 @@ tsalign <- function(df, reso, year, tz) {
 
   series <- unique(df$series)
 
-  out_generatets <- generatets(df, reso, year, tz)
+  out_generatets <- generatets(df = df, reso = reso, year = year, tz = tz)
   df <- out_generatets[[1]]
   ts_seq <- out_generatets[[2]]
 
   if (length(grep("prec", series, ignore.case = T)) > 0) {
     prec_sum_raw <- sum(df$value, na.rm = T)
     df <- fillintergaps_prec(df = df, reso = reso)
-    prec_sum_proc <- sum(df$value, na.rm = T)
-    if (!(identical(prec_sum_raw, prec_sum_proc))) {
-      stop(paste0("there was an error with the time-alignement in the ",
-                  "precipitation data. Error in ", series, "."))
-    }
   } else {
     df <- fillintergaps(df = df, reso = reso, flag = FALSE,
                         interpol = NULL)
@@ -35,8 +30,17 @@ tsalign <- function(df, reso, year, tz) {
 
   df <- df %>%
     dplyr::left_join(ts_seq, ., by = "ts") %>%
-    dplyr::arrange(ts) %>%
-    dplyr::distinct()
+    dplyr::arrange(series, ts) %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(series = series)
+
+  if (length(grep("prec", series, ignore.case = T)) > 0) {
+    prec_sum_proc <- sum(df$value, na.rm = T)
+    if (!(identical(prec_sum_raw, prec_sum_proc))) {
+      stop(paste0("there was an error with the time-alignment in the ",
+                  "precipitation data. Error in ", series, "."))
+    }
+  }
 
   return(df)
 }
@@ -132,7 +136,7 @@ roundtimetoreso <- function(df, reso, pos, tz) {
 #' Interpolate Between Irregular and Regular Timesteps
 #'
 #' \code{fillintergaps} interpolates gaps between irregular and regular
-#'   timesteps, i.e. only over very small gaps (more an alignement than an
+#'   timesteps, i.e. only over very small gaps (more an alignment than an
 #'   interpolation).
 #'
 #' @param df input \code{data.frame}.
@@ -195,7 +199,7 @@ fillintergaps <- function(df, reso, interpol = NULL, type = "linear",
 #'
 #' \code{fillintergaps_prec} interpolates gaps between irregular and regular
 #'   timesteps for precipitation data. In contrast to \code{fillintergaps}
-#'   the values are summed up and not lineraly interpolated.
+#'   the values are summed up and not linearly interpolated.
 #'
 #' @param df input \code{data.frame}.
 #' @inheritParams proc_L1

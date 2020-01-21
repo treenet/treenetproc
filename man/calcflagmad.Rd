@@ -4,8 +4,16 @@
 \alias{calcflagmad}
 \title{Define Outliers Based on Value Distribution}
 \usage{
-calcflagmad(df, reso, wnd = NULL, tol = 10, frost, frost_thr,
-  save_thr = FALSE, correction = NULL)
+calcflagmad(
+  df,
+  reso,
+  wnd = NULL,
+  tol = 10,
+  frost,
+  frost_thr,
+  save_thr = FALSE,
+  correction = NULL
+)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
@@ -14,7 +22,7 @@ calcflagmad(df, reso, wnd = NULL, tol = 10, frost, frost_thr,
 frost periods or other periods.}
 
 \item{frost_thr}{numeric, increases the thresholds for outlier
-classifiation in periods of probable frost (i.e. temperature <
+and jump detection in periods of probable frost (i.e. temperature <
 \code{lowtemp}). The thresholds are multiplied by the value provided.}
 
 \item{save_thr}{logical, specifies whether the applied thresholds are

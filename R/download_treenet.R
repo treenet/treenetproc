@@ -3,13 +3,18 @@
 #' \code{download_treenet} loads \code{L0, L1 or L2} dendrometer data from
 #'   the TreeNet or Decentlab server.
 #'
-#' @inheritParams select_data
+#' @param export logical, indicate whether each sensor will be saved as
+#'   an \code{.RData}-file to the current working directory
+#'   (\code{export = TRUE}) or will be returned to the console.
+#' @inheritParams select_series
+#' @inheritParams download_series
+#' @inheritParams proc_L1
 #'
-#' @return If \code{export = TRUE} data will be saved in a named list with
-#'   each list element containing one sensor.
-#'
-#'   If \code{export = FALSE} data will be saved in the console as a
-#'   \code{data.frame}.
+#' @return If \code{export = TRUE} each sensor is saved as an
+#'   \code{.RData}-file to the current working directory. Else,
+#'   \code{export = FALSE} data will be returned to the console either as a
+#'   \code{data.frame} (\code{bind_df = TRUE}), or as a \code{list} with each
+#'   sensor as a list element (\code{bind_df = FALSE}).
 #'
 #' @export
 #'
@@ -21,34 +26,81 @@
 #'                  server = "decentlab")
 #' }
 download_treenet <- function(site = NULL, sensor_name = NULL,
-                             from = NULL, to = NULL,
-                             server = "treenet",
-                             data_format = "L0", path_cred = NULL,
-                             export = FALSE, bind_df = TRUE,
-                             last = NULL, tz = "Etc/GMT-1") {
+                             sensor_class = NULL, from = NULL, to = NULL,
+                             bind_df = TRUE, server = "treenet",
+                             data_format = "L0", data_version = NULL,
+                             path_cred = NULL, export = FALSE, last = NULL,
+                             tz = "Etc/GMT-1", use_intl = FALSE) {
 
   # Check input variables -----------------------------------------------------
-  if (!(data_format %in% c("L0", "L1", "L2"))) {
-    stop("'data_format' needs to be 'L0', 'L1' or 'L2'.")
-  }
-  if (!(server %in% c("treenet", "decentlab"))) {
-    stop("'server' needs to be 'treenet' or 'decentlab'.")
-  }
-  check_logical(var = export, var_name = "export")
-  check_logical(var = bind_df, var_name = "bind_df")
-  if (export && bind_df) {
-    stop("'export' and 'bind_df' cannot both be TRUE at the same time.")
-  }
+  list_inputs <- mget(ls())
+  check_input_variables(list = list_inputs)
 
 
   # Download data from server -------------------------------------------------
   print("download data from server...")
-  df_server <- select_data(site = site, sensor_name = sensor_name,
-                           from = from, to = to, server = server,
-                           data_format = data_format, path_cred = path_cred,
-                           select_temp = FALSE, export = export,
-                           bind_df = bind_df, last = last, tz = tz)
 
-  print("Done!")
-  return(df_server)
+  # load credentials
+  path_cred <- load_credentials(path_cred = path_cred)
+
+  # select series and reference temperature for download
+  if (data_format == "L2") {
+    sensor_class <- "dendrometer"
+  }
+  meta_series <- select_series(site = site, sensor_class = sensor_class,
+                               sensor_name = sensor_name,
+                               path_cred = path_cred)
+
+  # download selected series
+  list_server <- download_series(meta_series = meta_series,
+                                 data_format = data_format,
+                                 data_version = data_version, from = from,
+                                 to = to, last = last, bind_df = FALSE,
+                                 reso = 10, path_cred = path_cred,
+                                 server = server, temp_ref = FALSE, tz = tz,
+                                 use_intl = use_intl)
+
+
+  # Time-align downloaded data ------------------------------------------------
+  if (data_format %in% c("L1", "L2")) {
+    list_align <- vector("list", length = length(list_server))
+    passenv$reso <- 10 # needed for fillintergaps in tsalign
+    for (s in 1:length(list_align)) {
+      df <- list_server[[s]]
+
+      if (nrow(df) >= 2) {
+        df <- tsalign(df = df, reso = 10, year = "asis", tz = tz) %>%
+          dplyr::mutate(series = fill_na(series))
+      }
+
+      list_align[[s]] <- df
+    }
+    list_server <- list_align
+  }
+
+
+  # Return dataset ------------------------------------------------------------
+  # export each series as a .RData file
+  if (export) {
+    print("export data...")
+    series_vec <- names(list_server)
+    for (s in 1:length(list_server)) {
+      df <- list_server[[s]]
+      save(df, file = paste0(series_vec[s], "_", data_format,
+                             ".RData"), compress = "xz")
+    }
+    print("Done!")
+  }
+
+  if (bind_df) {
+    df_out <- dplyr::bind_rows(list_server) %>%
+      dplyr::arrange(series, ts)
+
+    print("Done!")
+    return(df_out)
+  }
+
+  if (!bind_df) {
+    return(list_server)
+  }
 }

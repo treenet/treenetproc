@@ -4,25 +4,24 @@
 \alias{fillintergaps}
 \title{Interpolate Between Irregular and Regular Timesteps}
 \usage{
-fillintergaps(df, reso, interpol = NULL, type = "linear",
-  flag = FALSE)
+fillintergaps(df, reso, interpol = NULL, type = "linear", flag = FALSE)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{reso}{desired time resolution of output (in minutes). See
+\item{reso}{numeric, desired output time resolution (in minutes). See
 \code{Details} for more information on data aggregation.}
 
-\item{interpol}{numeric, length of gaps (in minutes) in which values are
-linearly interpolated. Set \code{interpol = 0} to disable gapfilling.
-If \code{interpol = NULL} the default value is set to
-\code{interpol = 2.1 * reso}.}
+\item{interpol}{numeric, length of gaps (in minutes) for which values are
+linearly interpolated after data cleaning. Set \code{interpol = 0} to
+disable gapfilling. If \code{interpol = NULL} the default value is set to
+\code{interpol = 2.1 * reso} (i.e. two timestamps).}
 
 \item{type}{specify type of interpolation between regular timesteps.}
 }
 \description{
 \code{fillintergaps} interpolates gaps between irregular and regular
-  timesteps, i.e. only over very small gaps (more an alignement than an
+  timesteps, i.e. only over very small gaps (more an alignment than an
   interpolation).
 }
 \keyword{internal}

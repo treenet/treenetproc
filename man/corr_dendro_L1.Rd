@@ -4,17 +4,24 @@
 \alias{corr_dendro_L1}
 \title{Manually Correct Time-Aligned Dendrometer Data}
 \usage{
-corr_dendro_L1(data_L1, delete, series = NULL, plot = TRUE,
-  plot_export = TRUE, tz = "UTC")
+corr_dendro_L1(
+  dendro_L1,
+  delete,
+  series = NULL,
+  plot = TRUE,
+  plot_export = TRUE,
+  tz = "UTC"
+)
 }
 \arguments{
-\item{data_L1}{time-aligned dendrometer data as produced by
+\item{dendro_L1}{time-aligned dendrometer data as produced by
 \code{\link{proc_L1}}.}
 
 \item{delete}{character vector, specify pairs of dates between which
 all dendrometer data will be deleted (i.e. 4 dates will result in two
-periods: 1-2 and 3-4 in which data is deleted). Dates need to be in a
-standard date or datetime format (e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).}
+periods: 1-2 and 3-4 in which data is deleted). Dates need to be in the
+same standard date or datetime format
+(e.g. \code{\%Y-\%m-\%d \%H:\%M:\%S}).}
 
 \item{series}{character, specify the name of a single dendrometer series
 for which changes should be made. Data of other series is left unchanged.
@@ -33,16 +40,17 @@ The function returns a \code{data.frame} with corrected \code{L1}
   dendrometer data.
 }
 \description{
-\code{corr_dendro_L1} deletes values in periods with erroneous data of
-  time-aligned (\code{L1}) dendrometer or climate data. Values are
-  overwritten with \code{NA} without further notice.
+\code{corr_dendro_L1} deletes periods of erroneous dendrometer or
+  temperature data. The function takes time-aligned (\code{L1})
+  dendrometer or temperature data as input. Values are overwritten
+  with \code{NA} without further notice.
 }
 \examples{
-corr_dendro_L1(data_L1 = dendro_data_L1,
-               delete = c("2016-08-01", "2016-08-05"),
+corr_dendro_L1(dendro_L1 = dendro_data_L1,
+               delete = c("2013-08-01", "2013-08-05"),
                series = "site-1_dendro-3", plot_export = FALSE)
 
 }
 \seealso{
-\code{\link{corr_dendro_L3}} to correct \code{L2} data.
+\code{\link{corr_dendro_L2}} to correct \code{L2} data.
 }

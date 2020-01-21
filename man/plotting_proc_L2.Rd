@@ -4,30 +4,28 @@
 \alias{plotting_proc_L2}
 \title{Plot Command to Plot L2 Dendrometer Data}
 \usage{
-plotting_proc_L2(data_L1, data_L2, diff, deleted, plot_period,
-  plot_add = TRUE, plot_frost = TRUE, plot_interpol = TRUE, tz,
-  print_vars)
+plotting_proc_L2(
+  data_plot,
+  plot_period,
+  plot_add = TRUE,
+  plot_frost = TRUE,
+  plot_interpol = TRUE,
+  tz
+)
 }
 \arguments{
-\item{data_L1}{time-aligned dendrometer data as produced by
-\code{\link{proc_L1}}.}
+\item{data_plot}{input \code{data.frame} containing both \code{L1} and
+\code{L2} data as well as changes in \code{L2} for plotting.}
 
-\item{data_L2}{processed dendrometer data as produced by
-\code{\link{proc_dendro_L2}}.}
-
-\item{plot_period}{specify whether plots should be displayed over the whole
-plot_period (\code{plot_period = "full"}), for each year separately
-(\code{plot_period = "yearly"}) or for each month
+\item{plot_period}{character, specify whether plots should be displayed for
+the whole period (\code{plot_period = "full"}), or separately for each
+year (\code{plot_period = "yearly"}) or for each month
 (\code{plot_period = "monthly"}).}
 
 \item{plot_add}{logical, specify whether \code{L1} data should be plotted
 along with \code{L2} data in the second panel of the plot.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
-
-\item{print_vars}{logical, specifies whether used variables should be
-plotted in the first panel. Command is only used internally in the
-function \code{\link{proc_dendro_L2}}.}
 }
 \description{
 \code{plotting_proc_L2} contains the code necessary to plot \code{L2}

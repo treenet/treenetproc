@@ -3,39 +3,30 @@
 \docType{data}
 \name{dendro_data_L2}
 \alias{dendro_data_L2}
-\title{Processed Dendrometer Data}
-\format{A data frame with 13642 rows and 4 variables.}
+\title{Cleaned Dendrometer Data}
+\format{A data frame with 151236 rows and 4 variables.}
 \usage{
 data(dendro_data_L2)
 }
 \value{
 The function returns a \code{data.frame} with processed dendrometer
- data containing the following columns:
-   \item{series}{name of the series.}
+  data containing the following columns:
+   \item{series}{name of the dendrometer series.}
    \item{ts}{timestamp with format \code{\%Y-\%m-\%d \%H:\%M:\%S}.}
    \item{value}{dendrometer value.}
    \item{max}{highest measured value up to this timestamp.}
    \item{twd}{tree water deficit, i.e. the amount of stem shrinkage
      expressed as the difference between \code{max} and \code{value}.}
-   \item{mds}{maximum daily shrinkage, calculated as the difference between
-     a local maximum that occurs before a local minimum during one day. If
-     there is no local maximum or minimum or if the minimum occurs prior to
-     the maximum, then \code{mds = NA}. This may occur on days with rain or
-     in winter (see Details for further information).}
    \item{gro_yr}{growth since the beginning of the year. Also calculated
      for years with missing data.}
-   \item{gro_start}{day of year at which growth starts. \code{gro_start} is
-     defined as the day of year at which 5\% of total yearly growth is
-     surpassed.}
-   \item{gro_end}{day of year at which growth stops. \code{gro_end} is
-     defined as the day of year at which 95\% of total yearly growth is
-     reached.}
+   \item{frost}{indicates frost periods (i.e. periods in which the
+     temperature is below \code{lowtemp}).}
    \item{flags}{character vector specifying the changes that occurred
      during the processing. For more details see the following vignette:
      \href{../doc/Introduction-to-treenetproc.html}{\code{vignette("Introduction-to-treenetproc", package = "treenetproc")}}}
-   \item{version}{processing version.}
+   \item{version}{package version number.}
 }
 \description{
-A dataset containing processed (\code{L2}) dendrometer data.
+A dataset containing cleaned (\code{L2}) dendrometer data.
 }
 \keyword{datasets}
