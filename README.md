@@ -61,16 +61,19 @@ citation("treenetproc")
 #> 
 #> To cite treenetproc in publications use:
 #> 
-#>   Haeni M., Knüsel S., Wilhelm M., Zweifel R. 2019. treenetproc -
-#>   Clean, process and visualise dendrometer data. Github repository:
-#>   https://github.com/treenet/treenetproc
+#>   Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020.
+#>   treenetproc: An R package to clean, process and visualise dendrometer
+#>   data. Submitted to Tree Physiology.
 #> 
-#> A BibTeX entry for LaTeX users is
+#>   Haeni M., Knüsel S., Wilhelm M., Peters R.L., Zweifel R. 2020.
+#>   treenetproc - Clean, process and visualise dendrometer data. Github
+#>   repository: https://github.com/treenet/treenetproc
 #> 
-#>   @Manual{,
-#>     title = {treenetproc - Clean, process and visualise dendrometer data},
-#>     author = {Matthias Haeni and Simon Knüsel and Micah Wilhelm and Roman Zweifel},
-#>     year = {2019},
-#>     url = {https://github.com/treenet/treenetproc},
-#>   }
+#>   Hadley Wickham, Romain François, Lionel Henry and Kirill Müller
+#>   (2019). dplyr: A Grammar of Data Manipulation. R package version
+#>   0.8.3. https://CRAN.R-project.org/package=dplyr
+#> 
+#> To see these entries in BibTeX format, use 'print(<citation>,
+#> bibtex=TRUE)', 'toBibtex(.)', or set
+#> 'options(citation.bibtex.max=999)'.
 ```
