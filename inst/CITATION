@@ -7,7 +7,7 @@ citEntry(
   person("Micah", "Wilhelm"), person("Richard L.", "Peters"), person("Roman", "Zweifel")),
   year        = "2020",
   url         = "https://github.com/treenet/treenetproc",
-  textVersion = "Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020. treenetproc: An R package to clean, process and visualise dendrometer data. Submitted to Tree Physiology."
+  textVersion = "Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020. treenetproc: An R package to clean, process and visualise dendrometer data. In prep."
 )
 
 citEntry(
