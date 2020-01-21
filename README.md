@@ -63,7 +63,7 @@ citation("treenetproc")
 #> 
 #>   Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020.
 #>   treenetproc: An R package to clean, process and visualise dendrometer
-#>   data. Submitted to Tree Physiology.
+#>   data. In prep.
 #> 
 #>   Haeni M., Knüsel S., Wilhelm M., Peters R.L., Zweifel R. 2020.
 #>   treenetproc - Clean, process and visualise dendrometer data. Github
