@@ -159,11 +159,6 @@ check_input_variables <- function(list) {
     check_logical(var = list$agg_yearly, var_name = "agg_yearly")
   }
 
-  # print_vars
-  if ("print_vars" %in% var_names) {
-    check_logical(var = list$print_vars, var_name = "print_vars")
-  }
-
   # temp_ref
   if ("temp_ref" %in% var_names) {
     check_logical(var = list$temp_ref, var_name = "temp_ref")
