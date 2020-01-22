@@ -149,11 +149,14 @@ corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, reverse = NULL,
 
   if (plot) {
     data_L1 <- data_L1 %>%
-      # add diff_old to plot reversed changes
-      dplyr::left_join(., diff_old, by = "ts") %>%
       dplyr::mutate(month_plot = 0) %>%
       dplyr::mutate(month = paste0(substr(ts, 1, 7), "-01"))
 
+    if (length(reverse) != 0) {
+      data_L1 <- data_L1 %>%
+        # add diff_old to plot reversed changes
+        dplyr::left_join(., diff_old, by = "ts")
+    }
     # add months in which delete and force were applied
     if (length(delete) != 0) {
       month_delete <- format(delete, format = "%Y-%m", tz = tz)
