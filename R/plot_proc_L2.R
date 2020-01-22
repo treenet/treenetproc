@@ -19,8 +19,8 @@
 #'   saved.
 #' @param plot_export logical, specifies whether the plots are exported as a
 #'   \code{PDF} file to the working directory or are plotted in the console.
-#' @param print_vars logical, specifies whether values of used variables should
-#'   be plotted. Command is only used internally in the function
+#' @param thr_plot \code{data.frame}, containing the threshold values used for
+#'   outlier detection. Command is only used internally by the function
 #'   \code{\link{proc_dendro_L2}}.
 #' @inheritParams proc_L1
 #'
@@ -46,7 +46,7 @@
 plot_proc_L2 <- function(dendro_L1, dendro_L2, plot_period = "full",
                          plot_show = "all", plot_export = TRUE,
                          plot_name = "proc_L2_plot", tz = "UTC",
-                         print_vars = FALSE) {
+                         thr_plot = NULL) {
 
   # Check input variables -----------------------------------------------------
   list_inputs <- mget(ls())
@@ -229,7 +229,7 @@ plot_proc_L2 <- function(dendro_L1, dendro_L2, plot_period = "full",
     }
 
     # Plot yearly growth and print variables  ---------------------------------
-    plot_gro_yr_print_vars(data_plot = diff_sensor, print_vars = print_vars,
+    plot_gro_yr_print_vars(data_plot = diff_sensor, thr_plot = thr_plot,
                            tz = tz)
   }
   if (plot_export) {

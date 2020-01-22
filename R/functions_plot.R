@@ -132,8 +132,9 @@ axis_labels_period <- function(df, plot_period, tz) {
 #'
 #' @keywords internal
 #'
-plot_gro_yr_print_vars <- function(data_plot, print_vars, tz) {
+plot_gro_yr_print_vars <- function(data_plot, thr_plot, tz) {
 
+  series_plot <- unique(data_plot$series)
   graphics::layout(mat = matrix(c(1, 2), nrow = 2), heights = c(2, 4),
                    widths = 1)
 
@@ -161,7 +162,10 @@ plot_gro_yr_print_vars <- function(data_plot, print_vars, tz) {
 
 
   # print used variables and threshold values
-  if (print_vars) {
+  if (length(thr_plot) != 0) {
+    thr_print <- thr_plot %>%
+      dplyr::filter(series == series_plot)
+
     graphics::par(mar = c(5.1, 4.1, 4.1, 2.1))
 
     graphics::plot(x = c(0, 1), y = c(0, 1), ann = FALSE, bty = "n",
@@ -188,20 +192,20 @@ plot_gro_yr_print_vars <- function(data_plot, print_vars, tz) {
                    labels = "applied thresholds")
     graphics::text(x = 0.3, y = 0.97, adj = c(0, 1), cex = 0.8,
                    labels = paste0("tol_jump = ",
-                                   passobj("thr_jump_plot")[1], " / ",
-                                   passobj("thr_jump_plot")[2], "\n",
+                                   thr_print$thr_jump_min, " / ",
+                                   thr_print$thr_jump_max, "\n",
                                    "tol_out = ",
-                                   passobj("thr_out_plot")[1], " / ",
-                                   passobj("thr_out_plot")[2], "\n",
+                                   thr_print$thr_out_min, " / ",
+                                   thr_print$thr_out_max, "\n",
                                    "tol_jump_frost = ",
-                                   passobj("thr_jump_plot")[1] *
+                                   thr_print$thr_jump_min *
                                      passobj("frost_thr_plot"), " / ",
-                                   passobj("thr_jump_plot")[2] *
+                                   thr_print$thr_jump_max *
                                      passobj("frost_thr_plot"), "\n",
                                    "tol_out_frost = ",
-                                   passobj("thr_out_plot")[1] *
+                                   thr_print$thr_out_min *
                                      passobj("frost_thr_plot"), " / ",
-                                   passobj("thr_out_plot")[2] *
+                                   thr_print$thr_out_max *
                                      passobj("frost_thr_plot"), "\n"))
     # print amount of missing, deleted and interpolated data
     list_missing <- calcmissing(data_plot = data_plot)

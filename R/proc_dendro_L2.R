@@ -183,6 +183,7 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = NULL,
   # Process to L2 (jump and gap corrections) ----------------------------------
   series_vec <- unique(df$series)
   list_L2 <- vector("list", length = length(series_vec))
+  list_thr <- vector("list", length = length(series_vec))
   df_L1 <- df
   for (s in 1:length(series_vec)) {
     message(paste0("processing ", series_vec[s], "..."))
@@ -249,16 +250,24 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = NULL,
                                             fields = "Version", drop = TRUE))
 
     list_L2[[s]] <- df
+
+    # save threshold values for plot
+    if (plot) {
+      thr_plot <- saveplotthr(df = df, thr_out = passobj("thr_out_plot"),
+                              thr_jump = passobj("thr_jump_plot"))
+      list_thr[[s]] <- thr_plot
+    }
   }
 
   df <- dplyr::bind_rows(list_L2)
 
   if (plot) {
     print("plot data...")
+    thr_plot <- dplyr::bind_rows(list_thr)
     plot_proc_L2(dendro_L1 = dendro_L1, dendro_L2 = df,
                  plot_period = plot_period, plot_show = plot_show,
                  plot_export = plot_export, plot_name = plot_name, tz = tz,
-                 print_vars = TRUE)
+                 thr_plot = thr_plot)
   }
 
   return(df)
