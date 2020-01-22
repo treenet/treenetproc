@@ -4,11 +4,11 @@
 \alias{plot_gro_yr_print_vars}
 \title{Plot Yearly Growth Curves and Print Variables}
 \usage{
-plot_gro_yr_print_vars(data_plot, print_vars, tz)
+plot_gro_yr_print_vars(data_plot, thr_plot, tz)
 }
 \arguments{
-\item{print_vars}{logical, specifies whether values of used variables should
-be plotted. Command is only used internally in the function
+\item{thr_plot}{\code{data.frame}, containing the threshold values used for
+outlier detection. Command is only used internally by the function
 \code{\link{proc_dendro_L2}}.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}

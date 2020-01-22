@@ -12,7 +12,7 @@ plot_proc_L2(
   plot_export = TRUE,
   plot_name = "proc_L2_plot",
   tz = "UTC",
-  print_vars = FALSE
+  thr_plot = NULL
 )
 }
 \arguments{
@@ -39,8 +39,8 @@ saved.}
 
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 
-\item{print_vars}{logical, specifies whether values of used variables should
-be plotted. Command is only used internally in the function
+\item{thr_plot}{\code{data.frame}, containing the threshold values used for
+outlier detection. Command is only used internally by the function
 \code{\link{proc_dendro_L2}}.}
 }
 \value{
