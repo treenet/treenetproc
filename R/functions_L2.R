@@ -808,3 +808,30 @@ summariseflags <- function(df) {
 
   return(df)
 }
+
+
+#' Save Applied Cleaning Thresholds for Plotting
+#'
+#' \code{saveplotthr} stores the applied threshold values for jump and
+#'   outlier detection during data cleaning. The values are later used
+#'   for plotting (i.e. presented below the plot with the yearly growth
+#'   curves).
+#'
+#' @param thr_out vector, containing the values of the minimum and maximum
+#'   outlier thresholds applied.
+#' @param thr_jump vector, containing the values of the minimum and maximum
+#'   jump thresholds applied.
+#'
+#' @keywords internal
+#'
+saveplotthr <- function(df, thr_out, thr_jump) {
+
+  series <- df$series[1]
+  thr_plot <- as.data.frame(matrix(ncol = 5, nrow = 1))
+  colnames(thr_plot) <- c("thr_out_min", "thr_out_max", "thr_jump_min",
+                          "thr_jump_max", "series")
+  thr_plot[1, ] <- c(thr_out[1], thr_out[2], thr_jump[1], thr_jump[2], series)
+  thr_plot[, 1:4] <- as.numeric(thr_plot[, 1:4])
+
+  return(thr_plot)
+}
