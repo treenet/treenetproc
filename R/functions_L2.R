@@ -642,14 +642,23 @@ calctwdgro  <- function(df, tz) {
       dplyr::select(-gro_yr)
   }
   nc <- ncol(df)
-  df <- df %>%
-    dplyr::mutate(twd = abs(value - max)) %>%
+
+  gro <- df %>%
+    dplyr::filter(!is.na(value)) %>%
     dplyr::mutate(gro = c(0, diff(max))) %>%
     dplyr::mutate(gro = ifelse(is.na(gro), 0, gro)) %>%
     dplyr::mutate(year = substr(ts, 1, 4)) %>%
     dplyr::group_by(year) %>%
     dplyr::mutate(gro_yr = cumsum(gro)) %>%
     dplyr::ungroup() %>%
+    dplyr::select(-gro, -year)
+
+  df <- df %>%
+    dplyr::filter(is.na(value)) %>%
+    dplyr::mutate(gro_yr = NA) %>%
+    dplyr::bind_rows(., gro) %>%
+    dplyr::arrange(series, ts) %>%
+    dplyr::mutate(twd = abs(value - max)) %>%
     dplyr::select(1:nc, twd, gro_yr)
 
   return(df)
