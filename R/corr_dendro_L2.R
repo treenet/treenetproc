@@ -26,8 +26,7 @@
 #' @param series character, specify the name of a single dendrometer series
 #'   for which changes should be made. Data of other series is left unchanged.
 #'   Not needed if only a single series is provided.
-#' @param plot logical, specify whether changes between \code{L2} and
-#'   \code{L3} should be plotted.
+#' @param plot logical, specify whether implemented changes should be plotted.
 #' @param n_days numeric, length of the period (in days) following the dates
 #'   specified in \code{force} in which a jump is corrected. Increase if
 #'   the gap in data is longer than the default (\code{n_days = 5}).
@@ -183,7 +182,7 @@ corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, reverse = NULL,
     plot_proc_L2(dendro_L1 = data_L1, dendro_L2 = df,
                  plot_period = "monthly", plot_show = "diff_corr",
                  plot_export = plot_export,
-                 plot_name = "corr_L3_plot", tz = tz)
+                 plot_name = "corr_L2_plot", tz = tz)
   }
 
   if (n_series > 1) {
