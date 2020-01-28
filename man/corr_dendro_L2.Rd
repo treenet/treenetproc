@@ -50,8 +50,7 @@ Not needed if only a single series is provided.}
 specified in \code{force} in which a jump is corrected. Increase if
 the gap in data is longer than the default (\code{n_days = 5}).}
 
-\item{plot}{logical, specify whether changes between \code{L2} and
-\code{L3} should be plotted.}
+\item{plot}{logical, specify whether implemented changes should be plotted.}
 
 \item{plot_export}{logical, specifies whether the plots are exported as a
 \code{PDF} file to the working directory or are plotted in the console.}
