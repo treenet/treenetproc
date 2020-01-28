@@ -88,6 +88,7 @@ reversecorr <- function(data_L1, data_L2, reverse, tz) {
 forcejump <- function(data_L2, force, n_days = 5) {
 
   diff <- data_L2 %>%
+    dplyr::mutate(value = ifelse(grepl("fill", flags), NA, value)) %>%
     dplyr::filter(!is.na(value)) %>%
     dplyr::mutate(diff = c(NA, diff(value, lag = 1))) %>%
     dplyr::select(ts, diff) %>%
@@ -108,11 +109,15 @@ forcejump <- function(data_L2, force, n_days = 5) {
 
     val[pos_diff:length(val)] <- val[pos_diff:length(val)] - val_diff
     flag[pos_diff] <- TRUE
+    flag[pos_start:(pos_diff - 1)] <- ifelse(is.na(diff[pos_start:(pos_diff - 1)]),
+                                             TRUE, FALSE)
   }
 
   data_L2 <- data_L2 %>%
     dplyr::mutate(value = val) %>%
-    dplyr::mutate(flagforcejump = flag)
+    dplyr::mutate(flagforcejump = flag) %>%
+    dplyr::mutate(value = ifelse(grepl("fill", flags) &
+                                   flagforcejump, NA, value))
 
   return(data_L2)
 }
