@@ -367,7 +367,8 @@ plot_phase <- function(df, phase, plot_export) {
       dplyr::filter(ts >= plot_start & ts <= plot_end)
 
     graphics::plot(x = df_plot$ts, y = df_plot$value, type = "l",
-                   xaxt = "n", las = 1, ylab = "value",
+                   xaxt = "n", las = 1,
+                   ylab = paste0("Stem radius (", "\u00b5", "m)"),
                    xlab = paste("Time (Hours)\n",
                                 as.Date(phase_plot$start), "to",
                                 as.Date(phase_plot$end)),
