@@ -44,10 +44,12 @@ The following additional variables are returned by
       or expansion phase.}
     \item{shrink_end/exp_end}{timestamp of the end of the shrinkage or
       expansion phase.}
-    \item{shrink_dur/exp_dur}{duration (in minutes) of the shrinkage or
+    \item{shrink_dur/exp_dur}{duration (minutes) of the shrinkage or
       expansion phase.}
-    \item{shrink_amp/exp_amp}{amplitude of the shrinkage or expansion phase.}
-    \item{shrink_slope/exp_slope}{slope of the shrinkage or expansion phase.}
+    \item{shrink_amp/exp_amp}{amplitude (\code{µm}) of the shrinkage or
+      expansion phase.}
+    \item{shrink_slope/exp_slope}{slope (\code{µm * reso^-1})
+      of the shrinkage or expansion phase.}
     \item{phase_class}{days are classified as \code{1} if a shrinkage occurs
       during the day, and as \code{-1} if there is an expansion during the
       day. On all other days phase_class is set to NA.}
