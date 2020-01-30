@@ -113,6 +113,7 @@ forcejump <- function(data_L2, force, n_days = 5) {
   val <- data_L2$value
   ts <- data_L2$ts
   flag <- as.vector(rep(FALSE, nrow(data_L2)), mode = "logical")
+  flagfill <- as.vector(rep(FALSE, nrow(data_L2)), mode = "logical")
   for (f in 1:length(force)) {
     f_start <- force[f]
     f_end <- f_start + as.difftime(n_days, units = "days")
@@ -123,15 +124,17 @@ forcejump <- function(data_L2, force, n_days = 5) {
 
     val[pos_diff:length(val)] <- val[pos_diff:length(val)] - val_diff
     flag[pos_diff] <- TRUE
-    flag[pos_start:(pos_diff - 1)] <- ifelse(is.na(diff[pos_start:(pos_diff - 1)]),
-                                             TRUE, FALSE)
+    flagfill[pos_start:(pos_diff - 1)] <-
+      ifelse(is.na(diff[pos_start:(pos_diff - 1)]), TRUE, FALSE)
   }
 
   data_L2 <- data_L2 %>%
     dplyr::mutate(value = val) %>%
     dplyr::mutate(flagforcejump = flag) %>%
+    dplyr::mutate(flagtemp = flagfill) %>%
     dplyr::mutate(value = ifelse(grepl("fill", flags) &
-                                   flagforcejump, NA, value))
+                                   flagtemp, NA, value)) %>%
+    dplyr::select(-flagtemp)
 
   return(data_L2)
 }
