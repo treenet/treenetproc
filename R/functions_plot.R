@@ -189,7 +189,7 @@ plot_gro_yr_print_vars <- function(data_plot, thr_plot, tz) {
                                    "tz = ", passobj("tz_plot")))
     # print applied thresholds and values
     graphics::text(x = 0.3, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
-                   labels = "applied thresholds")
+                   labels = "applied thresholds (µm)")
     graphics::text(x = 0.3, y = 0.97, adj = c(0, 1), cex = 0.8,
                    labels = paste0("tol_jump = ",
                                    thr_print$thr_jump_min, " / ",
@@ -220,7 +220,7 @@ plot_gro_yr_print_vars <- function(data_plot, thr_plot, tz) {
                                  tz = tz)
     if (length(gro_period) > 0) {
       graphics::text(x = 0, y = 0.7, adj = c(0, 1), font = 2, cex = 0.8,
-                     labels = "growth statistics: median (min / max)")
+                     labels = "growth statistics (µm): median (min / max)")
       for (r in 1:nrow(gro_period)) {
         gro_period_single <- gro_period[r, ]
         graphics::text(x = 0, y = 0.7 - 0.03 * r, adj = c(0, 1), cex = 0.8,
