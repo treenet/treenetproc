@@ -279,8 +279,8 @@ data_shrink_L2 <- proc_dendro_L2(dendro_L1 = dendro_L1,
                                  tol_jump = 1, tol_out = 10, plot = FALSE)
 
 par(mar = c(2.1, 4, 1, 2))
-plot(data = data_shrink_L2, value ~ ts, type = "n", ylab = "L2", 
-     las = 1)
+plot(data = data_shrink_L2, value ~ ts, type = "n", 
+     ylab = paste0("L2 (", "\u00b5", "m)"), las = 1)
 lines(data = dendro_L1, value ~ ts, col = "grey70")
 lines(data = data_shrink_L2, value ~ ts, col = "#08519c")
 ```
@@ -301,8 +301,8 @@ dendro_L2 <- dendro_data_L2 %>%
   filter(series == "site-1_dendro-2")
 
 par(mar = c(2.1, 4, 1, 2))
-plot(data = dendro_L2, value ~ ts, type = "n", ylab = "L2", 
-     las = 1)
+plot(data = dendro_L2, value ~ ts, type = "n", 
+     ylab = paste0("L2 (", "\u00b5", "m)"), las = 1)
 lines(data = dendro_L1, value ~ ts, col = "grey70")
 lines(data = dendro_L2, value ~ ts, col = "#08519c")
 ```
@@ -343,8 +343,8 @@ proc_dendro_L2(dendro_L1 = dendro_L1, plot_export = FALSE)
 dendro_L2 <- proc_dendro_L2(dendro_L1 = dendro_L1, plot = FALSE)
 
 par(mar = c(2.1, 4, 1, 2))
-plot(data = dendro_L2, value ~ ts, type = "n", ylab = "L2", 
-     las = 1)
+plot(data = dendro_L2, value ~ ts, type = "n", 
+     ylab = paste0("L2 (", "\u00b5", "m)"), las = 1)
 lines(data = dendro_L1, value ~ ts, col = "grey70")
 lines(data = dendro_L2, value ~ ts, col = "#08519c")
 ```
@@ -370,8 +370,8 @@ dendro_L2 <- proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1,
                           plot = FALSE)
 
 par(mar = c(2.1, 4, 1, 2))
-plot(data = dendro_L2, value ~ ts, type = "n", ylab = "L2", 
-     las = 1)
+plot(data = dendro_L2, value ~ ts, type = "n", 
+     ylab = paste0("L2 (", "\u00b5", "m)"), las = 1)
 lines(data = dendro_L1, value ~ ts, col = "grey70")
 lines(data = dendro_L2, value ~ ts, col = "#08519c")
 # add abline to indicate frost
