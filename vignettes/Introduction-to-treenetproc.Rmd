@@ -71,20 +71,22 @@ temperature data is optional. However, temperature data increases the quality
 of the cleaning process (cf. Step 2: Providing temperature data).
 
 The raw dendrometer or climate data can be provided in long (Table 1) or wide
-format (Table 2). In both cases the data has to contain a timestamp column
-named `ts`. The timestamp can be in any standard date format (default is 
-`date_format = "%Y-%m-%d %H:%M:%S"`). Data of multiple sensors can either be
-specified in a column named `series` to separate the sensors (long format, 
-Table 1) or as separate columns (wide format, Table 2). Dendrometer and 
-temperature data can also be provided in the same `data.frame`. In this case,
-the name of the temperature data series has to contain the string '`temp`' 
-(cf. Table 2).
+format (Table 2). Data of multiple sensors can either be specified in a column 
+named `series` to separate the sensors (long format, Table 1) or as separate 
+columns (wide format, Table 2). Dendrometer data always has to be provided in
+`µm`. In addition, a column named `ts` with timestamps in any standard date 
+format (default is `date_format = "%Y-%m-%d %H:%M:%S"`) is required.
+Dendrometer and temperature data can either be provided in two separate 
+data frames or in the same `data.frame`. If temperature data is provided
+along with dendrometer data, the name of the temperature data series has to 
+contain the string '`temp`' to be identified as temperature data (cf. Table 2).
 <br><br>
 
 ```{r Table 1 - head of dendro_data_L0, echo = FALSE, results = "asis"}
 data("dendro_data_L0")
 knitr::kable(dendro_data_L0[1:5, ], caption = "**Table 1**: Raw dendrometer 
-             data in `long` format.")
+             data in `long` format. Dendrometer measurements have to be
+             provided in `µm`.")
 ```
 
 <br>
@@ -92,7 +94,8 @@ knitr::kable(dendro_data_L0[1:5, ], caption = "**Table 1**: Raw dendrometer
 ```{r Table 2 - head of dendro_data_L0_wide, echo = FALSE, results = "asis"}
 data("dendro_data_L0_wide")
 knitr::kable(dendro_data_L0_wide[1:5, ], caption = "**Table 2**: Raw 
-             dendrometer and temperature data in `wide` format.")
+             dendrometer and temperature data in `wide` format. Dendrometer 
+             measurements have to be provided in `µm`.")
 ```
 <br><br>
 
@@ -159,13 +162,13 @@ The output `data.frame` contains the following columns:
 
 * **series**: name of the dendrometer series
 * **ts**: timestamp with format `%Y-%m-%d %H:%M:%S`
-* **value**: dendrometer value
+* **value**: dendrometer value (µm)
 * **max**: highest measured dendrometer `value` up to this timestamp
-* **twd**: tree water deficit, i.e. the amount of stem shrinkage
+* **twd**: tree water deficit (µm), i.e. the amount of stem shrinkage
   expressed as the difference between `max` and `value` (calculated according
   to Zweifel et al. 2016)
-* **gro_yr**: growth since the beginning of the year (calculated according to
-  Zweifel et al. 2016)
+* **gro_yr**: growth since the beginning of the year (µm; calculated according 
+  to Zweifel et al. 2016)
 * **frost**: indicates periods of probable frost (i.e. periods where the 
   temperature is below `lowtemp`)
 * **flags**: documentation of all changes that occurred during data cleaning, 
@@ -207,17 +210,19 @@ proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1,
 
 The plot contains...
 
-* the original time-aligned `L1` data in the first panel, 
-* the cleaned `L2` data (with `L1` in the background) in the second 
-  panel. Interpolated points are circled and frost periods are indicated
-  with a horizontal, light-blue line
-* the changes between `L1` and `L2` (red) as well as the deleted values
+* the stem radius changes of the raw time-aligned `L1` dendrometer data in 
+  the first panel, 
+* the stem radius changes of the cleaned `L2` dendrometer data (with `L1` data 
+  in the background in grey) in the second panel. Interpolated points are 
+  circled and frost periods are indicated with a horizontal, light-blue line
+* the changes between `L1` and `L2` data (red) as well as the deleted values
   (pink) in the third panel
 * and the tree water deficit (twd) in the last panel
 <br>
 
 When plotted monthly (`plot_period = "monthly"`), the changes that occurred 
-during the processing are numbered. Alternatively, the plots can be drawn for 
+during the processing are numbered. The numbers facilitate the reversal of 
+wrong or unwanted corrections. Alternatively, the plots can be drawn for 
 the full period (`plot_period = "full"`) or for each year separately 
 (`plot_period = "yearly"`). In these cases, the changes are not numbered.
 <br><br>
