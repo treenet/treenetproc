@@ -108,12 +108,29 @@ plot_proc_L2 <- function(dendro_L1, dendro_L2, plot_period = "full",
       dplyr::mutate(diff = ifelse(is.na(diff), 0, diff)) %>%
       # add diff = 100 for removed outliers (flag = "out")
       dplyr::mutate(diff = ifelse(grepl("out", flags), 100, diff)) %>%
-      dplyr::mutate(diff_plot = abs(diff)) %>%
       dplyr::mutate(diff_nr = 0) %>%
       dplyr::mutate(diff_nr = ifelse(grepl(".*out|.*jump", flags), 1, 0)) %>%
       dplyr::mutate(diff_nr = cumsum(diff_nr)) %>%
       dplyr::mutate(diff_nr = ifelse(grepl(".*out|.*jump", flags),
-                                     diff_nr, NA))
+                                     diff_nr, NA)) %>%
+      # add diff for jumps
+      dplyr::mutate(jump_group = !is.na(diff_nr)) %>%
+      dplyr::mutate(jump_group = cumsum(jump_group)) %>%
+      dplyr::mutate(y = c(0, diff(jump_group, lag = 1))) %>%
+      dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+      dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+      dplyr::mutate(jump_nr = cumsum(z)) %>%
+      dplyr::group_by(jump_nr) %>%
+      dplyr::mutate(jump_group = ifelse(any(grepl(".*jump", flags)),
+                                        jump_nr, NA)) %>%
+      dplyr::ungroup() %>%
+      dplyr::group_by(jump_group) %>%
+      dplyr::mutate(diff_jump = sum(diff_L1, na.rm = TRUE)) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(diff = ifelse(grepl(".*jump", flags),
+                                  diff_jump, diff)) %>%
+      dplyr::mutate(diff_plot = abs(diff)) %>%
+      dplyr::select(-jump_group, -y, -z, -jump_nr, -diff_jump)
 
 
     # Plot L1, L2 and daily diff ----------------------------------------------
@@ -133,7 +150,7 @@ plot_proc_L2 <- function(dendro_L1, dendro_L2, plot_period = "full",
           if (sum(!is.na(df_year$value_L1)) != 0 &
               sum(!is.na(df_year$value_L2)) != 0) {
             if (plot_show == "diff" &
-                max(df_year$diff_plot) < 0.1) {
+                max(df_year$diff_plot) == 0) {
               next
             }
             plotting_proc_L2(data_plot = df_year, plot_period = plot_period,
