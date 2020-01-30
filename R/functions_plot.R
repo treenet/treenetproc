@@ -26,7 +26,7 @@ plotting_proc_L2 <- function(data_plot, plot_period, plot_add = TRUE,
   graphics::par(mar = c(0, 5, 4.1, 2.1))
   graphics::plot(data = data_plot, value_L1 ~ ts, type = "l", xaxt = "n",
                  ylab = "", las = 1, main = passobj("sensor_label"))
-  graphics::title(ylab = "L1 (µm)", mgp = c(3.5, 1, 0))
+  graphics::title(ylab = paste0("L1 (", "\u00b5", "m)"), mgp = c(3.5, 1, 0))
 
   # plot data_L2
   graphics::par(mar = c(0, 5, 0, 2.1))
@@ -46,7 +46,7 @@ plotting_proc_L2 <- function(data_plot, plot_period, plot_add = TRUE,
       plot_interpol_points(df = data_plot)
     }
   }
-  graphics::title(ylab = "L2 (µm)", mgp = c(3.5, 1, 0))
+  graphics::title(ylab = paste0("L2 (", "\u00b5", "m)"), mgp = c(3.5, 1, 0))
 
   # plot diff
   graphics::par(mar = c(0, 5, 0, 2.1))
@@ -82,7 +82,7 @@ plotting_proc_L2 <- function(data_plot, plot_period, plot_add = TRUE,
                  xlab = passobj("year_label"),  ylab = "", las = 1,
                  col = "#7a0177")
   graphics::axis(1, at = axis_labs[[1]], labels = axis_labs[[2]])
-  graphics::title(ylab = "twd (µm)", mgp = c(3.5, 1, 0))
+  graphics::title(ylab = paste0("twd (", "\u00b5", "m)"), mgp = c(3.5, 1, 0))
 
 }
 
@@ -145,7 +145,8 @@ plot_gro_yr_print_vars <- function(data_plot, thr_plot, tz) {
     dplyr::mutate(doy = as.numeric(strftime(ts, format = "%j", tz = tz)) - 1)
 
   graphics::plot(data = data_plot, gro_yr ~ doy, type = "n",
-                 main = passobj("sensor_label"), ylab = "gro_yr (µm)",
+                 main = passobj("sensor_label"), ylab = paste0("gro_yr (",
+                                                               "\u00b5", "m)"),
                  xlab = "day of year", xlim = c(0, 365),
                  ylim = c(0, max(data_plot$gro_yr, na.rm = TRUE)), las = 1)
 
@@ -189,7 +190,7 @@ plot_gro_yr_print_vars <- function(data_plot, thr_plot, tz) {
                                    "tz = ", passobj("tz_plot")))
     # print applied thresholds and values
     graphics::text(x = 0.3, y = 1, adj = c(0, 1), font = 2, cex = 0.8,
-                   labels = "applied thresholds (µm)")
+                   labels = paste0("applied thresholds (", "\u00b5", "m)"))
     graphics::text(x = 0.3, y = 0.97, adj = c(0, 1), cex = 0.8,
                    labels = paste0("tol_jump = ",
                                    thr_print$thr_jump_min, " / ",
@@ -220,7 +221,8 @@ plot_gro_yr_print_vars <- function(data_plot, thr_plot, tz) {
                                  tz = tz)
     if (length(gro_period) > 0) {
       graphics::text(x = 0, y = 0.7, adj = c(0, 1), font = 2, cex = 0.8,
-                     labels = "growth statistics (µm): median (min / max)")
+                     labels = paste0("growth statistics (", "\u00b5",
+                                     "m): median (min / max)"))
       for (r in 1:nrow(gro_period)) {
         gro_period_single <- gro_period[r, ]
         graphics::text(x = 0, y = 0.7 - 0.03 * r, adj = c(0, 1), cex = 0.8,
