@@ -18,21 +18,36 @@ reversecorr <- function(data_L1, data_L2, reverse, tz) {
     dplyr::mutate(diff_L2 = c(NA, diff(value, lag = 1))) %>%
     dplyr::rename(value_L2 = value) %>%
     dplyr::left_join(., L1, by = c("series", "ts")) %>%
-    dplyr::mutate(diff = diff_L1 - diff_L2) %>%
-    dplyr::mutate(diff = ifelse(abs(diff) <= 0.1, 0, diff)) %>%
-    dplyr::mutate(diff = ifelse(is.na(diff), 0, diff)) %>%
+    dplyr::mutate(diff_plot = abs(diff_L1 - diff_L2)) %>%
     # add diff = 100 for reversed outliers (flag = "out")
-    dplyr::mutate(diff = ifelse(grepl("out", flags), 100, diff)) %>%
-    dplyr::mutate(diff_plot = abs(diff)) %>%
+    dplyr::mutate(diff_plot = ifelse(grepl("out", flags), 100, diff_plot)) %>%
     dplyr::mutate(diff_nr = 0) %>%
     dplyr::mutate(diff_nr = ifelse(grepl(".*out|.*jump", flags), 1, 0)) %>%
     dplyr::mutate(diff_nr = cumsum(diff_nr)) %>%
     dplyr::mutate(diff_nr = ifelse(grepl(".*out|.*jump", flags),
-                                   diff_nr, NA))
+                                   diff_nr, NA)) %>%
+    # sum up diff before jumps for jump removal
+    dplyr::mutate(jump_group = !is.na(diff_nr)) %>%
+    dplyr::mutate(jump_group = cumsum(jump_group)) %>%
+    dplyr::mutate(y = c(0, diff(jump_group, lag = 1))) %>%
+    dplyr::mutate(z = c(0, diff(y, lag = 1))) %>%
+    dplyr::mutate(z = ifelse(z == -1, 1, z)) %>%
+    dplyr::mutate(jump_nr = cumsum(z)) %>%
+    dplyr::group_by(jump_nr) %>%
+    dplyr::mutate(jump_group = ifelse(any(grepl(".*jump", flags)),
+                                      jump_nr, NA)) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(jump_group) %>%
+    dplyr::mutate(diff_jump = sum(diff_L1, na.rm = TRUE)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(diff_L1 = ifelse(grepl(".*jump", flags),
+                                   diff_jump, diff_L1)) %>%
+    # add jump diff for plotting
+    dplyr::mutate(diff_plot = ifelse(grepl(".*jump", flags),
+                                     abs(diff_jump), diff_plot))
 
   diff_L1 <- df$diff_L1
   val <- df$value_L2
-  diff <- df$diff
   ts <- df$ts
   reverse_row <- which(df$diff_nr %in% reverse)
   ts_rem <- df$ts[reverse_row]
@@ -42,11 +57,10 @@ reversecorr <- function(data_L1, data_L2, reverse, tz) {
   flag <- as.vector(rep(FALSE, nrow(df)), mode = "logical")
   for (r in 1:length(reverse_row)) {
     rev <- reverse_row[r]
-    val_diff <- diff[rev]
 
     # reverse differences
     if (grepl("jump", flag_old[rev])) {
-      val[rev:length(val)] <- val[rev:length(val)] + val_diff
+      val[rev:length(val)] <- val[rev:length(val)] + diff_L1[rev]
     }
     # restore deleted values
     if (grepl("out", flag_old[rev])) {
