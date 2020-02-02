@@ -4,13 +4,15 @@
 \alias{reso_check_L0}
 \title{Check Time Resolution of L0 Input Data}
 \usage{
-reso_check_L0(df, reso)
+reso_check_L0(df, reso, tz)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
 
 \item{reso}{numeric, desired output time resolution (in minutes). See
 \code{Details} for more information on data aggregation.}
+
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{reso_check} extracts the median time resolution of \code{L0} data

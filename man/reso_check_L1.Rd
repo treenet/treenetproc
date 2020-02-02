@@ -4,10 +4,12 @@
 \alias{reso_check_L1}
 \title{Check Time Resolution of L1 Input Data}
 \usage{
-reso_check_L1(df)
+reso_check_L1(df, tz)
 }
 \arguments{
 \item{df}{input \code{data.frame}.}
+
+\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \description{
 \code{reso_check} checks time resolution of \code{L1} input
