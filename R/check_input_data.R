@@ -181,6 +181,7 @@ reso_check_L0 <- function(df, reso, tz) {
 #'   \code{data.frame}.
 #'
 #' @param df input \code{data.frame}.
+#' @inheritParams proc_L1
 #'
 #' @keywords internal
 #'
