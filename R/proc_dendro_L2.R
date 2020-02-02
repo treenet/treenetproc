@@ -168,8 +168,8 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = NULL,
     }
   }
 
-  reso_df <- reso_check_L1(df = df)
-  reso_tem <- reso_check_L1(df = tem)
+  reso_df <- reso_check_L1(df = df, tz = tz)
+  reso_tem <- reso_check_L1(df = tem, tz = tz)
   if (reso_df != reso_tem) {
     stop("provide both dendrometer and temperature data at the same time ",
          "resolution.")

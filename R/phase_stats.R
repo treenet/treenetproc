@@ -80,7 +80,7 @@ phase_stats <- function(dendro_L2, phase_wnd = 8, plot_phase = FALSE,
   # Check input data ----------------------------------------------------------
   df <- dendro_L2
   check_data_L2(data_L2 = df)
-  reso <- reso_check_L1(df = df)
+  reso <- reso_check_L1(df = df, tz = tz)
   if (reso > 360) {
     message("the time resolution of the dataset ('reso') is too coarse to
             calculate phase statistics")
