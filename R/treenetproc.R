@@ -28,3 +28,32 @@
 #' @docType package
 #' @name treenetproc
 NULL
+
+utils::globalVariables(c("series", "ts", "value", "version", "max", "twd",
+                         "gro_yr", "frost", "flags", ".", ":=",
+                         "Sensor_class", "Sensor_query", "Seriesname",
+                         "Site", "Site_temp_ref", "amp", "cons", "cons_nr",
+                         "day", "day_exp", "day_shrink", "diff_L1", "diff_L2",
+                         "diff_gap", "diff_gro", "diff_jump", "diff_nona",
+                         "diff_nr", "diff_nr_first", "diff_nr_last",
+                         "diff_nr_old", "diff_nr_old_first",
+                         "diff_nr_old_last", "diff_old", "diff_plot",
+                         "diff_sum", "diff_ts", "diff_val", "doy", "dur",
+                         "end", "exp_amp", "exp_dur", "exp_end", "exp_group",
+                         "exp_slope", "exp_start", "exp_start_day", "extrema",
+                         "fill_forw", "fill_rev", "flag", "flag_group",
+                         "flag_len", "flag_nr", "flagdelete", "flagfill",
+                         "flagfrag", "flagjump", "flagout", "flagouthigh",
+                         "flagoutlow", "flagtemp", "frost_group", "gapflag",
+                         "gaple", "gaple_mins", "gapnr", "gaps", "gro",
+                         "gro_end", "gro_end_tol", "gro_start",
+                         "gro_start_tol", "gro_tot", "group_reso", "id",
+                         "iscons", "isgap", "jump_group", "jump_nr", "max_na",
+                         "min_na", "month", "month_del", "month_forc",
+                         "month_plot", "n_days", "na_prop", "norem", "rem",
+                         "shrink_amp", "shrink_dur", "shrink_end",
+                         "shrink_group", "shrink_slope", "shrink_start",
+                         "shrink_start_day", "slope", "start", "time",
+                         "unique_value", "uqk", "val_gap", "val_nona",
+                         "value_L1", "value_L2", "value_lag", "value_lead",
+                         "value_na", "y", "year", "z"))
