@@ -156,12 +156,12 @@ check_missing <- function(df) {
 #'
 #' @keywords internal
 #'
-reso_check_L0 <- function(df, reso) {
+reso_check_L0 <- function(df, reso, tz) {
 
   # calculate median resolution of input data
   reso_med <- df %>%
     dplyr::mutate(reso = as.numeric(difftime(ts, dplyr::lag(ts, 1),
-                                             units = "mins"))) %>%
+                                             units = "mins", tz = tz))) %>%
     dplyr::summarise(reso_med = stats::median(reso, na.rm = TRUE)) %>%
     dplyr::select(reso_med) %>%
     unlist(use.names = FALSE)
