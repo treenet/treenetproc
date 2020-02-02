@@ -184,21 +184,24 @@ reso_check_L0 <- function(df, reso, tz) {
 #'
 #' @keywords internal
 #'
-reso_check_L1 <- function(df) {
+reso_check_L1 <- function(df, tz) {
   reso_check <- df %>%
     dplyr::group_by(series) %>%
-    dplyr::mutate(reso_check = as.numeric(difftime(ts, dplyr::lag(ts, 1),
-                                                   units = "mins"))) %>%
+    dplyr::mutate(reso_check =
+                    as.numeric(difftime(ts, dplyr::lag(ts, 1),
+                                        units = "mins", tz = tz))) %>%
+    dplyr::select(series, reso_check) %>%
     dplyr::filter(!is.na(reso_check)) %>%
-    dplyr::summarise(reso_check = unique(reso_check)) %>%
+    dplyr::distinct() %>%
     dplyr::ungroup() %>%
     dplyr::select(-series) %>%
+    dplyr::distinct() %>%
     unlist(use.names = FALSE)
 
-  if (length(unique(reso_check)) > 1) {
+  if (length(reso_check) > 1) {
     stop("please provide time-aligned data.")
   } else {
-    reso <- unique(reso_check)
+    reso <- reso_check
   }
 
   return(reso)
