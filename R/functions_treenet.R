@@ -267,24 +267,20 @@ download_series <- function(meta_series, data_format, data_version = NULL,
     if (data_format == "L0") {
       db_folder <- "treenet0"
       db_version <- "version = 0;"
-      select_col <- c("series", "ts", "value")
       version_nm <- "L0"
     }
     if (data_format == "L1") {
       db_folder <- "treenet1"
       db_version <- "version = 1;"
-      select_col <- c("series", "ts", "value")
       version_nm <- "L1"
     }
     if (data_format == "L2") {
       db_folder <- "treenet2"
       db_version <- paste0("version = '", data_version, "';")
-      select_col <- NA
       version_nm <- "L2"
     }
   }
   if (server == "decentlab") {
-    select_col <- NA
     version_nm <- "L0"
   }
 
@@ -326,7 +322,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
     }
 
     df <- foo %>%
-      dplyr::select(match(select_col, names(.))) %>%
+      dplyr::select(-insert_date) %>%
       transform(ts = as.POSIXct(ts, format = "%m-%d-%y %H:%M:%S",
                                 tz = tz)) %>%
       dplyr::arrange(ts) %>%
