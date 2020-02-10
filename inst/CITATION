@@ -18,7 +18,7 @@ citEntry(
   year        = "2020",
   note        = "Github repository",
   url         = "https://github.com/treenet/treenetproc",
-  textVersion = "Haeni M., Knüsel S., Wilhelm M., Peters R.L., Zweifel R. 2020. treenetproc - Clean, process and visualise dendrometer data. Github repository: https://github.com/treenet/treenetproc"
+  textVersion = "Haeni M., Knüsel S., Wilhelm M., Peters R.L., Zweifel R. 2020. treenetproc - Clean, process and visualise dendrometer data. R package version 0.1.4. Github repository: https://github.com/treenet/treenetproc"
 )
 
 citEntry(
