@@ -390,7 +390,7 @@ check_package <- function(pck_name) {
 #' @keywords internal
 #'
 check_data_L1 <- function(data_L1) {
-  if (sum(colnames(data_L1) %in% c("series", "ts", "value", "version")) != 4) {
+  if (sum(colnames(data_L1) %in% c("series", "ts", "value")) != 3) {
     stop("provide time-aligned dendrometer data generated with 'proc_L1'.")
   }
 }
@@ -408,7 +408,7 @@ check_data_L1 <- function(data_L1) {
 #'
 check_data_L2 <- function(data_L2) {
   if (sum(colnames(data_L2) %in% c("series", "ts", "value", "max",
-                                   "twd", "version")) != 6) {
+                                   "twd")) != 5) {
     stop("provide processed dendrometer data generated with 'proc_dendro_L2'.")
   }
 }
