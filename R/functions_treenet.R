@@ -322,7 +322,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
     }
 
     df <- foo %>%
-      dplyr::select(-insert_date) %>%
+      dplyr::select_if(!(names(.) %in% "insert_date")) %>%
       transform(ts = as.POSIXct(ts, format = "%m-%d-%y %H:%M:%S",
                                 tz = tz)) %>%
       dplyr::arrange(ts) %>%
