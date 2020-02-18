@@ -78,7 +78,7 @@ plot_proc_L2 <- function(dendro_L1, dendro_L2, plot_period = "full",
     dplyr::mutate(diff_L1 = c(NA, diff(value, lag = 1))) %>%
     dplyr::ungroup() %>%
     dplyr::rename(value_L1 = value) %>%
-    dplyr::select(-version)
+    dplyr::select_if(!(names(.) %in% "version"))
   df_L2 <- data_L2 %>%
     dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
     dplyr::mutate(month = strftime(ts, format = "%m", tz = tz)) %>%
@@ -86,7 +86,7 @@ plot_proc_L2 <- function(dendro_L1, dendro_L2, plot_period = "full",
     dplyr::mutate(diff_L2 = c(NA, diff(value, lag = 1))) %>%
     dplyr::ungroup() %>%
     dplyr::rename(value_L2 = value) %>%
-    dplyr::select(-version)
+    dplyr::select_if(!(names(.) %in% "version"))
   df <- dplyr::full_join(df_L1, df_L2, by = c("ts", "series", "year", "month"))
 
   sensors <- unique(df$series)
