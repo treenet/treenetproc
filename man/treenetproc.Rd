@@ -16,23 +16,23 @@ The \code{treenetproc} package contains three main functions:
 
 \section{\code{proc_dendro_L2()}}{
 
-  The function \code{proc_dendro_L2} removes jumps and outliers in
-  time-aligned dendrometer data.
+  The function \code{proc_dendro_L2} removes outliers and jumps or shifts
+  in time-aligned dendrometer data.
 }
 
 \section{\code{corr_dendro_L2()}}{
 
   The function \code{corr_dendro_L2} can be used to manually correct
-  remaining errors in data cleaning.
+  remaining errors after data cleaning with \code{proc_dendro_L2}.
 }
 
 \section{Vignettes}{
 
   More information and some examples on how to use the functions can be
-  found in the vignettes of the package. To see the vignettes use:\cr
+  found in the package vignette. To see the vignette use:\cr
   \code{browseVignettes("treenetproc")}\cr
   If \code{browseVignettes} does not work, the package may need to be
-  reinstalled along with the vignettes:\cr
+  reinstalled along with the vignette:\cr
   \code{library(devtools)}\cr
   \code{devtools::install_github("treenet/treenetproc",
   build_vignettes = TRUE))}

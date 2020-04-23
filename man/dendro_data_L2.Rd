@@ -4,7 +4,9 @@
 \name{dendro_data_L2}
 \alias{dendro_data_L2}
 \title{Cleaned Dendrometer Data}
-\format{A data frame with 151236 rows and 4 variables.}
+\format{
+A data frame with 151236 rows and 4 variables.
+}
 \usage{
 data(dendro_data_L2)
 }

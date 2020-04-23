@@ -7,8 +7,8 @@
 reversecorr(data_L1, data_L2, reverse, tz)
 }
 \arguments{
-\item{reverse}{numeric vector, specify numbers of the changes that should
-be reversed. Numbers are reported in the plots produced by
+\item{reverse}{numeric vector, specify ID numbers of the changes that should
+be reversed. ID numbers are reported in the plots produced by
 \code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} with the
 argument \code{plot_period = "monthly"}.}
 

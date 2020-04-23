@@ -4,14 +4,16 @@
 \name{dendro_data_L0_wide}
 \alias{dendro_data_L0_wide}
 \title{Raw Dendrometer Data in Wide Format}
-\format{A data frame with 17897 rows and 5 variables:
+\format{
+A data frame with 17897 rows and 5 variables:
 \describe{
   \item{ts}{timestamp of the measurements}
   \item{site-1_dendro-1}{measurements of first dendrometer series}
   \item{site-1_dendro-2}{measurements of second dendrometer series.}
   \item{site-1_dendro-3}{measurements of third dendrometer series.}
   \item{site-1_temperature}{temperature measurements}
-}}
+}
+}
 \usage{
 data(dendro_data_L0_wide)
 }

@@ -4,12 +4,14 @@
 \name{temp_data_L0}
 \alias{temp_data_L0}
 \title{Raw Temperature data}
-\format{A data frame with 145770 rows and 3 variables.
+\format{
+A data frame with 145770 rows and 3 variables.
 \describe{
   \item{series}{name of the data series}
   \item{ts}{timestamp of the measurements}
   \item{value}{measured values}
-}}
+}
+}
 \usage{
 data(temp_data_L0)
 }

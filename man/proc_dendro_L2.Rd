@@ -61,7 +61,7 @@ within a period of missing data, i.e. after jumps. If
 cleaning should be plotted.}
 
 \item{plot_period}{character, specify whether plots should be displayed for
-the whole period (\code{plot_period = "full"}), or separately for each
+the whole period (\code{plot_period = "full"}), separately for each
 year (\code{plot_period = "yearly"}) or for each month
 (\code{plot_period = "monthly"}).}
 
@@ -135,6 +135,6 @@ proc_dendro_L2(dendro_L1 = dendro_data_L1, plot_period = "monthly",
 }
 \references{
 Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020.
-  treenetproc - An R package to clean, process and visualise dendrometer
-  data. In preparation.
+  treenetproc: towards a standardized processing of stem radius data.
+  In preparation.
 }

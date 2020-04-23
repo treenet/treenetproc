@@ -10,7 +10,7 @@ axis_labels_period(df, plot_period, tz)
 \item{df}{input \code{data.frame}}
 
 \item{plot_period}{character, specify whether plots should be displayed for
-the whole period (\code{plot_period = "full"}), or separately for each
+the whole period (\code{plot_period = "full"}), separately for each
 year (\code{plot_period = "yearly"}) or for each month
 (\code{plot_period = "monthly"}).}
 

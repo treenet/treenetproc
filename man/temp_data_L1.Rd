@@ -4,7 +4,9 @@
 \name{temp_data_L1}
 \alias{temp_data_L1}
 \title{Time-aligned Temperature Data}
-\format{A data frame with 147782 rows and 4 variables.}
+\format{
+A data frame with 147782 rows and 4 variables.
+}
 \usage{
 data(temp_data_L1)
 }

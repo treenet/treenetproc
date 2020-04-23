@@ -21,7 +21,7 @@ plot_L1(
 used to plot a previous version of \code{data_L1} in the background.}
 
 \item{plot_period}{character, specify whether plots should be displayed for
-the whole period (\code{plot_period = "full"}), or separately for each
+the whole period (\code{plot_period = "full"}), separately for each
 year (\code{plot_period = "yearly"}) or for each month
 (\code{plot_period = "monthly"}).}
 

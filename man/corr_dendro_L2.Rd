@@ -25,12 +25,12 @@ corr_dendro_L2(
 \item{dendro_L2}{cleaned dendrometer data as produced by
 \code{\link{proc_dendro_L2}}.}
 
-\item{reverse}{numeric vector, specify numbers of the changes that should
-be reversed. Numbers are reported in the plots produced by
+\item{reverse}{numeric vector, specify ID numbers of the changes that should
+be reversed. ID numbers are reported in the plots produced by
 \code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} with the
 argument \code{plot_period = "monthly"}.}
 
-\item{force}{character vector, specify the dates after which jumps
+\item{force}{character vector, specify the dates after which jumps/shifts
 should be corrected. The largest value difference occurring in a
 period of \code{n_days} after the specified dates in \code{force} is
 corrected. Dates need to be in a standard date or
@@ -47,7 +47,7 @@ for which changes should be made. Data of other series is left unchanged.
 Not needed if only a single series is provided.}
 
 \item{n_days}{numeric, length of the period (in days) following the dates
-specified in \code{force} in which a jump is corrected. Increase if
+specified in \code{force} in which a jump/shift is corrected. Increase if
 the gap in data is longer than the default (\code{n_days = 5}).}
 
 \item{plot}{logical, specify whether implemented changes should be plotted.}
@@ -64,10 +64,10 @@ The function returns a \code{data.frame} with corrected \code{L2}
 }
 \description{
 \code{corr_dendro_L2} corrects remaining errors in cleaned \code{L2}
-  dendrometer data. Can be used to manually correct errors that cannot
-  be removed by changing input parameter values in
-  \code{\link{proc_dendro_L2}} or to reverse errors that are introduced
-  during data cleaning.
+  dendrometer data. The function can be used to manually correct remaining
+  errors that cannot be removed by adjusting the input parameter values in
+  \code{\link{proc_dendro_L2}}. The function can reverse erroneously
+  introduced changes or force changes that were not automatically made.
 }
 \examples{
 corr_dendro_L2(dendro_L1 = dendro_data_L1, dendro_L2 = dendro_data_L2,

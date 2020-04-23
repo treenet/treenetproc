@@ -4,12 +4,14 @@
 \name{dendro_data_L0}
 \alias{dendro_data_L0}
 \title{Raw Dendrometer Data in Long Format}
-\format{A data frame with 152469 rows and 3 variables:
+\format{
+A data frame with 152469 rows and 3 variables:
 \describe{
   \item{series}{name of the data series}
   \item{ts}{timestamp of the measurements}
   \item{value}{measured values}
-}}
+}
+}
 \usage{
 data(dendro_data_L0)
 }

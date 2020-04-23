@@ -23,7 +23,7 @@ plot_proc_L2(
 \code{\link{proc_dendro_L2}}.}
 
 \item{plot_period}{character, specify whether plots should be displayed for
-the whole period (\code{plot_period = "full"}), or separately for each
+the whole period (\code{plot_period = "full"}), separately for each
 year (\code{plot_period = "yearly"}) or for each month
 (\code{plot_period = "monthly"}).}
 
@@ -53,9 +53,9 @@ Plots are saved in a PDF to the current working directory as
   lines at the bottom of the panel indicate frost periods. The third panel
   shows the changes (red) as well as the deleted values (pink) on a
   logarithmic scale. In case \code{plot_period = "monthly"}, the changes
-  that occurred are numbered. The numbers facilitate the reversal of wrong
-  or unwanted corrections with \code{\link{corr_dendro_L2}}. The last panel
-  shows the tree-water deficit (twd).
+  that occurred are numbered. The ID numbers facilitate the reversal of
+  wrong or unwanted corrections with \code{\link{corr_dendro_L2}}.
+  The last panel shows the tree-water deficit (twd).
 }
 \description{
 \code{plot_proc_L2} plots changes between time-aligned (\code{L1}) and

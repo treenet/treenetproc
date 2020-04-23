@@ -11,7 +11,7 @@ plotting_L1(data_L1, data_L1_orig, plot_period, tz)
 is plotted behind the corrected \code{L1} data.}
 
 \item{plot_period}{character, specify whether plots should be displayed for
-the whole period (\code{plot_period = "full"}), or separately for each
+the whole period (\code{plot_period = "full"}), separately for each
 year (\code{plot_period = "yearly"}) or for each month
 (\code{plot_period = "monthly"}).}
 
