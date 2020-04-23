@@ -51,11 +51,11 @@ temp_data_L0 <- bind_rows(frost_L0, temp_L0) %>%
   arrange(ts)
 
 # save L0 data
-usethis::use_data(temp_data_L0, overwrite = TRUE)
+usethis::use_data(temp_data_L0, compress = "bzip2", overwrite = TRUE)
 
 
 # prepare L1 data -------------------------------------------------------------
 temp_data_L1 <- proc_L1(data_L0 = temp_data_L0, reso = 10, input = "long")
 
 # save L1 data
-usethis::use_data(temp_data_L1, overwrite = TRUE)
+usethis::use_data(temp_data_L1, compress = "bzip2", overwrite = TRUE)

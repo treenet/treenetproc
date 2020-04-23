@@ -113,14 +113,14 @@ dendro_data_L0 <- bind_rows(list(jump_L0, outlier_L0, dendro_L0, shrink_L0,
                                  delete_L0, shrink_2_L0, frost_L0))
 
 # save L0 data
-usethis::use_data(dendro_data_L0, overwrite = TRUE)
+usethis::use_data(dendro_data_L0, compress = "bzip2", overwrite = TRUE)
 
 
 # prepare L1 data -------------------------------------------------------------
 dendro_data_L1 <- proc_L1(data_L0 = dendro_data_L0, reso = 10, input = "long")
 
 # save L1 data
-usethis::use_data(dendro_data_L1, overwrite = TRUE)
+usethis::use_data(dendro_data_L1, compress = "bzip2", overwrite = TRUE)
 
 
 # prepare L2 data -------------------------------------------------------------
@@ -129,7 +129,7 @@ dendro_data_L2 <- proc_dendro_L2(dendro_L1 = dendro_data_L1,
                                  temp_L1 = temp_data_L1, plot = FALSE)
 
 # save L2 data
-usethis::use_data(dendro_data_L2, overwrite = TRUE)
+usethis::use_data(dendro_data_L2, compress = "bzip2", overwrite = TRUE)
 
 
 # prepare dendro_data_L0_wide -------------------------------------------------
