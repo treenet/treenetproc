@@ -1,7 +1,7 @@
 #' Calculate the Start and End of the Growing Season
 #'
-#' \code{grow_seas} returns the day of year at which growth starts
-#'   or ends. Values are returned starting from the second year only, since
+#' \code{grow_seas} returns the day of year of growth onset and cessation.
+#'   Values are returned starting from the second year only, since
 #'   the calculation depends on the previous year (see Details for further
 #'   information on the calculation).
 #'
@@ -43,8 +43,8 @@
 #'   first timestamp of the year, all other rows are set to \code{NA}.
 #'
 #' @references Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020.
-#'   treenetproc - An R package to clean, process and visualise dendrometer
-#'   data. In preparation.
+#'   treenetproc: towards a standardized processing of stem radius data.
+#'   In preparation.
 #'
 #' @examples
 #' grow_seas(dendro_L2 = dendro_data_L2)

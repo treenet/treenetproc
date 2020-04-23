@@ -9,7 +9,7 @@
 #' @param dendro_L2 cleaned dendrometer data as produced by
 #'   \code{\link{proc_dendro_L2}}.
 #' @param plot_period character, specify whether plots should be displayed for
-#'   the whole period (\code{plot_period = "full"}), or separately for each
+#'   the whole period (\code{plot_period = "full"}), separately for each
 #'   year (\code{plot_period = "yearly"}) or for each month
 #'   (\code{plot_period = "monthly"}).
 #' @param plot_show character, specify whether all periods should be plotted
@@ -33,9 +33,9 @@
 #'   lines at the bottom of the panel indicate frost periods. The third panel
 #'   shows the changes (red) as well as the deleted values (pink) on a
 #'   logarithmic scale. In case \code{plot_period = "monthly"}, the changes
-#'   that occurred are numbered. The numbers facilitate the reversal of wrong
-#'   or unwanted corrections with \code{\link{corr_dendro_L2}}. The last panel
-#'   shows the tree-water deficit (twd).
+#'   that occurred are numbered. The ID numbers facilitate the reversal of
+#'   wrong or unwanted corrections with \code{\link{corr_dendro_L2}}.
+#'   The last panel shows the tree-water deficit (twd).
 #'
 #' @export
 #'

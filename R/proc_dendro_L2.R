@@ -81,8 +81,8 @@
 #' @export
 #'
 #' @references Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020.
-#'   treenetproc - An R package to clean, process and visualise dendrometer
-#'   data. In preparation.
+#'   treenetproc: towards a standardized processing of stem radius data.
+#'   In preparation.
 #'
 #' @examples
 #' proc_dendro_L2(dendro_L1 = dendro_data_L1, plot_period = "monthly",

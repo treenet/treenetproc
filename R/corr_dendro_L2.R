@@ -1,19 +1,19 @@
 #' Manually Correct Processed Dendrometer Data
 #'
 #' \code{corr_dendro_L2} corrects remaining errors in cleaned \code{L2}
-#'   dendrometer data. Can be used to manually correct errors that cannot
-#'   be removed by changing input parameter values in
-#'   \code{\link{proc_dendro_L2}} or to reverse errors that are introduced
-#'   during data cleaning.
+#'   dendrometer data. The function can be used to manually correct remaining
+#'   errors that cannot be removed by adjusting the input parameter values in
+#'   \code{\link{proc_dendro_L2}}. The function can reverse erroneously
+#'   introduced changes or force changes that were not automatically made.
 #'
 #' @param dendro_L1 time-aligned dendrometer data as produced by
 #'   \code{\link{proc_L1}}. Optional, only needed for \code{reverse} and if
 #'   \code{plot = TRUE}.
-#' @param reverse numeric vector, specify numbers of the changes that should
-#'   be reversed. Numbers are reported in the plots produced by
+#' @param reverse numeric vector, specify ID numbers of the changes that should
+#'   be reversed. ID numbers are reported in the plots produced by
 #'   \code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} with the
 #'   argument \code{plot_period = "monthly"}.
-#' @param force character vector, specify the dates after which jumps
+#' @param force character vector, specify the dates after which jumps/shifts
 #'   should be corrected. The largest value difference occurring in a
 #'   period of \code{n_days} after the specified dates in \code{force} is
 #'   corrected. Dates need to be in a standard date or
@@ -28,7 +28,7 @@
 #'   Not needed if only a single series is provided.
 #' @param plot logical, specify whether implemented changes should be plotted.
 #' @param n_days numeric, length of the period (in days) following the dates
-#'   specified in \code{force} in which a jump is corrected. Increase if
+#'   specified in \code{force} in which a jump/shift is corrected. Increase if
 #'   the gap in data is longer than the default (\code{n_days = 5}).
 #' @inheritParams proc_dendro_L2
 #' @inheritParams plot_proc_L2
