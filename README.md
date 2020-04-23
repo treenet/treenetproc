@@ -62,12 +62,13 @@ citation("treenetproc")
 #> To cite treenetproc in publications use:
 #> 
 #>   Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020.
-#>   treenetproc: An R package to clean, process and visualise dendrometer
-#>   data. In prep.
+#>   treenetproc: towards a standardized processing of stem radius data.
+#>   In prep.
 #> 
 #>   Haeni M., Knüsel S., Wilhelm M., Peters R.L., Zweifel R. 2020.
-#>   treenetproc - Clean, process and visualise dendrometer data. Github
-#>   repository: https://github.com/treenet/treenetproc
+#>   treenetproc - Clean, process and visualise dendrometer data. R
+#>   package version 0.1.4. Github repository:
+#>   https://github.com/treenet/treenetproc
 #> 
 #>   Hadley Wickham, Romain François, Lionel Henry and Kirill Müller
 #>   (2019). dplyr: A Grammar of Data Manipulation. R package version

@@ -89,3 +89,4 @@ To cite `treenetproc` in a publication use:
 ```{r citation, echo = TRUE, message=FALSE, warning=FALSE}
 citation("treenetproc")
 ```
+
