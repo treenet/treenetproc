@@ -58,7 +58,9 @@ library(dplyr)
 
 The package `treenetproc` cleans, processes and visualises highly resolved 
 time series of dendrometer data. In two steps, raw dendrometer data is aligned
-to regular time intervals (level 1: `L1`) and cleaned (level 2: `L2`).
+to regular time intervals (level 1: `L1`) and cleaned (level 2: `L2`). In an
+optional third step several commonly used characteristics such as the start and
+end of stem growth can be calculated.
 This vignette demonstrates the workflow of the package with sample code. 
 For more information on the  functionality of the package, the user is referred
 to Knüsel et al. (2020, in prep).
@@ -68,7 +70,7 @@ to Knüsel et al. (2020, in prep).
 # Data input
 Raw dendrometer and temperature data can be provided as input. Providing
 temperature data is optional. However, temperature data increases the quality
-of the cleaning process (cf. Step 2: Providing temperature data).
+of error detection and processing (cf. Step 2: Providing temperature data).
 
 The raw dendrometer or climate data can be provided in long (Table 1) or wide
 format (Table 2). Data of multiple sensors can either be specified in a column 
@@ -128,9 +130,9 @@ proc_L1(data_L0 = dendro_data_L0_wide, reso = 10, input = "wide")
 <br><br>
 
 
-# Step 2: Data cleaning (L2)
-Time-aligned dendrometer data can be cleaned with the function 
-`proc_dendro_L2`. To increase the quality of the cleaning process,
+# Step 2: Error detection and processing (L2)
+Time-aligned dendrometer data can be cleaned and processed with the function 
+`proc_dendro_L2`. To increase the quality of error detection,
 time-aligned temperature data can optionally be provided to `temp_L1`.
 
 ```{r prepare for proc_dendro_L2, echo = FALSE}
@@ -176,9 +178,9 @@ The output `data.frame` contains the following columns:
 * **version**: package version number
 <br><br>
 
-The column `flags` documents all changes that occurred during the data 
-cleaning. The numbers after the name of the flag specify in which iteration 
-of the cleaning process the changes occurred:
+The column `flags` documents all changes that occurred during the error
+detection and processing. The numbers after the name of the flag specify 
+in which iteration of the cleaning process the changes occurred:
 
 * `"out"`: outlier point removed (e.g. `"out1"` for an outlier removed in
   iteration 1 of the cleaning process)
@@ -188,7 +190,7 @@ of the cleaning process the changes occurred:
 <br><br>
 
 
-## Evaluation of data cleaning
+## Evaluation of error detection
 The visual checking of the results remains an essential step in dendrometer 
 data cleaning. By default all changes are plotted (`plot = TRUE`) and saved to
 a PDF file in the current working directory (`plot_export = TRUE`). 
@@ -214,17 +216,17 @@ The plot contains...
   the first panel, 
 * the stem radius changes of the cleaned `L2` dendrometer data (with `L1` data 
   in the background in grey) in the second panel. Interpolated points are 
-  circled and frost periods are indicated with a horizontal, light-blue line
+  circled and frost periods are indicated with a horizontal, cyan line
 * the changes between `L1` and `L2` data (red) as well as the deleted values
   (pink) in the third panel
 * and the tree water deficit (twd) in the last panel
 <br>
 
-When plotted monthly (`plot_period = "monthly"`), the changes that occurred 
-during the processing are numbered. The numbers facilitate the reversal of 
+When plotted monthly (`plot_period = "monthly"`), each change to the data 
+gets an ID. The ID numbers facilitate the reversal of 
 wrong or unwanted corrections. Alternatively, the plots can be drawn for 
 the full period (`plot_period = "full"`) or for each year separately 
-(`plot_period = "yearly"`). In these cases, the changes are not numbered.
+(`plot_period = "yearly"`). In these cases, the ID's are not displayed.
 <br><br>
 
 As a summary for each dendrometer series, an additional plot shows the yearly 
@@ -232,7 +234,7 @@ growth curves aligned by the day of year. The first year is shown in grey since
 the measurements may start before or after the beginning of the growing season
 and therefore the start of growth may not be comparable to other years.  
 Beneath the plot all input values, some growth statistics as well as the 
-package version used for data cleaning are reported.
+package version used are reported.
 
 
 ```{r process to L2 last_plot, fig.asp = 1.4, fig.retina = 2, fig.keep = "last", echo = FALSE, results = "hide", message = FALSE}
@@ -241,14 +243,14 @@ proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1,
 ```
 
 
-## Adjustments to data cleaning parameters
+## Adjustments to parameters of `proc_dendro_L2()`
 
-### Rigidity of data cleaning
-The rigidity of the data cleaning can be adjusted with the variables
+### Rigidity of error detection
+The rigidity of the error detection can be adjusted with the variables
 `tol_out` and `tol_jump`. Both variables control the thresholds used for
-the classification of outliers and jumps.
+the classification of outliers and jumps/shifts in the data.
 
-If values are deleted (i.e. classified as outliers) that are not outliers, the
+If values are erroneously deleted (i.e. classified as outliers), the
 value of `tol_out` should be increased (high values of `tol_out` decrease the 
 rigidity of the thresholds). A decrease in the value of `tol_out`, in contrast, 
 is appropriate if outliers are not detected as such (low values of `tol_out`
@@ -259,7 +261,7 @@ contrast, is appropriate if obvious jumps are not corrected.
 <br>
 
 
-#### Example of too rigid data cleaning
+#### Example of too rigid error detection
 ```{r shrinking example code, fig.asp=0.9, fig.show="hide", message=FALSE, warning=FALSE, results="hide"}
 # Load dataset
 data("dendro_data_L1")
@@ -390,15 +392,16 @@ classification of the values during the frost shrinkage as outliers.
 
 
 ## Manual corrections
-If not all errors in data cleaning can be removed by adjusting the default 
-values of `tol_jump` and/or `tol_out`, remaining errors can be removed using
-the function `corr_dendro_L2()`. There are three possibilities to reverse 
-wrong changes:
+Remaining errors that cannot be removed by adjusting the default values
+of `tol_jump` and/or `tol_out` can be corrected using the function
+`corr_dendro_L2()`. This function can be used to reverse erroneous changes
+or force changes that were not automatically made. There are three 
+possibilities to manually correct remaining errors:
 
-* **reverse**: specify the numbers of the changes that should be reversed.
+* **reverse**: specify the ID numbers of the changes that should be reversed.
   Remaining changes are renumbered starting at 1.
-* **force**: force a jump in the data that was not corrected for by 
-  specifying a point in time prior (but close to) where the jump should occur.
+* **force**: force a shift in the data that was not corrected for by 
+  specifying a date up to five days prior to where the shift should occur.
 * **delete**: delete an entire period of erroneous data by specifying a
   date range. This can also be done for `L1` data with the function 
   `corr_dendro_L1()`.
@@ -450,12 +453,12 @@ column `flags` as:
 
 
 # Step 3: Data aggregation (optional)
-After data cleaning and the manual removal of remaining errors, the package
-offers two functions to calculate additional physiological parameters that may
-be of use for later analyses. The function `grow_seas` returns the day of year 
-of growth onset and growth cessation. The function `phase_stats` calculates 
-calculates the timing, duration, amplitude and the rate of change of shrinkage
-and expansion phases.
+After error detection and processing and the manual removal of remaining 
+errors, the package offers two functions to calculate additional physiological
+parameters that may be of use for later analyses. The function `grow_seas` 
+returns the day of year of growth onset and growth cessation. The function
+`phase_stats` calculates the timing, duration, amplitude and the rate of change
+of shrinkage and expansion phases.
 <br>
 
 
@@ -547,8 +550,8 @@ mds <- phase_stats %>%
 
 
 # References
-Knüsel S, Haeni M, Wilhelm M, Peters R, Zweifel R (2020) treenetproc: An R
-package to clean, process and visualise dendrometer data. In prep.
+Knüsel S, Haeni M, Wilhelm M, Peters R, Zweifel R (2020) treenetproc: towards a 
+standardized processing of stem radius data. In prep.
 
 [Zweifel R, Haeni M, Buchmann N, Eugster W (2016) Are trees able to grow in 
 periods of stem shrinkage? New Phytol. 211:839-49.](https://doi.org/10.1111/nph.13995)
