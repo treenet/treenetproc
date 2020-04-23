@@ -2,12 +2,12 @@ citHeader("To cite treenetproc in publications use:")
 
 citEntry(
   entry       = "Manual",
-  title       = "treenetproc: An R package to clean, process and visualise dendrometer data",
+  title       = "treenetproc: towards a standardized processing of stem radius data",
   author      = c(person("Simon", "Knüsel"), person("Matthias", "Haeni"),
   person("Micah", "Wilhelm"), person("Richard L.", "Peters"), person("Roman", "Zweifel")),
   year        = "2020",
   url         = "https://github.com/treenet/treenetproc",
-  textVersion = "Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020. treenetproc: An R package to clean, process and visualise dendrometer data. In prep."
+  textVersion = "Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020. treenetproc: towards a standardized processing of stem radius data. In prep."
 )
 
 citEntry(
