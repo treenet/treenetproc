@@ -62,12 +62,21 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
   # read metadata file
   auth <- config::get("googledrive_auth", file = path_cred)
   googledrive::drive_auth(email = auth$email)
-  googlesheets4::sheets_auth(token = googledrive::drive_token())
+  googlesheets4::gs4_auth(token = googledrive::drive_token())
 
-  suppressMessages(
-    meta <- googledrive::drive_get("Metadata") %>%
-      googlesheets4::read_sheet("Metadata")
-  )
+  repeat {
+    meta <- try(
+      suppressMessages(
+        googledrive::drive_get("Metadata") %>%
+          googlesheets4::read_sheet("Metadata")),
+      silent=T)
+    if ("try-error" %in% class(meta)) {
+      message("Metadata service error, retrying in 100s...")
+      Sys.sleep(100)
+    } else {
+      break
+    }
+  }
 
   # select specified series from metadata file
   meta_filter <- meta$Seriesname
