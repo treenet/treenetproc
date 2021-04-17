@@ -2,12 +2,12 @@ citHeader("To cite treenetproc in publications use:")
 
 citEntry(
   entry       = "Manual",
-  title       = "treenetproc: towards a standardized processing of stem radius data",
+  title       = "Processing and extraction of seasonal tree physiological parameters from stem radius time series",
   author      = c(person("Simon", "Knüsel"), person("Matthias", "Haeni"),
   person("Micah", "Wilhelm"), person("Richard L.", "Peters"), person("Roman", "Zweifel")),
-  year        = "2020",
+  year        = "2021",
   url         = "https://github.com/treenet/treenetproc",
-  textVersion = "Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020. treenetproc: towards a standardized processing of stem radius data. In prep."
+  textVersion = "Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2021. Processing and extraction of seasonal tree physiological parameters from stem radius time series. In prep."
 )
 
 citEntry(
