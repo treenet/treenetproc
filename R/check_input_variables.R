@@ -16,11 +16,11 @@ check_input_variables <- function(list) {
   if ("data_format" %in% var_names) {
     if (length(list$data_format) > 1) {
       stop("You cannot download multiple 'data_formats' at once.\n",
-           "'data_format' needs to be 'L0', 'L1' or 'L2'.")
+           "'data_format' needs to be 'L0', 'L1', 'L2' or 'L2M'.")
     }
     if (length(list$data_format) > 0) {
-      if (!(list$data_format %in% c("L0", "L1", "L2"))) {
-        stop("Variable 'data_format' needs to be 'L0', 'L1' or 'L2'.")
+      if (!(list$data_format %in% c("L0", "L1", "L2", "L2M"))) {
+        stop("Variable 'data_format' needs to be 'L0', 'L1', 'L2' or 'L2M'.")
       }
     }
   }
