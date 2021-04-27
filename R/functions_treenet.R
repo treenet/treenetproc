@@ -246,7 +246,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   if (length(data_version) == 0 & data_format %in% c("L2","L2M")) {
   auth <- config::get("googledrive_auth", file = path_cred)
   googledrive::drive_auth(email = auth$email)
-  googlesheets4::sheets_auth(token = googledrive::drive_token())
+  googlesheets4::gs4_auth(token = googledrive::drive_token())
 
     suppressMessages(
       data_info <- googledrive::drive_get(id = "1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08") %>%
@@ -262,7 +262,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   else if (data_format == "L2M") {
     auth <- config::get("googledrive_auth", file = path_cred)
     googledrive::drive_auth(email = auth$email)
-    googlesheets4::sheets_auth(token = googledrive::drive_token())
+    googlesheets4::gs4_auth(token = googledrive::drive_token())
 
     suppressMessages(
       data_info <- googledrive::drive_get(id = "1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08") %>%
