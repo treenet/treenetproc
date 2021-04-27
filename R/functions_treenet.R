@@ -338,15 +338,35 @@ download_series <- function(meta_series, data_format, data_version = NULL,
                             password = cred$password)
       setUTC1()
       if (data_format == "L2M") {
-        foo <- sqldf::sqldf(paste0("WITH my_select AS (
-                                     SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
-                                     FROM treenetm
-                                     WHERE series = '", series[i], "' AND ", db_version, " AND dataset = '", data_set, "'
-                                    )
-                                   SELECT * FROM my_select
-                                   UNION ALL
-                                   SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
-                                   FROM treenet2 WHERE series = '", series[i], "' AND ", db_version, " AND ts > (SELECT max(ts) FROM my_select)"), connection = con)
+paste0("WITH
+LM AS
+(SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
+ FROM treenetm WHERE series = '", series[i],"' AND ", db_version," AND dataset = '", data_set,"'),
+L2 AS
+(SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
+ FROM treenet2 WHERE series = '", series[i],"' AND ", db_version,")
+select series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
+FROM LM
+UNION ALL
+SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
+FROM L2
+WHERE NOT EXISTS (SELECT 1 FROM LM WHERE LM.ts = L2.ts);")
+
+        foo <- sqldf::sqldf(paste0("WITH
+                                    LM AS
+                                    (SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
+                                     FROM treenetm WHERE series = '", series[i],"' AND ", db_version," AND dataset = '", data_set,"'),
+                                    L2 AS
+                                    (SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
+                                     FROM treenet2 WHERE series = '", series[i],"' AND ", db_version,")
+                                    select series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
+                                    FROM LM
+                                    UNION ALL
+                                    SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
+                                    FROM L2
+                                    WHERE NOT EXISTS
+                                   (SELECT 1 FROM LM WHERE LM.ts = L2.ts);"),
+                            connection = con)
       } else {
         foo <- sqldf::sqldf(paste0("SELECT * from ", db_folder,
                                    " where series = '", series[i], "' AND ",
