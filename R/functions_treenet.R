@@ -305,7 +305,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
     }
     if (data_format == "L2M") {
       db_folder <- "treenetm"
-      db_version <- paste0("dataset = '", data_set, "'")
+      db_version <- paste0("version = '", data_version, "'")
       version_nm <- "L2M"
     }
   }
@@ -340,7 +340,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
         foo <- sqldf::sqldf(paste0("WITH
                                     LM AS
                                     (SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
-                                     FROM treenetm WHERE series = '", series[i],"' AND ", db_version,"),
+                                     FROM treenetm WHERE series = '", series[i],"' AND dataset = '", data_set, "'),
                                     L2 AS
                                     (SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
                                      FROM treenet2 WHERE series = '", series[i],"' AND ", db_version,")
