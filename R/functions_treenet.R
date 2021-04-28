@@ -243,7 +243,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   # load credentials
   path_cred <- load_credentials(path_cred = path_cred)
 
-  if (length(data_version) == 0 & data_format %in% c("L2","L2M")) {
+  if (length(data_version) == 0 & data_format == "L2") {
   auth <- config::get("googledrive_auth", file = path_cred)
   googledrive::drive_auth(email = auth$email)
   googlesheets4::gs4_auth(token = googledrive::drive_token())
@@ -255,7 +255,6 @@ download_series <- function(meta_series, data_format, data_version = NULL,
         # unlist()
     )
     data_version <- data_info$Current_L2_version
-    data_set     <- data_info$Current_LM_version
   }
 
   # Set default data_set for L2M data --------------------------------------
@@ -306,7 +305,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
     }
     if (data_format == "L2M") {
       db_folder <- "treenetm"
-      db_version <- paste0("version = '", data_version, "'")
+      db_version <- paste0("dataset = '", data_set, "'")
       version_nm <- "L2M"
     }
   }
@@ -338,28 +337,14 @@ download_series <- function(meta_series, data_format, data_version = NULL,
                             password = cred$password)
       setUTC1()
       if (data_format == "L2M") {
-paste0("WITH
-LM AS
-(SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
- FROM treenetm WHERE series = '", series[i],"' AND ", db_version," AND dataset = '", data_set,"'),
-L2 AS
-(SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
- FROM treenet2 WHERE series = '", series[i],"' AND ", db_version,")
-select series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
-FROM LM
-UNION ALL
-SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
-FROM L2
-WHERE NOT EXISTS (SELECT 1 FROM LM WHERE LM.ts = L2.ts);")
-
         foo <- sqldf::sqldf(paste0("WITH
                                     LM AS
                                     (SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
-                                     FROM treenetm WHERE series = '", series[i],"' AND ", db_version," AND dataset = '", data_set,"'),
+                                     FROM treenetm WHERE series = '", series[i],"' AND ", db_version,"),
                                     L2 AS
                                     (SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
                                      FROM treenet2 WHERE series = '", series[i],"' AND ", db_version,")
-                                    select series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
+                                    SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
                                     FROM LM
                                     UNION ALL
                                     SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
@@ -368,8 +353,8 @@ WHERE NOT EXISTS (SELECT 1 FROM LM WHERE LM.ts = L2.ts);")
                                    (SELECT 1 FROM LM WHERE LM.ts = L2.ts);"),
                             connection = con)
       } else {
-        foo <- sqldf::sqldf(paste0("SELECT * from ", db_folder,
-                                   " where series = '", series[i], "' AND ",
+        foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
+                                   " WHERE series = '", series[i], "' AND ",
                                    db_version), connection = con)
       }
       invisible(DBI::dbDisconnect(con))
