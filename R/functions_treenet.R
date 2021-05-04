@@ -350,7 +350,8 @@ download_series <- function(meta_series, data_format, data_version = NULL,
                                     SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
                                     FROM L2
                                     WHERE NOT EXISTS
-                                   (SELECT 1 FROM LM WHERE LM.ts = L2.ts);"),
+                                   (SELECT 1 FROM LM WHERE LM.ts = L2.ts)
+                                   ORDER BY ts;"),
                             connection = con)
       } else {
         foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
