@@ -62,7 +62,7 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
 
 
   # Time-align downloaded data ------------------------------------------------
-  if (data_format %in% c("L1", "L2")) {
+  if (data_format %in% c("L1", "L2", "L2M")) {
     list_align <- vector("list", length = length(list_server))
     passenv$reso <- 10 # needed for fillintergaps in tsalign
     for (s in 1:length(list_align)) {
