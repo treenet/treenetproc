@@ -337,7 +337,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
                             password = cred$password)
       setUTC1()
       if (data_format == "L2M") {
-        foo <- sqldf::sqldf(paste0("WITH
+        string <-           paste0("WITH
                                     LM AS
                                     (SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
                                      FROM treenetm WHERE series = '", series[i],"' AND dataset = '", data_set, "'),
@@ -351,7 +351,9 @@ download_series <- function(meta_series, data_format, data_version = NULL,
                                     FROM L2
                                     WHERE NOT EXISTS
                                    (SELECT 1 FROM LM WHERE LM.ts = L2.ts)
-                                   ORDER BY ts;"),
+                                   ORDER BY ts;")
+        print(string)
+        foo <- sqldf::sqldf(string,
                             connection = con)
       } else {
         foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
