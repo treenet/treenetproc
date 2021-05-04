@@ -254,7 +254,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
         # unname() %>%
         # unlist()
     )
-    data_version <- data_info$Current_L2_version
+    data_version <- data_info$Current_L2_version[1]
   }
 
   # Set default data_set for L2M data --------------------------------------
@@ -267,7 +267,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
       data_info <- googledrive::drive_get(id = "1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08") %>%
         googlesheets4::read_sheet("Ancillary")
     )
-    data_set     <- data_info$Current_LM_version
+    data_set     <- data_info$Current_LM_version[1]
   }
 
 
@@ -352,7 +352,6 @@ download_series <- function(meta_series, data_format, data_version = NULL,
                                     WHERE NOT EXISTS
                                    (SELECT 1 FROM LM WHERE LM.ts = L2.ts)
                                    ORDER BY ts;")
-        print(string)
         foo <- sqldf::sqldf(string,
                             connection = con)
       } else {
