@@ -55,7 +55,7 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
   list_server <- download_series(meta_series = meta_series,
                                  data_format = data_format,
                                  data_version = data_version, from = from,
-                                 to = to, last = last, bind_df = FALSE,
+                                 to = to, last = last, bind_df = bind_df,
                                  reso = 10, path_cred = path_cred,
                                  server = server, temp_ref = temp_ref, tz = tz,
                                  use_intl = use_intl)
