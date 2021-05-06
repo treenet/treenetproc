@@ -18,7 +18,8 @@ download_treenet(
   export = FALSE,
   last = NULL,
   tz = "Etc/GMT-1",
-  use_intl = FALSE
+  use_intl = FALSE,
+  temp_ref = FALSE
 )
 }
 \arguments{
@@ -72,6 +73,10 @@ be empty.}
 \item{use_intl}{logical, specify whether this function is used
 internally on the server. Changes \code{stop()} error messages to
 \code{message()} only.}
+
+\item{temp_ref}{logical, specify whether the reference temperature
+dataset(s) should be downloaded along with specified data.}
+
 }
 \value{
 If \code{export = TRUE} each sensor is saved as an

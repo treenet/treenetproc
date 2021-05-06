@@ -30,7 +30,7 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
                              bind_df = TRUE, server = "treenet",
                              data_format = "L0", data_version = NULL,
                              path_cred = NULL, export = FALSE, last = NULL,
-                             tz = "Etc/GMT-1", use_intl = FALSE) {
+                             tz = "Etc/GMT-1", use_intl = FALSE, temp_ref = FALSE) {
 
   # Check input variables -----------------------------------------------------
   list_inputs <- mget(ls())
@@ -57,7 +57,7 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
                                  data_version = data_version, from = from,
                                  to = to, last = last, bind_df = FALSE,
                                  reso = 10, path_cred = path_cred,
-                                 server = server, temp_ref = FALSE, tz = tz,
+                                 server = server, temp_ref = temp_ref, tz = tz,
                                  use_intl = use_intl)
 
   # return null if no data
