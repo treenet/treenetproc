@@ -60,6 +60,8 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
                                  server = server, temp_ref = FALSE, tz = tz,
                                  use_intl = use_intl)
 
+  # return null if no data
+  if (length(return(list_server)) == 0) return(NULL)
 
   # Time-align downloaded data ------------------------------------------------
   if (data_format %in% c("L1", "L2")) {

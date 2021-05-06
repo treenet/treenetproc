@@ -418,6 +418,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
     if (use_intl) {
       message(paste("There is no data available for the specified sensor(s):",
                     meta_series$series))
+      return(NULL)
     }
   }
 
