@@ -1,6 +1,6 @@
 #' Download Dendrometer Data from TreeNet or Decentlab Server
 #'
-#' \code{download_treenet} loads \code{L0, L1, L2 or L2M} dendrometer data from
+#' \code{download_treenet} loads \code{L0, L1, L2, LM or L2M} dendrometer data from
 #'   the TreeNet or Decentlab server.
 #'
 #' @param export logical, indicate whether each sensor will be saved as
@@ -44,7 +44,7 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
   path_cred <- load_credentials(path_cred = path_cred)
 
   # select series and reference temperature for download
-  if (data_format %in% c("L2","L2M")) {
+  if (data_format %in% c("L2","LM","L2M")) {
     sensor_class <- "dendrometer"
   }
   meta_series <- select_series(site = site, sensor_class = sensor_class,
