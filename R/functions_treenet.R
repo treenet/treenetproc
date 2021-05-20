@@ -93,7 +93,7 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
         meta_select <- c(meta_select, meta_sub$Seriesname)
         meta_airtemp <- unique(meta_sub$Site_temp_ref)
       } else {
-        stop(paste0("Site '", site[t], "' does not exist."))
+        message(paste0("Site '", site[t], "' does not exist."))
       }
     }
     meta_filter <- meta_select
@@ -150,7 +150,7 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
       if (nrow(meta_sub) != 0) {
         meta_select <- c(meta_select, meta_sub$Seriesname)
       } else {
-        stop(paste0("Sensor name '", sensor_name[t], "' does not exist."))
+        message(paste0("Sensor name '", sensor_name[t], "' does not exist."))
       }
     }
     meta_filter <- meta_select
