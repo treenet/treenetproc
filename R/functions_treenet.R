@@ -349,7 +349,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
         if (is.na(ts.max.L2)) {
           message(paste0("There is no L2 data available for ", series[i], "."))
         } else {
-          message(paste0("Data is L2 for ", series[i], " after ", format(ts.max.LM, "%Y-%m-%d %H:%M:%S"), "."))
+          print(paste0("Data is L2 for ", series[i], " after ", format(ts.max.LM, "%Y-%m-%d %H:%M:%S"), "."))
         }
 
         foo <- sqldf::sqldf(paste0("WITH
