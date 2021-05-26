@@ -243,7 +243,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   # load credentials
   path_cred <- load_credentials(path_cred = path_cred)
 
-  if (length(data_version) == 0 & data_format == "L2") {
+  if (length(data_version) == 0) {
   auth <- config::get("googledrive_auth", file = path_cred)
   googledrive::drive_auth(email = auth$email)
   googlesheets4::gs4_auth(token = googledrive::drive_token())
@@ -258,7 +258,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   }
 
   # Set default data_set for LM and L2M data --------------------------------------
-  else if (data_format %in% c("LM","L2M")) {
+  if (data_format %in% c("LM","L2M")) {
     auth <- config::get("googledrive_auth", file = path_cred)
     googledrive::drive_auth(email = auth$email)
     googlesheets4::gs4_auth(token = googledrive::drive_token())
