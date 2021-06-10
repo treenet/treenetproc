@@ -145,14 +145,21 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
       meta_sub <- meta %>%
         dplyr::filter(Seriesname %in% meta_filter) %>%
         dplyr::filter(grepl(paste0(sensor_name[t]), Seriesname,
-                            ignore.case = TRUE) |
-                        grepl(paste0(sensor_name[t]), Series_ancestor,
-                              ignore.case = TRUE))
+                            ignore.case = TRUE))
 
       if (nrow(meta_sub) != 0) {
         meta_select <- c(meta_select, meta_sub$Seriesname)
       } else {
-        message(paste0("Sensor name '", sensor_name[t], "' does not exist."))
+        meta_sub <- meta %>%
+          dplyr::filter(Seriesname %in% meta_filter) %>%
+          dplyr::filter(grepl(paste0(sensor_name[t]), Series_ancestor,
+                              ignore.case = TRUE))
+        if (nrow(meta_sub) != 0) {
+          message(paste0("Sensor name '", sensor_name[t], "' is old. Using current sensor name '", meta_sub$Seriesname, "'"))
+          meta_select <- c(meta_select, meta_sub$Seriesname)
+        } else {
+          message(paste0("Sensor name '", sensor_name[t], "' does not exist."))
+        }
       }
     }
     meta_filter <- meta_select
