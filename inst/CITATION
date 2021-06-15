@@ -3,11 +3,14 @@ citHeader("To cite treenetproc in publications use:")
 citEntry(
   entry       = "Manual",
   title       = "Processing and extraction of seasonal tree physiological parameters from stem radius time series",
-  author      = c(person("Simon", "Knüsel"), person("Matthias", "Haeni"),
-  person("Micah", "Wilhelm"), person("Richard L.", "Peters"), person("Roman", "Zweifel")),
+  author      = c(person("Simon", "Knüsel"), person("Richard L.", "Peters"), person("Matthias", "Haeni"), person("Micah", "Wilhelm"), person("Roman", "Zweifel")),
+  journal     = "Forests",
   year        = "2021",
-  url         = "https://github.com/treenet/treenetproc",
-  textVersion = "Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2021. Processing and extraction of seasonal tree physiological parameters from stem radius time series. In prep."
+  volume      = "12",
+  number      = "6",
+  pages       = "765",
+  url         = "https://doi.org/10.3390/f12060765",
+  textVersion = "Knüsel S., Peters R.L., Haeni M., Wilhelm M., Zweifel R. 2021. Processing and extraction of seasonal tree physiological parameters from stem radius time series. Forests: 12(6): 765. https://doi.org/10.3390/f12060765."
 )
 
 citEntry(
