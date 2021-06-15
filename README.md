@@ -4,7 +4,6 @@
 # treenetproc
 
 <!-- badges: start -->
-
 <!-- badges: end -->
 
 The package `treenetproc` cleans, processes and visualises highly
@@ -61,9 +60,10 @@ citation("treenetproc")
 #> 
 #> To cite treenetproc in publications use:
 #> 
-#>   Knüsel S., Haeni M., Wilhelm M., Peters R.L., Zweifel R. 2020.
-#>   treenetproc: towards a standardized processing of stem radius data.
-#>   In prep.
+#>   Knüsel S., Peters R.L., Haeni M., Wilhelm M., Zweifel R. 2021.
+#>   Processing and extraction of seasonal tree physiological parameters
+#>   from stem radius time series. Forests: 12(6): 765.
+#>   https://doi.org/10.3390/f12060765.
 #> 
 #>   Haeni M., Knüsel S., Wilhelm M., Peters R.L., Zweifel R. 2020.
 #>   treenetproc - Clean, process and visualise dendrometer data. R
