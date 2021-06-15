@@ -63,7 +63,7 @@ optional third step several commonly used characteristics such as the start and
 end of stem growth can be calculated.
 This vignette demonstrates the workflow of the package with sample code. 
 For more information on the  functionality of the package, the user is referred
-to Knüsel et al. (2020, in prep).
+to Knüsel et al. (2021).
 <br><br>
 
 
@@ -550,8 +550,7 @@ mds <- phase_stats %>%
 
 
 # References
-Knüsel S, Haeni M, Wilhelm M, Peters R, Zweifel R (2020) treenetproc: towards a 
-standardized processing of stem radius data. In prep.
+[Knüsel S, Peters RL, Haeni M, Wilhelm M, Zweifel R (2021) Processing and extraction of seasonal tree physiological parameters from stem radius time series. Forests: 12(6):765.](https://doi.org/10.3390/f12060765)
 
 [Zweifel R, Haeni M, Buchmann N, Eugster W (2016) Are trees able to grow in 
 periods of stem shrinkage? New Phytol. 211:839-49.](https://doi.org/10.1111/nph.13995)
