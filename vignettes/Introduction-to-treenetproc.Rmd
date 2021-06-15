@@ -9,8 +9,10 @@ output:
     theme: paper
 vignette: >
   %\VignetteIndexEntry{Introduction to treenetproc}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
