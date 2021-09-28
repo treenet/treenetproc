@@ -50,25 +50,15 @@ load_credentials <- function(path_cred = NULL) {
 select_series <- function(site, sensor_class, sensor_name, path_cred) {
 
   # Check availability of packages --------------------------------------------
-  check_package(pck_name = "config")
   check_package(pck_name = "googlesheets4")
-  check_package(pck_name = "googledrive")
-
+  options(googlesheets4_quiet = T)
 
   # Select series for download via metadata file ------------------------------
-  # load credentials
-  path_cred <- load_credentials(path_cred = path_cred)
-
   # read metadata file
-  auth <- config::get("googledrive_auth", file = path_cred)
-  googledrive::drive_auth(email = auth$email)
-  googlesheets4::gs4_auth(token = googledrive::drive_token())
-
   repeat {
     meta <- try(
-      suppressMessages(
-        googledrive::drive_get("Metadata") %>%
-          googlesheets4::read_sheet("Metadata")),
+      googlesheets4::range_read(ss = "https://docs.google.com/spreadsheets/d/1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08",
+                                sheet = "Metadata"),
       silent=T)
     if ("try-error" %in% class(meta)) {
       message("Metadata service error, retrying in 100s...")
@@ -253,19 +243,11 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   path_cred <- load_credentials(path_cred = path_cred)
 
   if (length(data_version) == 0) {
-    auth <- config::get("googledrive_auth", file = path_cred)
-    googledrive::drive_auth(email = auth$email)
-    googlesheets4::gs4_auth(token = googledrive::drive_token())
-
     repeat {
       data_info <- try(
-        suppressMessages(
-          googledrive::drive_get(id = "1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08") %>%
-            googlesheets4::read_sheet("Ancillary") #%>%
-          # unname() %>%
-          # unlist()
-        ),
-        silent=T)
+        googlesheets4::range_read(ss = "https://docs.google.com/spreadsheets/d/1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08",
+                                  sheet = "Ancillary"),
+        silent = T)
       if ("try-error" %in% class(data_info)) {
         message("Metadata service error, retrying in 100s...")
         Sys.sleep(100)
@@ -278,17 +260,11 @@ download_series <- function(meta_series, data_format, data_version = NULL,
 
   # Set default data_set for LM and L2M data --------------------------------------
   if (data_format %in% c("LM","L2M")) {
-    auth <- config::get("googledrive_auth", file = path_cred)
-    googledrive::drive_auth(email = auth$email)
-    googlesheets4::gs4_auth(token = googledrive::drive_token())
-
     repeat {
       data_info <- try(
-        suppressMessages(
-          googledrive::drive_get(id = "1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08") %>%
-            googlesheets4::read_sheet("Ancillary")
-        ),
-        silent=T)
+        googlesheets4::range_read(ss = "https://docs.google.com/spreadsheets/d/1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08",
+                                  sheet = "Ancillary"),
+        silent = T)
       if ("try-error" %in% class(data_info)) {
         message("Metadata service error, retrying in 100s...")
         Sys.sleep(100)
