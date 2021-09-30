@@ -52,6 +52,7 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
   # Check availability of packages --------------------------------------------
   check_package(pck_name = "googlesheets4")
   options(googlesheets4_quiet = T)
+  googlesheets4::gs4_deauth()
 
   # Select series for download via metadata file ------------------------------
   # read metadata file
