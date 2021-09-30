@@ -241,7 +241,6 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   # Set default data_version for L2 data --------------------------------------
   # load credentials
   path_cred <- load_credentials(path_cred = path_cred)
-
   if (length(data_version) == 0) {
     repeat {
       data_info <- try(
@@ -431,12 +430,10 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   # return error if no data is available
   if (length(server_data) == 0) {
     if (!use_intl) {
-      stop(paste("There is no data available for the specified sensor(s):",
-                 meta_series$series))
+      stop("There is no data available from the specified sensor(s).")
     }
     if (use_intl) {
-      message(paste("There is no data available for the specified sensor(s):",
-                    meta_series$series))
+      message("There is no data available from the specified sensor(s).")
       return(NULL)
     }
   }
