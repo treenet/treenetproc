@@ -55,7 +55,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
 
 
   # Download L0 data from server ----------------------------------------------
-  print("download data from server...")
+  writeLines("download data from server...")
 
   # load credentials
   path_cred <- load_credentials(path_cred = path_cred)
@@ -75,7 +75,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
 
 
   # Process data to L1 --------------------------------------------------------
-  print("process data to L1 (time-aligned data)...")
+  writeLines("process data to L1 (time-aligned data)...")
   df_L1 <- proc_L1(data_L0 = df_L0, reso = reso, year = year, input = "long",
                    date_format = "%Y-%m-%d %H:%M:%S", tz = tz)
   if (proc_to == "L1") {
@@ -84,7 +84,7 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
 
 
   # Process data to L2 --------------------------------------------------------
-  print("process data to L2...")
+  writeLines("process data to L2...")
 
   # add reference temperature column
   df_L1 <- df_L1 %>%
@@ -121,6 +121,6 @@ proc_treenet <- function(site = NULL, sensor_name = NULL,
                          tz = tz)
   }
 
-  print("Done!")
+  writeLines("Done!")
   return(df_L2)
 }

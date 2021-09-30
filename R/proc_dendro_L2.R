@@ -263,7 +263,7 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = NULL,
   df <- dplyr::bind_rows(list_L2)
 
   if (plot) {
-    print("plot data...")
+    writeLines("plot data...")
     thr_plot <- dplyr::bind_rows(list_thr)
     plot_proc_L2(dendro_L1 = dendro_L1, dendro_L2 = df,
                  plot_period = plot_period, plot_show = plot_show,

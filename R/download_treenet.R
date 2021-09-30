@@ -38,7 +38,7 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
 
 
   # Download data from server -------------------------------------------------
-  print("download data from server...")
+  writeLines("download data from server...")
 
   # load credentials
   path_cred <- load_credentials(path_cred = path_cred)
@@ -84,21 +84,21 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
   # Return dataset ------------------------------------------------------------
   # export each series as a .RData file
   if (export) {
-    print("export data...")
+    writeLines("export data...")
     series_vec <- names(list_server)
     for (s in 1:length(list_server)) {
       df <- list_server[[s]]
       save(df, file = paste0(series_vec[s], "_", data_format,
                              ".RData"), compress = "xz")
     }
-    print("Done!")
+    writeLines("Done!")
   }
 
   if (bind_df) {
     df_out <- dplyr::bind_rows(list_server) %>%
       dplyr::arrange(series, ts)
 
-    print("Done!")
+    writeLines("Done!")
     return(df_out)
   }
 

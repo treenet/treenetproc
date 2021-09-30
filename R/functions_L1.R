@@ -150,7 +150,7 @@ fillintergaps <- function(df, reso, interpol = NULL, type = "linear",
                           flag = FALSE) {
 
   if (type != "linear" | length(type) == 0) {
-    print("no gapfilling...")
+    writeLines("no gapfilling...")
   }
   if (length(interpol) == 0) {
     interpol <- passobj("reso") * 2.1

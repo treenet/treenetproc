@@ -222,7 +222,7 @@ phase_stats <- function(dendro_L2, phase_wnd = 8, plot_phase = FALSE,
     list_phase[[s]] <- shrink_exp
 
     if (plot_phase) {
-      print("plot phases...")
+      writeLines("plot phases...")
       plot_phase(df = df, phase = shrink_exp, plot_export = plot_export)
     }
   }
