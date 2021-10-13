@@ -239,41 +239,8 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   check_package(pck_name = "httr")
 
 
-  # Set default data_version for L2 data --------------------------------------
-  # load credentials
+  # Load credentials
   path_cred <- load_credentials(path_cred = path_cred)
-  if (length(data_version) == 0) {
-    repeat {
-      data_info <- try(
-        googlesheets4::range_read(ss = "https://docs.google.com/spreadsheets/d/1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08",
-                                  sheet = "Ancillary"),
-        silent = T)
-      if ("try-error" %in% class(data_info)) {
-        message("Metadata service error, retrying in 100s...")
-        Sys.sleep(100)
-      } else {
-        break
-      }
-    }
-    data_version <- data_info$Current_L2_version[1]
-  }
-
-  # Set default data_set for LM and L2M data --------------------------------------
-  if (data_format %in% c("LM","L2M")) {
-    repeat {
-      data_info <- try(
-        googlesheets4::range_read(ss = "https://docs.google.com/spreadsheets/d/1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08",
-                                  sheet = "Ancillary"),
-        silent = T)
-      if ("try-error" %in% class(data_info)) {
-        message("Metadata service error, retrying in 100s...")
-        Sys.sleep(100)
-      } else {
-        break
-      }
-    }
-    data_set <- data_info$Current_LM_version[1]
-  }
 
 
   # Load functions ------------------------------------------------------------
@@ -295,27 +262,24 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   if (server == "treenet") {
     if (data_format == "L0") {
       db_folder <- "treenet0"
-      db_version <- "version = 0;"
+      db_version <- "version = 0"
       version_nm <- "L0"
     }
     if (data_format == "L1") {
       db_folder <- "treenet1"
-      db_version <- "version = 1;"
+      db_version <- "version = 1"
       version_nm <- "L1"
     }
     if (data_format == "L2") {
       db_folder <- "treenet2"
-      db_version <- paste0("version = '", data_version, "';")
       version_nm <- "L2"
     }
     if (data_format == "LM") {
       db_folder <- "treenetm"
-      db_version <- paste0("dataset = '", data_set, "'")
       version_nm <- "LM"
     }
     if (data_format == "L2M") {
       db_folder <- "treenetm"
-      db_version <- paste0("version = '", data_version, "'")
       version_nm <- "L2M"
     }
   }
@@ -346,8 +310,27 @@ download_series <- function(meta_series, data_format, data_version = NULL,
                             user = cred$user,
                             password = cred$password)
       setUTC1()
+      # check newest data in treenet database
+      if ((data_format %in% c("L2","L2M")) & length(data_version) == 0) {
+        data_version <- sqldf::sqldf(paste0("SELECT DISTINCT version from treenet2 WHERE series = '", series[i], "' ORDER BY version DESC;"),
+                                  connection = con)$version[1]
+      }
+      if (data_format %in% c("LM","L2M")) {
+        data_set <- sqldf::sqldf(paste0("SELECT DISTINCT dataset from treenetm WHERE series = '", series[i], "' ORDER BY dataset DESC;"),
+                                  connection = con)$dataset[1]
+      }
+      if (data_format == "L2") {
+        db_version <- paste0("version = '", data_version, "'")
+      }
+      if (data_format == "LM") {
+        db_version <- paste0("dataset = '", data_set, "'")
+      }
       if (data_format == "L2M") {
-        ts.max.LM <- sqldf::sqldf(paste0("SELECT max(ts) from treenetm WHERE series = '", series[i], "' AND dataset = '", data_set, "';"),
+        db_dataset <- paste0("dataset = '", data_set, "'")
+        db_version <- paste0("version = '", data_version, "'")
+      }
+      if (data_format == "L2M") {
+        ts.max.LM <- sqldf::sqldf(paste0("SELECT max(ts) from treenetm WHERE series = '", series[i], "' AND ", db_dataset, ";"),
                                   connection = con)$max
         ts.max.L2 <- sqldf::sqldf(paste0("SELECT max(ts) from treenet2 WHERE series = '", series[i], "' AND ", db_version, ";"),
                                   connection = con)$max
@@ -355,10 +338,10 @@ download_series <- function(meta_series, data_format, data_version = NULL,
         if (is.na(ts.max.LM)) {
           message(paste0("There is no LM data available for ", series[i], "."))
         } else {
-          writeLines(paste0("Data is L2 for ", series[i], " after ", format(ts.max.LM, "%Y-%m-%d %H:%M:%S"), "."))
+          writeLines(paste0("Data from ", series[i], " is LM (", data_set,") until ", format(ts.max.LM, "%Y-%m-%d %H:%M:%S"), " afterwhich it is L2."))
         }
         foo <- sqldf::sqldf(paste0("SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
-                                    FROM treenetm WHERE series = '", series[i],"' AND dataset = '", data_set, "'
+                                    FROM treenetm WHERE series = '", series[i],"' AND ", db_dataset, "
                                    UNION
                                    SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
                                     FROM treenet2 WHERE series = '", series[i],"' AND ", db_version," AND ts > '", format(ts.max.LM, "%Y-%m-%d %H:%M:%S"), "'::timestamp
@@ -367,7 +350,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
       } else {
         foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
                                    " WHERE series = '", series[i], "' AND ",
-                                   db_version), connection = con)
+                                   db_version,";"), connection = con)
       }
       invisible(DBI::dbDisconnect(con))
     }
