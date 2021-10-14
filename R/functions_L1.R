@@ -37,8 +37,9 @@ tsalign <- function(df, reso, year, tz) {
   if (length(grep("prec", series, ignore.case = T)) > 0) {
     prec_sum_proc <- sum(df$value, na.rm = T)
     if (!(identical(prec_sum_raw, prec_sum_proc))) {
-      stop(paste0("there was an error with the time-alignment in the ",
+      message(paste0("There was an error with the time-alignment in the ",
                   "precipitation data. Error in ", series, "."))
+      return(NULL)
     }
   }
 

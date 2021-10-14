@@ -84,6 +84,7 @@ proc_L1 <- function(data_L0, reso = 10, input = "long",
       dplyr::filter(series == series_vec[s])
 
     df <- tsalign(df = df, reso = reso, year = year, tz = tz)
+    if (is.null(df)) return(NULL)
 
     df <- df %>%
       dplyr::mutate(series = series_vec[s]) %>%
