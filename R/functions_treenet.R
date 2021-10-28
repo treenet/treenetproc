@@ -286,6 +286,24 @@ download_series <- function(meta_series, data_format, data_version = NULL,
     version_nm <- "L0"
   }
 
+  # specify time window
+  from.ts <- NULL
+  to.ts   <- NULL
+  db_time <- NULL
+  if (length(from) != 0) {
+    from    <- as.POSIXct(from, format = "%Y-%m-%d", tz = tz)
+    from.ts <- paste0(" AND ts >= '", format(from, "%Y-%m-%d %H:%M:%S"), "'::timestamp")
+    db_time <- paste(from.ts, to.ts)
+  }
+  if (length(to) != 0) {
+    to      <- as.POSIXct(to, format = "%Y-%m-%d", tz = tz) + 86399
+    to.ts   <- paste0(" AND ts <= '", format(to, "%Y-%m-%d %H:%M:%S"), "'::timestamp")
+    db_time <- paste(from.ts, to.ts)
+  }
+  if (length(last) != 0) {
+    db_time <- paste0(" ORDER BY ts DESC LIMIT ", last)
+  }
+
   # download series
   options(warn = -1)
   if (temp_ref) {
@@ -336,23 +354,34 @@ download_series <- function(meta_series, data_format, data_version = NULL,
                                   connection = con)$max
         ts.max.L2 <- sqldf::sqldf(paste0("SELECT max(ts) from treenet2 WHERE series = '", series[i], "' AND ", db_version, ";"),
                                   connection = con)$max
+        db_time.LM <- NULL
+        db_time.L2 <- NULL
+
         if (is.na(ts.max.L2)) message(paste0("There is no L2 data available for ", series[i], "."))
         if (is.na(ts.max.LM)) {
           message(paste0("There is no LM data available for ", series[i], "."))
         } else {
           writeLines(paste0("Data from ", series[i], " is LM (", data_set,") until ", format(ts.max.LM, "%Y-%m-%d %H:%M:%S"), " afterwhich it is L2."))
+
+          if (length(from) == 0) from <- as.POSIXct("1970-01-01", format = "%Y-%m-%d", tz = tz)
+          if (length(to)   == 0) to   <- as.POSIXct("2100-01-01", format = "%Y-%m-%d", tz = tz)
+
+          db_time.LM <-paste0(" AND ts > '", as.POSIXct(min(from, ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp AND ts <= '", as.POSIXct(min(to,ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp")
+          db_time.L2 <-paste0(" AND ts > '", as.POSIXct(max(from, ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp AND ts <= '", as.POSIXct(max(to,ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp")
         }
-        foo <- sqldf::sqldf(paste0("SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
-                                    FROM treenetm WHERE series = '", series[i],"' AND ", db_dataset, "
-                                   UNION
-                                   SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
-                                    FROM treenet2 WHERE series = '", series[i],"' AND ", db_version," AND ts > '", format(ts.max.LM, "%Y-%m-%d %H:%M:%S"), "'::timestamp
-                                   ORDER BY ts;"),
+        foo <- sqldf::sqldf(paste0("SELECT * FROM (
+                                     SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
+                                      FROM treenetm WHERE series = '", series[i],"' AND ", db_dataset, db_time.LM, "
+                                     UNION
+                                     SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
+                                      FROM treenet2 WHERE series = '", series[i],"' AND ", db_version, db_time.L2,
+                                     ") l2m ",
+                                    dplyr::if_else(length(last) != 0, db_time, NULL), ";"),
                             connection = con)
       } else {
         foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
                                    " WHERE series = '", series[i], "' AND ",
-                                   db_version,";"), connection = con)
+                                   db_version, db_time, ";"), connection = con)
       }
       invisible(DBI::dbDisconnect(con))
     }
@@ -372,21 +401,6 @@ download_series <- function(meta_series, data_format, data_version = NULL,
       dplyr::distinct() %>%
       dplyr::filter(ts <= Sys.time()) %>%
       transform(value = as.numeric(value))
-
-    if (length(from) != 0) {
-      from <- as.POSIXct(from, format = "%Y-%m-%d", tz = tz)
-      df <- df %>%
-        dplyr::filter(ts >= from)
-    }
-    if (length(to) != 0) {
-      to <- as.POSIXct(to, format = "%Y-%m-%d", tz = tz)
-      df <- df %>%
-        dplyr::filter(ts <= to)
-    }
-
-    if (length(last) != 0) {
-      df <- last_values(df = df, last = last, reso = reso, tz = tz)
-    }
 
     # skip series if there is not data available
     if (all(is.na(df$value))) {
