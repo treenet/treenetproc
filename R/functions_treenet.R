@@ -135,8 +135,7 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
     for (t in 1:length(sensor_name)) {
       meta_sub <- meta %>%
         dplyr::filter(Seriesname %in% meta_filter) %>%
-        dplyr::filter(grepl(paste0(gsub("([()])","\\\\\\1", sensor_name[t])), Seriesname,
-                            ignore.case = TRUE))
+        dplyr::filter(Seriesname == sensor_name[t])
 
       if (nrow(meta_sub) != 0) {
         meta_select <- c(meta_select, meta_sub$Seriesname)
