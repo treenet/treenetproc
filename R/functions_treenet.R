@@ -376,7 +376,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
                                      SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
                                       FROM treenet2 WHERE series = '", series[i],"' AND ", db_version, db_time.L2,
                                      ") l2m ",
-                                    dplyr::if_else(length(last) != 0, paste0(" WHERE ", db_time), NULL), ";"),
+                                    dplyr::if_else(length(last) != 0, paste0(" WHERE ", db_time), ""), ";"),
                             connection = con)
       } else {
         foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
