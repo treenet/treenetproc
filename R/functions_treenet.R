@@ -334,6 +334,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
       if (data_format %in% c("LM","L2M")) {
         data_set <- sqldf::sqldf(paste0("SELECT DISTINCT dataset from treenetm WHERE series = '", series[i], "' ORDER BY dataset DESC;"),
                                   connection = con)$dataset[1]
+        if (is.na(data_set)) data_set <- "dummy.value"
       }
       if (data_format == "L1") {
         db_version <- paste0("version = '", data_version, "'")
