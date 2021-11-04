@@ -292,12 +292,12 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   if (length(from) != 0) {
     from    <- as.POSIXct(from, format = "%Y-%m-%d", tz = tz)
     from.ts <- paste0(" ts >= '", format(from, "%Y-%m-%d %H:%M:%S"), "'::timestamp")
-    db_time <- paste0(c(from.ts, to.ts), collapse = " AND")
+    db_time <- paste0(c("", from.ts, to.ts), collapse = " AND")
   }
   if (length(to) != 0) {
     to      <- as.POSIXct(to, format = "%Y-%m-%d", tz = tz) + 86399
     to.ts   <- paste0(" ts <= '", format(to, "%Y-%m-%d %H:%M:%S"), "'::timestamp")
-    db_time <- paste0(c(from.ts, to.ts), collapse = " AND")
+    db_time <- paste0(c("",from.ts, to.ts), collapse = " AND")
   }
   if (length(last) != 0) {
     db_time <- paste0(" ORDER BY ts DESC LIMIT ", last)
