@@ -292,12 +292,12 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   if (length(from) != 0) {
     from    <- as.POSIXct(from, format = "%Y-%m-%d", tz = tz)
     from.ts <- paste0(" ts >= '", format(from, "%Y-%m-%d %H:%M:%S"), "'::timestamp")
-    db_time <- paste0("WHERE", paste0(c(from.ts, to.ts), collapse = " AND"))
+    db_time <- paste0(c(from.ts, to.ts), collapse = " AND")
   }
   if (length(to) != 0) {
     to      <- as.POSIXct(to, format = "%Y-%m-%d", tz = tz) + 86399
     to.ts   <- paste0(" ts <= '", format(to, "%Y-%m-%d %H:%M:%S"), "'::timestamp")
-    db_time <- paste0("WHERE", paste0(c(from.ts, to.ts), collapse = " AND"))
+    db_time <- paste0(c(from.ts, to.ts), collapse = " AND")
   }
   if (length(last) != 0) {
     db_time <- paste0(" ORDER BY ts DESC LIMIT ", last)
@@ -375,7 +375,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
                                      SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
                                       FROM treenet2 WHERE series = '", series[i],"' AND ", db_version, db_time.L2,
                                      ") l2m ",
-                                    dplyr::if_else(length(last) != 0, db_time, NULL), ";"),
+                                    dplyr::if_else(length(last) != 0, paste0(" WHERE ", db_time), NULL), ";"),
                             connection = con)
       } else {
         foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
