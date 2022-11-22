@@ -395,12 +395,11 @@ download_series <- function(meta_series, data_format, data_version = NULL,
 
     df <- foo %>%
       dplyr::select_if(!(names(.) %in% "insert_date")) %>%
-      transform(ts = format(ts, "%Y-%m-%d %H:%M:%S",
-                                tz = tz)) %>%
       dplyr::arrange(ts) %>%
       dplyr::distinct() %>%
       dplyr::filter(ts <= Sys.time()) %>%
       transform(value = as.numeric(value))
+    attr(df$ts, "tzone") <- tz
 
     # skip series if there is not data available
     if (all(is.na(df$value))) {
