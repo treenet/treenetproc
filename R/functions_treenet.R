@@ -291,12 +291,12 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   db_time <- NULL
   if (length(from) != 0) {
     from    <- as.POSIXct(from, format = "%Y-%m-%d", tz = tz)
-    from.ts <- paste0(" ts >= '", format(from, "%Y-%m-%d %H:%M:%S"), "'::timestamp")
+    from.ts <- paste0(" ts >= '", format(from, "%Y-%m-%d %H:%M:%S", tz = "UTC"), "'::timestamp")
     db_time <- paste0(c(from.ts, to.ts), collapse = " AND")
   }
   if (length(to) != 0) {
     to      <- as.POSIXct(to, format = "%Y-%m-%d", tz = tz) + 86399
-    to.ts   <- paste0(" ts <= '", format(to, "%Y-%m-%d %H:%M:%S"), "'::timestamp")
+    to.ts   <- paste0(" ts <= '", format(to, "%Y-%m-%d %H:%M:%S", tz = "UTC"), "'::timestamp")
     db_time <- paste0(c(from.ts, to.ts), collapse = " AND")
   }
   if (length(last) != 0) {
@@ -395,7 +395,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
 
     df <- foo %>%
       dplyr::select_if(!(names(.) %in% "insert_date")) %>%
-      transform(ts = as.POSIXct(ts, format = "%m-%d-%y %H:%M:%S",
+      transform(ts = format(ts, "%Y-%m-%d %H:%M:%S",
                                 tz = tz)) %>%
       dplyr::arrange(ts) %>%
       dplyr::distinct() %>%
