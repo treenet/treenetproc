@@ -236,6 +236,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   check_package(pck_name = "config")
   check_package(pck_name = "DBI")
   check_package(pck_name = "httr")
+  check_package(pck_name = "lubridate")
 
 
   # Load credentials
