@@ -290,14 +290,14 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   to.ts   <- NULL
   db_time <- NULL
   if (length(from) != 0) {
-    from    <- as.POSIXct(from, format = "%Y-%m-%d", tz = tz)
+    from    <- as.POSIXct(as.character(from), format = "%Y-%m-%d", tz = tz)
     from.ts <- paste0(" ts >= '", format(from, "%Y-%m-%d %H:%M:%S", tz = "UTC"), "'::timestamp")
-    db_time <- paste0(c(from.ts, to.ts), collapse = " AND")
+    db_time <- paste0(c("", from.ts, to.ts), collapse = " AND")
   }
   if (length(to) != 0) {
-    to      <- as.POSIXct(to, format = "%Y-%m-%d", tz = tz) + 86399
+    to      <- as.POSIXct(as.character(to), format = "%Y-%m-%d", tz = tz) + 86399
     to.ts   <- paste0(" ts <= '", format(to, "%Y-%m-%d %H:%M:%S", tz = "UTC"), "'::timestamp")
-    db_time <- paste0(c(from.ts, to.ts), collapse = " AND")
+    db_time <- paste0(c("", from.ts, to.ts), collapse = " AND")
   }
   if (length(last) != 0) {
     db_time <- paste0(" ORDER BY ts DESC LIMIT ", last)
@@ -381,7 +381,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
       } else {
         foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
                                    " WHERE series = '", series[i], "' AND ",
-                                   paste0(c(db_version, db_time), collapse = " AND "), ";"), connection = con)
+                                   db_version,  db_time, ";"), connection = con)
       }
       invisible(DBI::dbDisconnect(con))
     }
