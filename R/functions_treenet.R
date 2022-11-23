@@ -399,7 +399,6 @@ download_series <- function(meta_series, data_format, data_version = NULL,
       transform(ts = lubridate::with_tz(ts, tzone = tz)) %>%
       dplyr::arrange(ts) %>%
       dplyr::distinct() %>%
-      dplyr::filter(ts <= Sys.time()) %>%
       transform(value = as.numeric(value))
 
     # skip series if there is not data available
