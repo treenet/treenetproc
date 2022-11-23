@@ -295,7 +295,7 @@ download_series <- function(meta_series, data_format, data_version = NULL,
     db_time <- paste0(c("", from.ts, to.ts), collapse = " AND")
   }
   if (length(to) != 0) {
-    to      <- as.POSIXct(as.character(to), format = "%Y-%m-%d", tz = tz) + 86399
+    to      <- as.POSIXct(as.character(to), format = "%Y-%m-%d", tz = tz) +86399
     to.ts   <- paste0(" ts <= '", format(to, "%Y-%m-%d %H:%M:%S", tz = "UTC"), "'::timestamp")
     db_time <- paste0(c("", from.ts, to.ts), collapse = " AND")
   }
@@ -395,11 +395,11 @@ download_series <- function(meta_series, data_format, data_version = NULL,
 
     df <- foo %>%
       dplyr::select_if(!(names(.) %in% "insert_date")) %>%
+      transform(ts = lubridate::with_tz(ts, tzone = tz)) %>%
       dplyr::arrange(ts) %>%
       dplyr::distinct() %>%
       dplyr::filter(ts <= Sys.time()) %>%
       transform(value = as.numeric(value))
-    attr(df$ts, "tzone") <- tz
 
     # skip series if there is not data available
     if (all(is.na(df$value))) {
