@@ -391,7 +391,7 @@ check_package <- function(pck_name) {
 #'
 check_data_L1 <- function(data_L1) {
   if (sum(colnames(data_L1) %in% c("series", "ts", "value")) != 3) {
-    stop("provide time-aligned dendrometer data generated with 'proc_L1'.")
+    stop("Provide time-aligned dendrometer data generated with 'proc_L1'.")
   }
 }
 
@@ -409,7 +409,7 @@ check_data_L1 <- function(data_L1) {
 check_data_L2 <- function(data_L2) {
   if (sum(colnames(data_L2) %in% c("series", "ts", "value", "max",
                                    "twd")) != 5) {
-    stop("provide processed dendrometer data generated with 'proc_dendro_L2'.")
+    stop("Provide processed dendrometer data generated with 'proc_dendro_L2'.")
   }
 }
 
@@ -425,14 +425,14 @@ check_data_L2 <- function(data_L2) {
 #'
 check_series <- function(df, series) {
   if (length(series) == 0 & length(unique(df$series)) > 1) {
-    stop("name of the series needs to be provided in 'series'.")
+    stop("Name of the series needs to be provided in 'series'.")
   }
   if (length(series) > 1) {
-    stop("only one series can be provided at a time in 'series'.")
+    stop("Only one series can be provided at a time in 'series'.")
   }
   if (length(series) == 1) {
     if (!(series %in% unique(df$series))) {
-      stop("provided name in 'series' does not exist.")
+      stop("Provided name in 'series' does not exist.")
     }
   }
 }

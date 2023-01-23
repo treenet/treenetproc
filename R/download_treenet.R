@@ -38,7 +38,7 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
 
 
   # Download data from server -------------------------------------------------
-  writeLines("download data from server...")
+  writeLines("Downloading data from server...")
 
   # load credentials
   path_cred <- load_credentials(path_cred = path_cred)

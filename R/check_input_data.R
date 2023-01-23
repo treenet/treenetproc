@@ -9,23 +9,23 @@
 check_format <- function(df, input) {
   if (input == "long") {
     if (!("series" %in% colnames(df))) {
-      stop("you need to provide a 'series' column for data in 'long' format.")
+      stop("You need to provide a 'series' column for data in 'long' format.")
     }
   }
   if (input == "wide") {
     if ("series" %in% colnames(df)) {
-      stop("data in 'wide' format does not need a 'series' column.")
+      stop("Data in 'wide' format does not need a 'series' column.")
     }
   }
 
   nr_value_col <- length(which(sapply(df, class) == "numeric" &
                                  sapply(sapply(df, unique), length) > 1))
   if (nr_value_col == 0) {
-    stop(paste("provide at least one numeric column with raw dendrometer or",
+    stop(paste("Provide at least one numeric column with raw dendrometer or",
                "raw meteorological measurements."))
   }
   if (nr_value_col > 1 & input == "long") {
-    stop("provided data is not in 'long' format.")
+    stop("Provided data is not in 'long' format.")
   }
 }
 
@@ -43,7 +43,7 @@ check_format <- function(df, input) {
 check_ts <- function(df, date_format, tz) {
 
   if (!("ts" %in% colnames(df))) {
-    stop("column with time stamps (named 'ts') is missing.")
+    stop("Column with time stamps (named 'ts') is missing.")
   }
 
   ts <- as.character(df$ts)
@@ -136,7 +136,7 @@ check_missing <- function(df) {
     df <- df %>%
       dplyr::filter(!(series %in% series_missing))
 
-    message(paste0("the following series were excluded due to missing data ",
+    message(paste0("The following series were excluded due to missing data ",
                    "over the entire period: ",
                    paste0(series_missing, collapse = ", "), "."))
   }

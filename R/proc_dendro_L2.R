@@ -187,7 +187,7 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = NULL,
   list_thr <- vector("list", length = length(series_vec))
   df_L1 <- df
   for (s in 1:length(series_vec)) {
-    message(paste0("processing ", series_vec[s], "..."))
+    writeLines(paste0("Processing ", series_vec[s], " to L2..."))
     df <- df_L1 %>%
       dplyr::filter(series == series_vec[s])
 
