@@ -57,10 +57,12 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
   # Select series for download via metadata file ------------------------------
   # read metadata file
   repeat {
-    meta <- try(
-      googlesheets4::range_read(ss = "https://docs.google.com/spreadsheets/d/1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08",
-                                sheet = "Metadata"),
-      silent=T)
+    suppressWarnings({
+      meta <- try(
+        googlesheets4::range_read(ss = "https://docs.google.com/spreadsheets/d/1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08",
+                                  sheet = "Metadata"),
+        silent=T)
+    })
     if ("try-error" %in% class(meta)) {
       message("Metadata service error, retrying in 100s...")
       Sys.sleep(100)
@@ -164,9 +166,9 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
 }
 
 
-#' Select Reference Temperature Data for Selected Series
+#' Select Reference Data for Selected Series
 #'
-#' \code{select_temp_data} selects reference temperature data for dendrometer
+#' \code{select_temp_data} selects reference temperature data as well as outlier, jump, and frost tolerances for dendrometer
 #'   series based on the metadata file.
 #'
 #' @param meta_list list, containing the metadata file (first element) and
@@ -182,8 +184,8 @@ select_temp_data <- function(meta_list) {
   # select names of reference temperature data
   meta_temp <- meta %>%
     dplyr::filter(Seriesname %in% meta_series) %>%
-    dplyr::select(Seriesname, Site_temp_ref) %>%
-    dplyr::select(series = Seriesname, temp_ref = Site_temp_ref)
+    dplyr::select(Seriesname, Site_temp_ref, Tree_Proc_tol_out, Tree_Proc_tol_jump, Tree_Proc_frost_thr) %>%
+    dplyr::select(series = Seriesname, temp_ref = Site_temp_ref, tol_out = Tree_Proc_tol_out, tol_jump = Tree_Proc_tol_jump, lowtemp = Tree_Proc_frost_thr)
 
   return(meta_temp)
 }
@@ -226,7 +228,7 @@ select_temp_data <- function(meta_list) {
 #'
 #' @keywords internal, treenet
 #'
-download_series <- function(meta_series, data_format, data_version = NULL,
+download_series <- function(meta_series, data_format, data_version,
                             from, to, last, bind_df, reso, path_cred, server,
                             temp_ref, tz, use_intl) {
 
@@ -241,7 +243,6 @@ download_series <- function(meta_series, data_format, data_version = NULL,
 
   # Load credentials
   path_cred <- load_credentials(path_cred = path_cred)
-
 
   # Load functions ------------------------------------------------------------
   Sys.setenv(TZ = tz)
@@ -261,25 +262,26 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   # specify format
   if (server == "treenet") {
     if (data_format == "L0") {
-      db_folder <- "treenet0"
+      db_folder  <- "treenet0"
       db_version <- "version = 0"
       version_nm <- "L0"
     }
     if (data_format == "L1") {
-      db_folder <- "treenet1"
+      db_folder  <- "treenet1"
       version_nm <- "L1"
     }
     if (data_format == "L2") {
-      db_folder <- "treenet2"
+      db_folder  <- "treenet2"
       version_nm <- "L2"
     }
     if (data_format == "LM") {
-      db_folder <- "treenetm"
+      db_folder  <- "treenetm"
       version_nm <- "LM"
     }
     if (data_format == "L2M") {
-      db_folder <- "treenet2"
+      db_folder  <- "treenet1"
       version_nm <- "L2M"
+      temp_ref   <- T
     }
   }
   if (server == "decentlab") {
@@ -307,9 +309,10 @@ download_series <- function(meta_series, data_format, data_version = NULL,
   # download series
   options(warn = -1)
   if (temp_ref) {
-    n_temp_ref <- length(unique(meta_series$temp_ref))
+    temp_ref_unique <- unique(meta_series$temp_ref)
+    n_temp_ref <- length(temp_ref_unique)
     n_series <- nrow(meta_series) + n_temp_ref
-    series <- c(meta_series$series, unique(meta_series$temp_ref))
+    series <- c(meta_series$series, temp_ref_unique)
   }
   if (!temp_ref) {
     n_series <- nrow(meta_series)
@@ -329,11 +332,11 @@ download_series <- function(meta_series, data_format, data_version = NULL,
       setUTC1()
       # check newest data in treenet database
       if ((data_format %in% c("L1","L2","L2M")) & length(data_version) == 0) {
-        data_version <- sqldf::sqldf(paste0("SELECT DISTINCT version from ", db_folder," WHERE series = '", series[i], "' ORDER BY version DESC;"),
+        data_version <- sqldf::sqldf(paste0("SELECT DISTINCT version FROM ", db_folder," WHERE series = '", series[i], "' ORDER BY version DESC;"),
                                   connection = con)$version[1]
       }
       if (data_format %in% c("LM","L2M")) {
-        data_set <- sqldf::sqldf(paste0("SELECT DISTINCT dataset from treenetm WHERE series = '", series[i], "' ORDER BY dataset DESC;"),
+        data_set <- sqldf::sqldf(paste0("SELECT DISTINCT dataset FROM treenetm WHERE series = '", series[i], "' ORDER BY dataset DESC;"),
                                   connection = con)$dataset[1]
         if (is.na(data_set)) data_set <- "dummy.value"
       }
@@ -351,9 +354,9 @@ download_series <- function(meta_series, data_format, data_version = NULL,
         db_version <- paste0("version = '", data_version, "'")
       }
       if (data_format == "L2M") {
-        ts.max.LM <- sqldf::sqldf(paste0("SELECT max(ts) from treenetm WHERE series = '", series[i], "' AND ", db_dataset, ";"),
+        ts.max.LM <- sqldf::sqldf(paste0("SELECT max(ts) FROM treenetm WHERE series = '", series[i], "' AND ", db_dataset, ";"),
                                   connection = con)$max
-        ts.max.L2 <- sqldf::sqldf(paste0("SELECT max(ts) from treenet2 WHERE series = '", series[i], "' AND ", db_version, ";"),
+        ts.max.L2 <- sqldf::sqldf(paste0("SELECT max(ts) FROM treenet1 WHERE series = '", series[i], "' AND ", db_version, ";"),
                                   connection = con)$max
         db_time.LM <- NULL
         db_time.L2 <- NULL
@@ -371,14 +374,15 @@ download_series <- function(meta_series, data_format, data_version = NULL,
           db_time.L2 <-paste0(" AND ts > '", as.POSIXct(max(from, ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp AND ts <= '", as.POSIXct(max(to,ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp")
         }
         foo <- sqldf::sqldf(paste0("SELECT * FROM (
-                                     SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
+                                     SELECT series, ts, value, version
                                       FROM treenetm WHERE series = '", series[i],"' AND ", db_dataset, db_time.LM, "
                                      UNION
-                                     SELECT series, ts, value, max, twd, gro_yr, gro_start, gro_end, frost, flags, version
-                                      FROM treenet2 WHERE series = '", series[i],"' AND ", db_version, db_time.L2,
+                                     SELECT series, ts, value, version
+                                      FROM ", db_folder ," WHERE series = '", series[i],"' AND ", db_version, db_time.L2,
                                      ") l2m ",
                                     dplyr::if_else(length(last) != 0, paste0(" WHERE ", db_time), ""), ";"),
                             connection = con)
+
       } else {
         foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
                                    " WHERE series = '", series[i], "' AND ",
@@ -426,6 +430,25 @@ download_series <- function(meta_series, data_format, data_version = NULL,
       message("There is no data available from the specified sensor(s).")
       return(NULL)
     }
+  }
+
+  # process L1M to L2M
+  if (data_format == "L2M") {
+    m_temp   <- names(server_data) %in% temp_ref_unique
+    m_dendro <- names(server_data) %in% meta_series$series
+    if (any(m_temp) & any(m_dendro)) {
+      temp.L1 <- proc_L1(server_data[[which(m_temp)]])
+    } else {
+      temp.L1 <- NULL
+    }
+    server_data <- proc_dendro_L2(
+      dendro_L1   = proc_L1(server_data[[which(m_dendro)]]),
+      temp_L1     = temp.L1,
+      tol_out     = meta_series$tol_out,
+      tol_jump    = meta_series$tol_jump,
+      lowtemp     = meta_series$lowtemp,
+      plot        = T
+    )
   }
 
   if (!bind_df) {
