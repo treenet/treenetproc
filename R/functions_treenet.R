@@ -441,6 +441,7 @@ download_series <- function(meta_series, data_format, data_version,
     } else {
       temp.L1 <- NULL
     }
+
     if (is.na(meta_series$tol_out))  meta_series$tol_out  <- 10
     if (is.na(meta_series$tol_jump)) meta_series$tol_jump <- 50
     if (is.na(meta_series$lowtemp))  meta_series$lowtemp  <- 5
