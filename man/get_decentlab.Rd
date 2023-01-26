@@ -14,7 +14,7 @@ file \code{config.yml} containing the database login data. File can
 also be copied to the main folder of the package for automatic
 recognition.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \description{
 \code{get_decentlab} generates a query to download a specified

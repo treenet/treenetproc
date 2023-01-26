@@ -20,7 +20,7 @@ calculated.}
 identify local maxima and minima. A shorter window length leads to the
 identification of more local maxima and minima.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \description{
 \code{calcshrinkexpparam} calculates parameters for phases of shrinkage and

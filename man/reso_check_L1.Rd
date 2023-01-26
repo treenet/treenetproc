@@ -9,7 +9,7 @@ reso_check_L1(df, tz)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \description{
 \code{reso_check} checks time resolution of \code{L1} input

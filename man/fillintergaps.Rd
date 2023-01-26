@@ -10,7 +10,7 @@ fillintergaps(df, reso, interpol = NULL, type = "linear", flag = FALSE)
 \item{df}{input \code{data.frame}.}
 
 \item{reso}{numeric, desired output time resolution (in minutes). See
-\code{Details} for more information on data aggregation.}
+Details for more information on data aggregation.}
 
 \item{interpol}{numeric, length of gaps (in minutes) for which values are
 linearly interpolated after data cleaning. Set \code{interpol = 0} to

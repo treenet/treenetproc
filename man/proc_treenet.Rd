@@ -48,7 +48,7 @@ values. If \code{last} is specified \code{from} and \code{to} need to
 be empty.}
 
 \item{reso}{numeric, desired output time resolution (in minutes). See
-\code{Details} for more information on data aggregation.}
+Details for more information on data aggregation.}
 
 \item{frost_thr}{numeric, increases the thresholds for outlier
 and jump detection in periods of probable frost (i.e. temperature <
@@ -116,7 +116,7 @@ process is repeated. Can be used to check whether running the cleaning
 process multiple times has an effect on the results. In most cases, a
 single iteration is sufficient.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 
 \item{use_intl}{logical, specify whether this function is used
 internally on the server. Changes \code{stop()} error messages to

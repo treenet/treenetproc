@@ -32,7 +32,7 @@ plotted.}
 by day (\code{agg_daily = TRUE}) or appended to the \code{L2} data
 (\code{agg_daily = FALSE}).}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \value{
 The following additional variables are returned by

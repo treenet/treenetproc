@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_treenet.R
 \name{select_temp_data}
 \alias{select_temp_data}
-\title{Select Reference Temperature Data for Selected Series}
+\title{Select Reference Data for Selected Series}
 \usage{
 select_temp_data(meta_list)
 }
@@ -11,7 +11,7 @@ select_temp_data(meta_list)
 all series specified for download from the server (second element).}
 }
 \description{
-\code{select_temp_data} selects reference temperature data for dendrometer
+\code{select_temp_data} selects reference temperature data as well as outlier, jump, and frost tolerances for dendrometer
   series based on the metadata file.
 }
 \keyword{internal,}

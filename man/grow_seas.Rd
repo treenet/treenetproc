@@ -20,7 +20,7 @@ Likewise, \code{1 - tol_seas} is the amount of yearly growth at which
 (\code{agg_yearly = TRUE}) or appended to the \code{L2} data
 (\code{agg_yearly = FALSE}).}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \value{
 The following variables are returned by \code{grow_seas}:

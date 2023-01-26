@@ -9,7 +9,7 @@ format_input(df, input, tz)
 \arguments{
 \item{df}{input \code{data.frame}.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \description{
 \code{format_input} formats input data. Wide format is converted to long

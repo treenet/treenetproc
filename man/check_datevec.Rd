@@ -9,7 +9,7 @@ check_datevec(datevec, datevec_name, tz)
 \arguments{
 \item{datevec}{character vector in a standard date or datetime format.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \description{
 \code{check_datevec} checks whether all dates specified are in a standard

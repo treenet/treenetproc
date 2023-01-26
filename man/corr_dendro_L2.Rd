@@ -55,7 +55,7 @@ the gap in data is longer than the default (\code{n_days = 5}).}
 \item{plot_export}{logical, specifies whether the plots are exported as a
 \code{PDF} file to the working directory or are plotted in the console.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \value{
 The function returns a \code{data.frame} with corrected \code{L2}

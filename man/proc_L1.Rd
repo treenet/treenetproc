@@ -18,7 +18,7 @@ proc_L1(
 temperature data (see Details for formatting requirements).}
 
 \item{reso}{numeric, desired output time resolution (in minutes). See
-\code{Details} for more information on data aggregation.}
+Details for more information on data aggregation.}
 
 \item{input}{character, specify the structure of the input data
 (\code{data_L0}). Can either be in \code{"long"} format (i.e. sensors
@@ -34,7 +34,7 @@ for more information on formatting requirements.}
 if \code{year = "full"} then the output \code{data.frame} is expanded to
 complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \value{
 a \code{data.frame} with measurements aligned to regular time

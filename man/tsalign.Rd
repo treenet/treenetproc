@@ -10,14 +10,14 @@ tsalign(df, reso, year, tz)
 \item{df}{input \code{data.frame}.}
 
 \item{reso}{numeric, desired output time resolution (in minutes). See
-\code{Details} for more information on data aggregation.}
+Details for more information on data aggregation.}
 
 \item{year}{character, if \code{year = "asis"} the output
 \code{data.frame} covers the same period as the input data;
 if \code{year = "full"} then the output \code{data.frame} is expanded to
 complete years, i.e. \code{YYYY-01-01 to YYYY-12-31}.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \value{
 \code{data.frame} with measurements aligned to regular time

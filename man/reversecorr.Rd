@@ -12,7 +12,7 @@ be reversed. ID numbers are reported in the plots produced by
 \code{\link{proc_dendro_L2}} or \code{\link{plot_proc_L2}} with the
 argument \code{plot_period = "monthly"}.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \description{
 \code{reversecorr} reverses wrong corrections in the dendrometer data.

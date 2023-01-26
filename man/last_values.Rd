@@ -14,9 +14,9 @@ values. If \code{last} is specified \code{from} and \code{to} need to
 be empty.}
 
 \item{reso}{numeric, desired output time resolution (in minutes). See
-\code{Details} for more information on data aggregation.}
+Details for more information on data aggregation.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \description{
 \code{last_values()} selects specified number of values from current moment

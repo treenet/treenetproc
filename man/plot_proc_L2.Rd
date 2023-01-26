@@ -37,7 +37,7 @@ dendrometer data changed during data cleaning (\code{plot_show = "diff"}).}
 \item{plot_name}{character, specify name of the PDF to which the plots are
 saved.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 
 \item{thr_plot}{\code{data.frame}, containing the threshold values used for
 outlier detection. Command is only used internally by the function

@@ -11,7 +11,7 @@ plot_gro_yr_print_vars(data_plot, thr_plot, tz)
 outlier detection. Command is only used internally by the function
 \code{\link{proc_dendro_L2}}.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \description{
 \code{plot_gro_yr_print_vars} plots yearly growth curves for the whole

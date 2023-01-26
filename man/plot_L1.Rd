@@ -31,7 +31,7 @@ year (\code{plot_period = "yearly"}) or for each month
 \item{plot_name}{character, specify name of the PDF to which the plots are
 saved.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \value{
 Plots are saved to current working directory as

@@ -25,7 +25,7 @@ year (\code{plot_period = "yearly"}) or for each month
 \item{plot_add}{logical, specify whether \code{L1} data should be plotted
 along with \code{L2} data in the second panel of the plot.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \description{
 \code{plotting_proc_L2} contains the code necessary to plot \code{L2}

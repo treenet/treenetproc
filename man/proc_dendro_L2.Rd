@@ -19,7 +19,7 @@ proc_dendro_L2(
   plot_export = TRUE,
   plot_name = "proc_L2_plot",
   iter_clean = 1,
-  tz = "UTC"
+  tz = "Etc/GMT-1"
 )
 }
 \arguments{
@@ -80,7 +80,7 @@ process is repeated. Can be used to check whether running the cleaning
 process multiple times has an effect on the results. In most cases, a
 single iteration is sufficient.}
 
-\item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
+\item{tz}{specify the desired time zone.}
 }
 \value{
 The function returns a \code{data.frame} with processed dendrometer

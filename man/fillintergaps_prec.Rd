@@ -10,7 +10,7 @@ fillintergaps_prec(df, reso)
 \item{df}{input \code{data.frame}.}
 
 \item{reso}{numeric, desired output time resolution (in minutes). See
-\code{Details} for more information on data aggregation.}
+Details for more information on data aggregation.}
 }
 \description{
 \code{fillintergaps_prec} interpolates gaps between irregular and regular
