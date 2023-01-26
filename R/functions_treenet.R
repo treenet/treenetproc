@@ -441,13 +441,17 @@ download_series <- function(meta_series, data_format, data_version,
     } else {
       temp.L1 <- NULL
     }
+    if (is.na(meta_series$tol_out))  tol_out  <- 10
+    if (is.na(meta_series$tol_jump)) tol_jump <- 50
+    if (is.na(meta_series$lowtemp))  lowtemp  <- 5
+
     server_data <- proc_dendro_L2(
       dendro_L1   = proc_L1(server_data[[which(m_dendro)]]),
       temp_L1     = temp.L1,
-      tol_out     = meta_series$tol_out,
-      tol_jump    = meta_series$tol_jump,
-      lowtemp     = meta_series$lowtemp,
-      plot        = T
+      tol_out     = tol_out,
+      tol_jump    = tol_jump,
+      lowtemp     = lowtemp,
+      plot        = F
     )
   }
 
