@@ -452,8 +452,21 @@ download_series <- function(meta_series, data_format, data_version,
       tol_out     = meta_series$tol_out,
       tol_jump    = meta_series$tol_jump,
       lowtemp     = meta_series$lowtemp,
-      plot        = F
+      plot        = F,
+      tz          = tz
     )
+
+    # process growth start and end
+    grostartend <- grow_seas(server_data, tol_seas = 0.05, agg_yearly = T, tz = tz)
+
+    # insert year
+    server_data <- server_data %>%
+      dplyr::mutate(year = strftime(ts, format = "%Y", tz = tz)) %>%
+      dplyr::mutate(year = as.numeric(year))
+
+    # join data
+    server_data <- server_data %>%
+      dplyr::full_join(grostartend, by=c("series","year"))
   }
 
   if (!bind_df) {
