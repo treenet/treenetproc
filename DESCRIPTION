@@ -36,7 +36,6 @@ Suggests:
     RPostgres (>= 1.1.1),
     config (>= 0.3),
     httr (>= 1.4.0),
-    googlesheets4 (>= 1.0.0),
     testthat (>= 2.1.0)
 VignetteBuilder: 
     knitr

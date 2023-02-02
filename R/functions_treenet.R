@@ -55,36 +55,33 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
   googlesheets4::gs4_deauth()
 
   # Select series for download via metadata file ------------------------------
-  # read metadata file
-  repeat {
-    suppressWarnings({
-      meta <- try(
-        googlesheets4::range_read(ss = "https://docs.google.com/spreadsheets/d/1C0qX-Kif2GhdH2OuyFbOnkNIvDq7B80icLuAxtgKg08",
-                                  sheet = "Metadata"),
-        silent=T)
-    })
-    if ("try-error" %in% class(meta)) {
-      message("Metadata service error, retrying in 100s...")
-      Sys.sleep(100)
-    } else {
-      break
-    }
-  }
+  # read metadata
+  drv <- RPostgres::Postgres()
+  cred <- config::get("treenet_cred", file = path_cred)
+  con <- DBI::dbConnect(drv,
+                        dbname = cred$dbname,
+                        host = cred$host,
+                        port = cred$port,
+                        user = cred$user,
+                        password = cred$password)
+  meta <- sqldf::sqldf(paste0("SELECT * FROM metadata ORDER BY timeseries DESC;"),
+                       connection = con)
+  invisible(DBI::dbDisconnect(con))
 
   # select specified series from metadata file
-  meta_filter <- meta$Seriesname
+  meta_filter <- meta$seriesname
   meta_airtemp <- vector()
   # site
   if (!is.null(site)) {
     meta_select <- vector()
     for (t in 1:length(site)) {
       meta_sub <- meta %>%
-        dplyr::filter(Seriesname %in% meta_filter) %>%
-        dplyr::filter(grepl(paste0(site[t]), Site, ignore.case = TRUE))
+        dplyr::filter(seriesname %in% meta_filter) %>%
+        dplyr::filter(grepl(paste0(site[t]), site, ignore.case = TRUE))
 
       if (nrow(meta_sub) != 0) {
-        meta_select <- c(meta_select, meta_sub$Seriesname)
-        meta_airtemp <- unique(meta_sub$Site_temp_ref)
+        meta_select <- c(meta_select, meta_sub$seriesname)
+        meta_airtemp <- unique(meta_sub$site_temp_ref)
       } else {
         message(paste0("Site '", site[t], "' does not exist."))
       }
@@ -118,13 +115,13 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
           Precipitation_Invervall = "precipitationinterval")
 
       meta_sensor <- meta %>%
-        dplyr::filter(Seriesname %in% meta_filter) %>%
-        dplyr::mutate(Sensor_query = unname(lookup[Sensor_class])) %>%
+        dplyr::filter(seriesname %in% meta_filter) %>%
+        dplyr::mutate(Sensor_query = unname(lookup[sensor_class])) %>%
         dplyr::filter(grepl(paste0(sensor_class[t]), Sensor_query,
                             ignore.case = TRUE))
 
       if (nrow(meta_sensor) != 0) {
-        meta_select <- c(meta_select, meta_sensor$Seriesname)
+        meta_select <- c(meta_select, meta_sensor$seriesname)
       } else {
         stop(paste0("Sensor '", sensor_class[t], "' does not exist."))
       }
@@ -136,19 +133,19 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
     meta_select <- vector()
     for (t in 1:length(sensor_name)) {
       meta_sub <- meta %>%
-        dplyr::filter(Seriesname %in% meta_filter) %>%
-        dplyr::filter(Seriesname == sensor_name[t])
+        dplyr::filter(seriesname %in% meta_filter) %>%
+        dplyr::filter(seriesname == sensor_name[t])
 
       if (nrow(meta_sub) != 0) {
-        meta_select <- c(meta_select, meta_sub$Seriesname)
+        meta_select <- c(meta_select, meta_sub$seriesname)
       } else {
         meta_sub <- meta %>%
-          dplyr::filter(Seriesname %in% meta_filter) %>%
-          dplyr::filter(grepl(paste0(sensor_name[t]), Series_ancestor,
+          dplyr::filter(seriesname %in% meta_filter) %>%
+          dplyr::filter(grepl(paste0(sensor_name[t]), series_ancestor,
                               ignore.case = TRUE))
         if (nrow(meta_sub) != 0) {
-          message(paste0("Sensor name '", sensor_name[t], "' is old. Using current sensor name '", meta_sub$Seriesname, "'"))
-          meta_select <- c(meta_select, meta_sub$Seriesname)
+          message(paste0("Sensor name '", sensor_name[t], "' is old. Using current sensor name '", meta_sub$seriesname, "'"))
+          meta_select <- c(meta_select, meta_sub$seriesname)
         } else {
           message(paste0("Sensor name '", sensor_name[t], "' does not exist."))
         }
@@ -183,9 +180,9 @@ select_temp_data <- function(meta_list) {
 
   # select names of reference temperature data
   meta_temp <- meta %>%
-    dplyr::filter(Seriesname %in% meta_series) %>%
-    dplyr::select(Seriesname, Site_temp_ref, Tree_Proc_tol_out, Tree_Proc_tol_jump, Tree_Proc_frost_thr) %>%
-    dplyr::select(series = Seriesname, temp_ref = Site_temp_ref, tol_out = Tree_Proc_tol_out, tol_jump = Tree_Proc_tol_jump, lowtemp = Tree_Proc_frost_thr)
+    dplyr::filter(seriesname %in% meta_series) %>%
+    dplyr::select(seriesname, site_temp_ref, tree_proc_tol_out, tree_proc_tol_jump, tree_proc_frost_thr) %>%
+    dplyr::select(series = seriesname, temp_ref = site_temp_ref, tol_out = tree_proc_tol_out, tol_jump = tree_proc_tol_jump, lowtemp = tree_proc_frost_thr)
 
   return(meta_temp)
 }
