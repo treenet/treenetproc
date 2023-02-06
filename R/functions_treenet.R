@@ -49,6 +49,11 @@ load_credentials <- function(path_cred = NULL) {
 #'
 select_series <- function(site, sensor_class, sensor_name, path_cred) {
 
+  # Check availability of packages --------------------------------------------
+  check_package(pck_name = "config")
+  check_package(pck_name = "dplyr")
+  require(dplyr, quietly = T, warn.conflicts = F)
+
   # Select series for download via metadata file ------------------------------
   # read metadata
   drv <- RPostgres::Postgres()
@@ -59,7 +64,7 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
                         port = cred$port,
                         user = cred$user,
                         password = cred$password)
-  meta <- sqldf::sqldf(paste0("SELECT * FROM metadata ORDER BY timeseries DESC;"),
+  meta <- sqldf::sqldf(paste0("SELECT * FROM metadata ORDER BY timeseries;"),
                        connection = con)
   invisible(DBI::dbDisconnect(con))
 
