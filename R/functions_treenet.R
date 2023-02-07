@@ -52,7 +52,7 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
   # Check availability of packages --------------------------------------------
   check_package(pck_name = "config")
   check_package(pck_name = "dplyr")
-  require(dplyr, quietly = T, warn.conflicts = F)
+  require(magrittr, quietly = T, warn.conflicts = F)
 
   # Select series for download via metadata file ------------------------------
   # read metadata
