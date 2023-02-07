@@ -64,8 +64,8 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
                         port = cred$port,
                         user = cred$user,
                         password = cred$password)
-  meta <- sqldf::sqldf(paste0("SELECT * FROM metadata ORDER BY timeseries;"),
-                       connection = con)
+  meta <- DBI::dbGetQuery(paste0("SELECT * FROM metadata ORDER BY timeseries;"),
+                          conn = con)
   invisible(DBI::dbDisconnect(con))
 
   # select specified series from metadata file
