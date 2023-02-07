@@ -418,8 +418,9 @@ download_series <- function(meta_series, data_format, data_version,
   # remove empty list elements
   server_data <- Filter(f = length, x = server_data)
 
-  # return error if no data is available
-  if (length(server_data) == 0) {
+    # return error if no data is available
+  m_dendro <- names(server_data) %in% meta_series$series
+  if (length(server_data) == 0 | all(!m_dendro)) {
     if (!use_intl) {
       stop("There is no data available from the specified sensor(s).")
     }
@@ -432,7 +433,6 @@ download_series <- function(meta_series, data_format, data_version,
   # process L1M to L2M
   if (data_format == "L2M") {
     m_temp   <- names(server_data) %in% temp_ref_unique
-    m_dendro <- names(server_data) %in% meta_series$series
     if (any(m_temp) & any(m_dendro)) {
       temp.L1 <- proc_L1(server_data[[which(m_temp)]])
     } else {
