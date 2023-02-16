@@ -64,23 +64,23 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
                         port = cred$port,
                         user = cred$user,
                         password = cred$password)
-  meta <- DBI::dbGetQuery(paste0("SELECT * FROM metadata ORDER BY timeseries;"),
+  meta <- DBI::dbGetQuery(paste0("SELECT * FROM metadata;"),
                           conn = con)
   invisible(DBI::dbDisconnect(con))
 
   # select specified series from metadata file
-  meta_filter <- meta$seriesname
+  meta_filter <- meta$series_name
   meta_airtemp <- vector()
   # site
   if (!is.null(site)) {
     meta_select <- vector()
     for (t in 1:length(site)) {
       meta_sub <- meta %>%
-        dplyr::filter(seriesname %in% meta_filter) %>%
+        dplyr::filter(series_name %in% meta_filter) %>%
         dplyr::filter(grepl(paste0(site[t]), site, ignore.case = TRUE))
 
       if (nrow(meta_sub) != 0) {
-        meta_select <- c(meta_select, meta_sub$seriesname)
+        meta_select <- c(meta_select, meta_sub$series_name)
         meta_airtemp <- unique(meta_sub$site_temp_ref)
       } else {
         message(paste0("Site '", site[t], "' does not exist."))
@@ -115,13 +115,13 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
           Precipitation_Invervall = "precipitationinterval")
 
       meta_sensor <- meta %>%
-        dplyr::filter(seriesname %in% meta_filter) %>%
+        dplyr::filter(series_name %in% meta_filter) %>%
         dplyr::mutate(Sensor_query = unname(lookup[sensor_class])) %>%
         dplyr::filter(grepl(paste0(sensor_class[t]), Sensor_query,
                             ignore.case = TRUE))
 
       if (nrow(meta_sensor) != 0) {
-        meta_select <- c(meta_select, meta_sensor$seriesname)
+        meta_select <- c(meta_select, meta_sensor$series_name)
       } else {
         stop(paste0("Sensor '", sensor_class[t], "' does not exist."))
       }
@@ -133,19 +133,19 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
     meta_select <- vector()
     for (t in 1:length(sensor_name)) {
       meta_sub <- meta %>%
-        dplyr::filter(seriesname %in% meta_filter) %>%
-        dplyr::filter(seriesname == sensor_name[t])
+        dplyr::filter(series_name %in% meta_filter) %>%
+        dplyr::filter(series_name == sensor_name[t])
 
       if (nrow(meta_sub) != 0) {
-        meta_select <- c(meta_select, meta_sub$seriesname)
+        meta_select <- c(meta_select, meta_sub$series_name)
       } else {
         meta_sub <- meta %>%
-          dplyr::filter(seriesname %in% meta_filter) %>%
+          dplyr::filter(series_name %in% meta_filter) %>%
           dplyr::filter(grepl(paste0(sensor_name[t]), series_ancestor,
                               ignore.case = TRUE))
         if (nrow(meta_sub) != 0) {
-          message(paste0("Sensor name '", sensor_name[t], "' is old. Using current sensor name '", meta_sub$seriesname, "'"))
-          meta_select <- c(meta_select, meta_sub$seriesname)
+          message(paste0("Sensor name '", sensor_name[t], "' is old. Using current sensor name '", meta_sub$series_name, "'"))
+          meta_select <- c(meta_select, meta_sub$series_name)
         } else {
           message(paste0("Sensor name '", sensor_name[t], "' does not exist."))
         }
@@ -180,9 +180,9 @@ select_temp_data <- function(meta_list) {
 
   # select names of reference temperature data
   meta_temp <- meta %>%
-    dplyr::filter(seriesname %in% meta_series) %>%
-    dplyr::select(seriesname, site_temp_ref, tree_proc_tol_out, tree_proc_tol_jump, tree_proc_frost_thr) %>%
-    dplyr::select(series = seriesname, temp_ref = site_temp_ref, tol_out = tree_proc_tol_out, tol_jump = tree_proc_tol_jump, lowtemp = tree_proc_frost_thr)
+    dplyr::filter(series_name %in% meta_series) %>%
+    dplyr::select(series_name, site_temp_ref, tree_proc_tol_out, tree_proc_tol_jump, tree_proc_frost_thr) %>%
+    dplyr::select(series = series_name, temp_ref = site_temp_ref, tol_out = tree_proc_tol_out, tol_jump = tree_proc_tol_jump, lowtemp = tree_proc_frost_thr)
 
   return(meta_temp)
 }
