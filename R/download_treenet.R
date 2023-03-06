@@ -44,9 +44,9 @@ download_treenet <- function(site = NULL, sensor_name = NULL,
   path_cred <- load_credentials(path_cred = path_cred)
 
   # select series and reference temperature for download
-  if (data_format %in% c("L2","LM","L2M")) {
-    sensor_class <- "dendrometer"
-  }
+  # if (data_format %in% c("L2","LM","L2M")) {
+  #   sensor_class <- "dendrometer"
+  # }
   meta_series <- select_series(site = site, sensor_class = sensor_class,
                                sensor_name = sensor_name,
                                path_cred = path_cred)
