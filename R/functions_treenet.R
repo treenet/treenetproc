@@ -353,14 +353,18 @@ download_series <- function(meta_series, data_format, data_version,
       if (data_format == "L2M") {
         ts.max.LM <- sqldf::sqldf(paste0("SELECT max(ts) FROM treenetm WHERE series = '", series[i], "' AND ", db_dataset, ";"),
                                   connection = con)$max
-        ts.max.L2 <- sqldf::sqldf(paste0("SELECT max(ts) FROM treenet1 WHERE series = '", series[i], "' AND ", db_version, ";"),
+        ts.max.L2 <- sqldf::sqldf(paste0("SELECT max(ts) FROM ", db_folder ," WHERE series = '", series[i], "' AND ", db_version, ";"),
                                   connection = con)$max
-        db_time.LM <- NULL
-        db_time.L2 <- NULL
+        db_time.LM     <- NULL
+        db_time.L2     <- NULL
+
 
         if (is.na(ts.max.L2)) message(paste0("There is no L2 data available for ", series[i], "."))
         if (is.na(ts.max.LM)) {
-          message(paste0("There is no LM data available for ", series[i], "."))
+          message(paste0("There is no LM data available for ", series[i], ". Using L2 data."))
+          foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
+                                     " WHERE series = '", series[i], "' AND ",
+                                     db_version,  db_time, ";"), connection = con)
         } else {
           writeLines(paste0("Data from ", series[i], " is LM (", data_set,") until ", format(ts.max.LM, "%Y-%m-%d %H:%M:%S"), " afterwhich it is L2."))
 
@@ -369,17 +373,17 @@ download_series <- function(meta_series, data_format, data_version,
 
           db_time.LM <-paste0(" AND ts > '", as.POSIXct(min(from, ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp AND ts <= '", as.POSIXct(min(to,ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp")
           db_time.L2 <-paste0(" AND ts > '", as.POSIXct(max(from, ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp AND ts <= '", as.POSIXct(max(to,ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp")
-        }
-        foo <- sqldf::sqldf(paste0("SELECT * FROM (
+
+          foo <- sqldf::sqldf(paste0("SELECT * FROM (
                                      SELECT series, ts, value, version
                                       FROM treenetm WHERE series = '", series[i],"' AND ", db_dataset, db_time.LM, "
                                      UNION
                                      SELECT series, ts, value, version
                                       FROM ", db_folder ," WHERE series = '", series[i],"' AND ", db_version, db_time.L2,
                                      ") l2m ",
-                                    dplyr::if_else(length(last) != 0, paste0(" WHERE ", db_time), ""), ";"),
-                            connection = con)
-
+                                     dplyr::if_else(length(last) != 0, paste0(" WHERE ", db_time), ""), ";"),
+                              connection = con)
+        }
       } else {
         foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
                                    " WHERE series = '", series[i], "' AND ",
