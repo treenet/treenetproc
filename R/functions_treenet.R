@@ -438,14 +438,18 @@ download_series <- function(meta_series, data_format, data_version,
   if (data_format == "L2M") {
     m_temp   <- names(server_data) %in% temp_ref_unique
     if (any(m_temp) & any(m_dendro)) {
-      temp.L1 <- proc_L1(server_data[[which(m_temp)]])
+      temp.L1 <- try(proc_L1(server_data[[which(m_temp)]]), silent=T)
+      if ("try-error" %in% class(temp.L1)) {
+          message("There is no data available from the specified temp_ref sensor(s).")
+          temp.L1 <- NULL
+      }
     } else {
       temp.L1 <- NULL
     }
 
-    if (is.na(meta_series$tol_out))  meta_series$tol_out  <- 10
-    if (is.na(meta_series$tol_jump)) meta_series$tol_jump <- 50
-    if (is.na(meta_series$lowtemp))  meta_series$lowtemp  <- 5
+    meta_series$tol_out [is.na(meta_series$tol_out)]  <- 10
+    meta_series$tol_jump[is.na(meta_series$tol_jump)] <- 50
+    meta_series$lowtemp [is.na(meta_series$lowtemp)]  <- 5
 
     server_data <- proc_dendro_L2(
       dendro_L1   = proc_L1(server_data[[which(m_dendro)]]),
