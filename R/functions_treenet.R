@@ -454,9 +454,9 @@ download_series <- function(meta_series, data_format, data_version,
     server_data <- proc_dendro_L2(
       dendro_L1   = proc_L1(server_data[[which(m_dendro)]]),
       temp_L1     = temp.L1,
-      tol_out     = meta_series$tol_out,
-      tol_jump    = meta_series$tol_jump,
-      lowtemp     = meta_series$lowtemp,
+      tol_out     = meta_series$tol_out [m_dendro],
+      tol_jump    = meta_series$tol_jump[m_dendro],
+      lowtemp     = meta_series$lowtemp [m_dendro],
       plot        = F,
       tz          = tz
     )
