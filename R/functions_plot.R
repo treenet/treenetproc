@@ -139,7 +139,7 @@ plot_gro_yr_print_vars <- function(data_plot, thr_plot, tz) {
                    widths = 1)
 
   # plot yearly growth curves
-  graphics::par(mar = c(5.1, 4.1, 4.1, 2.1))
+  graphics::par(mar = c(1.1, 4.1, 4.1, 2.1))
 
   data_plot <- data_plot %>%
     dplyr::mutate(doy = as.numeric(strftime(ts, format = "%j", tz = tz)) - 1)
@@ -159,7 +159,7 @@ plot_gro_yr_print_vars <- function(data_plot, thr_plot, tz) {
     graphics::lines(data = data_year[[y]], gro_yr ~ doy, col = colors[y])
   }
   graphics::legend(x = "topleft", legend = years, col = colors, bty = "n",
-                   lty = 1, seg.len = 0.8)
+                   lty = 1, seg.len = 0.8, cex=1, ncol=2)
 
 
   # print used variables and threshold values
