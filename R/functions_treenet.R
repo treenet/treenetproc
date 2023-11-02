@@ -64,7 +64,7 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
                         port = cred$port,
                         user = cred$user,
                         password = cred$password)
-  meta <- DBI::dbGetQuery(paste0("SELECT * FROM metadata;"),
+  meta <- DBI::dbGetQuery(paste0("SELECT * FROM metadata LEFT JOIN metadata_sites USING(site_id);"),
                           conn = con)
   invisible(DBI::dbDisconnect(con))
 
