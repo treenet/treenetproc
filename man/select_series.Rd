@@ -4,9 +4,11 @@
 \alias{select_series}
 \title{Select Series from Metadata File}
 \usage{
-select_series(site, sensor_class, sensor_name, path_cred)
+select_series(measure_point, site, sensor_class, sensor_name, path_cred)
 }
 \arguments{
+\item{measure_point}{character, specify the measure point. String is not case sensitive.}
+
 \item{site}{character, specify the site. String is not case sensitive.}
 
 \item{sensor_class}{character, specify a single or multiple sensor

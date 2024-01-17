@@ -1,7 +1,7 @@
 Package: treenetproc
 Type: Package
 Title: Clean, Process and Visualize Dendrometer Data
-Version: 0.1.6
+Version: 0.1.7
 Date: 2019-06-17
 Authors@R: c(person("Matthias", "Haeni", email = "matthias.haeni@wsl.ch",
     role = c("aut", "cre")),
@@ -20,7 +20,7 @@ Depends: R (>= 3.5.0)
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Imports: 
     dplyr (>= 0.7.8),
     magrittr,

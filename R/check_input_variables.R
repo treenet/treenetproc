@@ -25,12 +25,12 @@ check_input_variables <- function(list) {
     }
   }
 
-  # site, sensor_name and sensor_class
-  if ("site" %in% var_names & "sensor_name" %in% var_names &
+  # measure_point, site, sensor_name and sensor_class
+  if ("measure_point" %in% var_names & "site" %in% var_names & "sensor_name" %in% var_names &
       "sensor_class" %in% var_names) {
-    if (length(list$site) == 0 & length(list$sensor_name) == 0 &
+    if (length(list$measure_point) == 0 & length(list$site) == 0 & length(list$sensor_name) == 0 &
         length(list$sensor_class) == 0) {
-      stop(paste0("Specify at least one of the following: site, ",
+      stop(paste0("Specify at least one of the following: measure_point, site, ",
                   " sensor_name, sensor_class."))
     }
   }

@@ -29,10 +29,11 @@ load_credentials <- function(path_cred = NULL) {
 #' Select Series from Metadata File
 #'
 #' \code{select_series} selects series from the metadata file based on
-#'   selection criteria specified by the user (i.e. site, sensor_class, etc.).
+#'   selection criteria specified by the user (i.e. measure_point, site, sensor_class, etc.).
 #'   In addition, reference temperature data is selected for all dendrometer
 #'   series.
 #'
+#' @param measure_point character, specify the measure point. String is not case sensitive.
 #' @param site character, specify the site. String is not case sensitive.
 #' @param sensor_class character, specify a single or multiple sensor
 #'   classes. String does not have to contain the full name of the sensor
@@ -47,7 +48,7 @@ load_credentials <- function(path_cred = NULL) {
 #'
 #' @keywords internal, treenet
 #'
-select_series <- function(site, sensor_class, sensor_name, path_cred) {
+select_series <- function(measure_point, site, sensor_class, sensor_name, path_cred) {
 
   # Check availability of packages --------------------------------------------
   check_package(pck_name = "config")
@@ -69,29 +70,35 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
   invisible(DBI::dbDisconnect(con))
 
   # select specified series from metadata file
-  meta_filter <- meta$series_name
-  meta_airtemp <- vector()
+  meta_filter <- meta$measure_point
+  warn_msg   <- vector()
+
   # site
   if (!is.null(site)) {
+    site_sel    <- site
     meta_select <- vector()
-    for (t in 1:length(site)) {
+    meta_msg    <- vector()
+    for (t in 1:length(site_sel)) {
       meta_sub <- meta %>%
-        dplyr::filter(series_name %in% meta_filter) %>%
-        dplyr::filter(grepl(paste0(site[t]), site, ignore.case = TRUE))
+        dplyr::filter(measure_point %in% meta_filter) %>%
+        dplyr::filter(grepl(paste0(site_sel[t]), site, ignore.case = TRUE))
 
       if (nrow(meta_sub) != 0) {
-        meta_select <- c(meta_select, meta_sub$series_name)
-        meta_airtemp <- unique(meta_sub$site_temp_ref)
+        meta_select <- c(meta_select, meta_sub$measure_point)
+        # meta_airtemp <- unique(meta_sub$site_temp_ref)
       } else {
-        message(paste0("Site '", site[t], "' does not exist."))
+        meta_msg <- c(meta_msg, site_sel[t])
       }
     }
+    if (length(meta_msg) > 0) warn_msg <- c(warn_msg, paste0("'", paste0(meta_msg, collapse = "', '"), "'"))
     meta_filter <- meta_select
   }
   # sensor_class
   if (!is.null(sensor_class)) {
-    meta_select <- vector()
-    for (t in 1:length(sensor_class)) {
+    sensor_class_sel <- sensor_class
+    meta_select      <- vector()
+    meta_msg         <- vector()
+    for (t in 1:length(sensor_class_sel)) {
       lookup <-
         c(Dendrometer = "dendrometer",
           Temp = "airtemperature",
@@ -115,45 +122,70 @@ select_series <- function(site, sensor_class, sensor_name, path_cred) {
           Precipitation_Invervall = "precipitationinterval")
 
       meta_sensor <- meta %>%
-        dplyr::filter(series_name %in% meta_filter) %>%
+        dplyr::filter(measure_point %in% meta_filter) %>%
         dplyr::mutate(Sensor_query = unname(lookup[sensor_class])) %>%
-        dplyr::filter(grepl(paste0(sensor_class[t]), Sensor_query,
+        dplyr::filter(grepl(paste0(sensor_class_sel[t]), Sensor_query,
                             ignore.case = TRUE))
 
       if (nrow(meta_sensor) != 0) {
-        meta_select <- c(meta_select, meta_sensor$series_name)
+        meta_select <- c(meta_select, meta_sensor$measure_point)
       } else {
-        stop(paste0("Sensor '", sensor_class[t], "' does not exist."))
+        meta_msg <- c(meta_msg, sensor_class_sel[t])
       }
     }
+    if (length(meta_msg) > 0) warn_msg <- c(warn_msg, paste0("'", paste0(meta_msg, collapse = "', '"), "'"))
     meta_filter <- meta_select
   }
   # sensor_name
   if (!is.null(sensor_name)) {
-    meta_select <- vector()
-    for (t in 1:length(sensor_name)) {
+    sensor_name_sel <- sensor_name
+    meta_msg        <- vector()
+    meta_select     <- vector()
+    for (t in 1:length(sensor_name_sel)) {
       meta_sub <- meta %>%
-        dplyr::filter(series_name %in% meta_filter) %>%
-        dplyr::filter(series_name == sensor_name[t])
+        dplyr::filter(measure_point %in% meta_filter) %>%
+        dplyr::filter(series_name == sensor_name_sel[t])
 
       if (nrow(meta_sub) != 0) {
-        meta_select <- c(meta_select, meta_sub$series_name)
+        meta_select <- c(meta_select, meta_sub$measure_point)
       } else {
         meta_sub <- meta %>%
-          dplyr::filter(series_name %in% meta_filter) %>%
-          dplyr::filter(grepl(paste0(sensor_name[t]), series_ancestor,
+          dplyr::filter(measure_point %in% meta_filter) %>%
+          dplyr::filter(grepl(paste0(sensor_name_sel[t]), series_ancestor,
                               ignore.case = TRUE))
         if (nrow(meta_sub) != 0) {
-          message(paste0("Sensor name '", sensor_name[t], "' is old. Using current sensor name '", meta_sub$series_name, "'"))
-          meta_select <- c(meta_select, meta_sub$series_name)
+          message(paste0("Sensor name '", sensor_name_sel[t], "' is old. Using current sensor name '", meta_sub$series_name, "'"))
+          meta_select <- c(meta_select, meta_sub$measure_point)
         } else {
-          message(paste0("Sensor name '", sensor_name[t], "' does not exist."))
+          meta_msg <- c(meta_msg, sensor_name_sel[t])
         }
       }
     }
+    if (length(meta_msg) > 0) warn_msg <- c(warn_msg, paste0("'", paste0(meta_msg, collapse = "', '"), "'"))
+    meta_filter <- meta_select
+  }
+  # measure_point
+  if (!is.null(measure_point)) {
+    measure_point_sel <- measure_point
+    meta_select       <- vector()
+    meta_msg          <- vector()
+    for (t in 1:length(measure_point_sel)) {
+      meta_sub <- meta %>%
+        dplyr::filter(measure_point %in% meta_filter) %>%
+        dplyr::filter(grepl(paste0(measure_point_sel[t]), measure_point,
+                            ignore.case = TRUE))
+      if (nrow(meta_sub) != 0) {
+        meta_select <- c(meta_select, meta_sub$measure_point)
+        # meta_airtemp <- unique(meta_sub$site_temp_ref)
+      } else {
+        meta_msg <- c(meta_msg, measure_point_sel[t])
+      }
+    }
+    if (length(meta_msg) > 0) warn_msg <- c(warn_msg, paste0("'", paste0(meta_msg, collapse = "', '"), "'"))
     meta_filter <- meta_select
   }
 
+  if (length(warn_msg) > 0) message("Selection criteria error: ", paste(warn_msg, collapse = " & ")," cannot be found.")
   meta_list <- list(meta, meta_filter)
 
   # Select reference temperature data for download via metadata file ----------
@@ -180,9 +212,9 @@ select_temp_data <- function(meta_list) {
 
   # select names of reference temperature data
   meta_temp <- meta %>%
-    dplyr::filter(series_name %in% meta_series) %>%
-    dplyr::select(series_name, site_temp_ref, tree_proc_tol_out, tree_proc_tol_jump, tree_proc_frost_thr) %>%
-    dplyr::select(series = series_name, temp_ref = site_temp_ref, tol_out = tree_proc_tol_out, tol_jump = tree_proc_tol_jump, lowtemp = tree_proc_frost_thr)
+    dplyr::filter(measure_point %in% meta_series) %>%
+    dplyr::select(measure_point,series_name, site_temp_ref, tree_proc_tol_out, tree_proc_tol_jump, tree_proc_frost_thr) %>%
+    dplyr::select(measure_point = measure_point, series = series_name, temp_ref = site_temp_ref, tol_out = tree_proc_tol_out, tol_jump = tree_proc_tol_jump, lowtemp = tree_proc_frost_thr)
 
   return(meta_temp)
 }
@@ -330,11 +362,11 @@ download_series <- function(meta_series, data_format, data_version,
       # check newest data in treenet database
       if ((data_format %in% c("L1","L2","L2M")) & length(data_version) == 0) {
         data_version <- sqldf::sqldf(paste0("SELECT DISTINCT version FROM ", db_folder," WHERE series = '", series[i], "' ORDER BY version DESC;"),
-                                  connection = con)$version[1]
+                                     connection = con)$version[1]
       }
       if (data_format %in% c("LM","L2M")) {
         data_set <- sqldf::sqldf(paste0("SELECT DISTINCT dataset FROM treenetm WHERE series = '", series[i], "' ORDER BY dataset DESC;"),
-                                  connection = con)$dataset[1]
+                                 connection = con)$dataset[1]
         if (is.na(data_set)) data_set <- "dummy.value"
       }
       if (data_format == "L1") {
@@ -409,7 +441,7 @@ download_series <- function(meta_series, data_format, data_version,
     # skip series if there is not data available
     if (all(is.na(df$value))) {
       writeLines(paste0("There is no data for '", series[i],
-                   "' in specified period."))
+                        "' in specified period."))
       next
     }
 
@@ -422,7 +454,7 @@ download_series <- function(meta_series, data_format, data_version,
   # remove empty list elements
   server_data <- Filter(f = length, x = server_data)
 
-    # return error if no data is available
+  # return error if no data is available
   m_dendro <- names(server_data) %in% meta_series$series
   if (length(server_data) == 0 | all(!m_dendro)) {
     if (!use_intl) {
@@ -438,10 +470,10 @@ download_series <- function(meta_series, data_format, data_version,
   if (data_format == "L2M") {
     m_temp   <- names(server_data) %in% temp_ref_unique
     if (any(m_temp) & any(m_dendro)) {
-      temp.L1 <- try(proc_L1(server_data[[which(m_temp)]]), silent=T)
+      temp.L1 <- try(proc_L1(dplyr::bind_rows(server_data[which(m_temp)])), silent=T)
       if ("try-error" %in% class(temp.L1)) {
-          message("There is no data available from the specified temp_ref sensor(s).")
-          temp.L1 <- NULL
+        message("There is no data available from the specified temp_ref sensor(s).")
+        temp.L1 <- NULL
       }
     } else {
       temp.L1 <- NULL
@@ -452,7 +484,7 @@ download_series <- function(meta_series, data_format, data_version,
     meta_series$lowtemp [is.na(meta_series$lowtemp)]  <- 5
 
     server_data <- proc_dendro_L2(
-      dendro_L1   = proc_L1(server_data[[which(m_dendro)]]),
+      dendro_L1   = proc_L1(dplyr::bind_rows(server_data[which(m_dendro)])),
       temp_L1     = temp.L1,
       tol_out     = meta_series$tol_out [m_dendro],
       tol_jump    = meta_series$tol_jump[m_dendro],

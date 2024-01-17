@@ -5,6 +5,7 @@
 \title{Download Dendrometer Data from TreeNet or Decentlab Server}
 \usage{
 download_treenet(
+  measure_point = NULL,
   site = NULL,
   sensor_name = NULL,
   sensor_class = NULL,
@@ -23,6 +24,8 @@ download_treenet(
 )
 }
 \arguments{
+\item{measure_point}{character, specify the measure point. String is not case sensitive.}
+
 \item{site}{character, specify the site. String is not case sensitive.}
 
 \item{sensor_name}{character, specify the name of a single or
