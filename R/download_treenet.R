@@ -22,10 +22,10 @@
 #'
 #' @examples
 #' \dontrun{
-#' download_treenet(site = "lens", export = TRUE, bind_df = FALSE,
+#' download_treenet(site_name = "lens", export = TRUE, bind_df = FALSE,
 #'                  server = "decentlab")
 #' }
-download_treenet <- function(measure_point = NULL, site = NULL, sensor_name = NULL,
+download_treenet <- function(measure_point = NULL, site_name = NULL, sensor_name = NULL,
                              sensor_class = NULL, from = NULL, to = NULL,
                              bind_df = TRUE, server = "treenet",
                              data_format = "L0", data_version = NULL,
@@ -47,7 +47,9 @@ download_treenet <- function(measure_point = NULL, site = NULL, sensor_name = NU
   # if (data_format %in% c("L2","LM","L2M")) {
   #   sensor_class <- "dendrometer"
   # }
-  meta_series <- select_series(measure_point = measure_point, site = site, sensor_class = sensor_class,
+  meta_series <- select_series(measure_point = measure_point,
+                               site_name = site_name,
+                               sensor_class = sensor_class,
                                sensor_name = sensor_name,
                                path_cred = path_cred)
 

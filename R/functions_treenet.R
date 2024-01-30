@@ -29,12 +29,12 @@ load_credentials <- function(path_cred = NULL) {
 #' Select Series from Metadata File
 #'
 #' \code{select_series} selects series from the metadata file based on
-#'   selection criteria specified by the user (i.e. measure_point, site, sensor_class, etc.).
+#'   selection criteria specified by the user (i.e. measure_point, site_name, sensor_class, etc.).
 #'   In addition, reference temperature data is selected for all dendrometer
 #'   series.
 #'
 #' @param measure_point character, specify the measure point. String is not case sensitive.
-#' @param site character, specify the site. String is not case sensitive.
+#' @param site_name character, specify the site name. String is not case sensitive.
 #' @param sensor_class character, specify a single or multiple sensor
 #'   classes. String does not have to contain the full name of the sensor
 #'   class, i.e. \code{"dendro"} works for \code{"dendrometer"}. String is not
@@ -48,7 +48,7 @@ load_credentials <- function(path_cred = NULL) {
 #'
 #' @keywords internal, treenet
 #'
-select_series <- function(measure_point, site, sensor_class, sensor_name, path_cred) {
+select_series <- function(measure_point, site_name, sensor_class, sensor_name, path_cred) {
 
   # Check availability of packages --------------------------------------------
   check_package(pck_name = "config")
@@ -66,28 +66,29 @@ select_series <- function(measure_point, site, sensor_class, sensor_name, path_c
                         user = cred$user,
                         password = cred$password)
   meta <- DBI::dbGetQuery(paste0("SELECT * FROM metadata LEFT JOIN metadata_sites USING(site_id);"),
-                          conn = con)
+                          conn = con) %>%
+    dplyr::mutate(id = dplyr::row_number())
   invisible(DBI::dbDisconnect(con))
 
   # select specified series from metadata file
-  meta_filter <- meta$measure_point
-  warn_msg   <- vector()
+  meta_filter <- meta$id
+  warn_msg    <- vector()
 
-  # site
-  if (!is.null(site)) {
-    site_sel    <- site
+  # site_name
+  if (!is.null(site_name)) {
+    site_name_sel    <- site_name
     meta_select <- vector()
     meta_msg    <- vector()
-    for (t in 1:length(site_sel)) {
+    for (t in 1:length(site_name_sel)) {
       meta_sub <- meta %>%
-        dplyr::filter(measure_point %in% meta_filter) %>%
-        dplyr::filter(grepl(paste0(site_sel[t]), site, ignore.case = TRUE))
+        dplyr::filter(id %in% meta_filter) %>%
+        dplyr::filter(grepl(paste0(site_name_sel[t]), site_name, ignore.case = TRUE))
 
       if (nrow(meta_sub) != 0) {
-        meta_select <- c(meta_select, meta_sub$measure_point)
+        meta_select <- c(meta_select, meta_sub$id)
         # meta_airtemp <- unique(meta_sub$site_temp_ref)
       } else {
-        meta_msg <- c(meta_msg, site_sel[t])
+        meta_msg <- c(meta_msg, site_name_sel[t])
       }
     }
     if (length(meta_msg) > 0) warn_msg <- c(warn_msg, paste0("'", paste0(meta_msg, collapse = "', '"), "'"))
@@ -127,13 +128,13 @@ select_series <- function(measure_point, site, sensor_class, sensor_name, path_c
           Precipitation_Invervall = "precipitationinterval")
 
       meta_sensor <- meta %>%
-        dplyr::filter(measure_point %in% meta_filter) %>%
+        dplyr::filter(id %in% meta_filter) %>%
         dplyr::mutate(Sensor_query = unname(lookup[sensor_class])) %>%
         dplyr::filter(grepl(paste0(sensor_class_sel[t]), Sensor_query,
                             ignore.case = TRUE))
 
       if (nrow(meta_sensor) != 0) {
-        meta_select <- c(meta_select, meta_sensor$measure_point)
+        meta_select <- c(meta_select, meta_sub$id)
       } else {
         meta_msg <- c(meta_msg, sensor_class_sel[t])
       }
@@ -148,24 +149,15 @@ select_series <- function(measure_point, site, sensor_class, sensor_name, path_c
     meta_select     <- vector()
     for (t in 1:length(sensor_name_sel)) {
       meta_sub <- meta %>%
-        dplyr::filter(measure_point %in% meta_filter) %>%
-        dplyr::filter(series_name == sensor_name_sel[t])
-
+        dplyr::filter(id %in% meta_filter) %>%
+        dplyr::filter(sensor_name %in% sensor_name_sel[t])
       if (nrow(meta_sub) != 0) {
-        meta_select <- c(meta_select, meta_sub$measure_point)
+        meta_select <- c(meta_select, meta_sub$id)
       } else {
-        meta_sub <- meta %>%
-          dplyr::filter(measure_point %in% meta_filter) %>%
-          dplyr::filter(grepl(paste0(sensor_name_sel[t]), series_ancestor,
-                              ignore.case = TRUE))
-        if (nrow(meta_sub) != 0) {
-          message(paste0("Sensor name '", sensor_name_sel[t], "' is old. Using current sensor name '", meta_sub$series_name, "'"))
-          meta_select <- c(meta_select, meta_sub$measure_point)
-        } else {
-          meta_msg <- c(meta_msg, sensor_name_sel[t])
-        }
+        meta_msg <- c(meta_msg, sensor_name_sel[t])
       }
     }
+
     if (length(meta_msg) > 0) warn_msg <- c(warn_msg, paste0("'", paste0(meta_msg, collapse = "', '"), "'"))
     meta_filter <- meta_select
   }
@@ -176,11 +168,11 @@ select_series <- function(measure_point, site, sensor_class, sensor_name, path_c
     meta_msg          <- vector()
     for (t in 1:length(measure_point_sel)) {
       meta_sub <- meta %>%
-        dplyr::filter(measure_point %in% meta_filter) %>%
+        dplyr::filter(id %in% meta_filter) %>%
         dplyr::filter(grepl(paste0(measure_point_sel[t]), measure_point,
                             ignore.case = TRUE))
       if (nrow(meta_sub) != 0) {
-        meta_select <- c(meta_select, meta_sub$measure_point)
+        meta_select <- c(meta_select, meta_sub$id)
         # meta_airtemp <- unique(meta_sub$site_temp_ref)
       } else {
         meta_msg <- c(meta_msg, measure_point_sel[t])
@@ -194,15 +186,15 @@ select_series <- function(measure_point, site, sensor_class, sensor_name, path_c
   meta_list <- list(meta, meta_filter)
 
   # Select reference temperature data for download via metadata file ----------
-  meta_series_temp <- select_temp_data(meta_list = meta_list)
+  meta_series_ref <- select_ref_data(meta_list = meta_list)
 
-  return(meta_series_temp)
+  return(meta_series_ref)
 }
 
 
 #' Select Reference Data for Selected Series
 #'
-#' \code{select_temp_data} selects reference temperature data as well as outlier, jump, and frost tolerances for dendrometer
+#' \code{select_ref_data} selects reference temperature data as well as outlier, jump, and frost tolerances for dendrometer
 #'   series based on the metadata file.
 #'
 #' @param meta_list list, containing the metadata file (first element) and
@@ -210,18 +202,24 @@ select_series <- function(measure_point, site, sensor_class, sensor_name, path_c
 #'
 #' @keywords internal, treenet
 #'
-select_temp_data <- function(meta_list) {
+select_ref_data <- function(meta_list) {
 
   meta <- meta_list[[1]]
   meta_series <- meta_list[[2]]
 
-  # select names of reference temperature data
-  meta_temp <- meta %>%
-    dplyr::filter(measure_point %in% meta_series) %>%
-    dplyr::select(measure_point,series_name, site_temp_ref, tree_proc_tol_out, tree_proc_tol_jump, tree_proc_frost_thr) %>%
-    dplyr::select(measure_point = measure_point, series = series_name, temp_ref = site_temp_ref, tol_out = tree_proc_tol_out, tol_jump = tree_proc_tol_jump, lowtemp = tree_proc_frost_thr)
+  # select names of metadata
+  meta_ref <- meta[meta_series, ] %>%
+    dplyr::select(measure_point = measure_point,
+                  sensor_name = sensor_name,
+                  series_start = series_start,
+                  series_stop = series_stop,
+                  site_id = site_id,
+                  temp_ref = site_temp_ref,
+                  tol_out = tree_proc_tol_out,
+                  tol_jump = tree_proc_tol_jump,
+                  lowtemp = tree_proc_frost_thr)
 
-  return(meta_temp)
+  return(meta_ref)
 }
 
 
@@ -295,141 +293,173 @@ download_series <- function(meta_series, data_format, data_version,
   # Download series -----------------------------------------------------------
   # specify format
   if (server == "treenet") {
-    if (data_format == "L0") {
-      db_folder  <- "treenet0"
-      db_version <- "version = 0"
-      version_nm <- "L0"
-    }
-    if (data_format == "L1") {
-      db_folder  <- "treenet1"
-      version_nm <- "L1"
-    }
-    if (data_format == "L2") {
-      db_folder  <- "treenet2"
-      version_nm <- "L2"
-    }
-    if (data_format == "LM") {
-      db_folder  <- "treenetm"
-      version_nm <- "LM"
-    }
-    if (data_format == "L2M") {
-      db_folder  <- "treenet1"
-      version_nm <- "L2M"
-      temp_ref   <- T
-    }
+    if (data_format == "L0")    db_table  <- "treenet0"
+    if (data_format == "L1")    db_table  <- "treenet1"
+    if (data_format == "L2")    db_table  <- "treenet2"
+    if (data_format == "LM")    db_table  <- "treenetm"
+    if (data_format == "L2M") { db_table  <- "treenet1"; temp_ref   <- T}
   }
   if (server == "decentlab") {
     version_nm <- "L0"
   }
 
-  # specify time window
-  from.ts <- NULL
-  to.ts   <- NULL
-  db_time <- NULL
-  if (length(from) != 0) {
-    from    <- as.POSIXct(as.character(from), format = "%Y-%m-%d", tz = tz)
-    from.ts <- paste0(" ts >= '", format(from, "%Y-%m-%d %H:%M:%S", tz = "UTC"), "'::timestamp")
-    db_time <- paste0(c("", from.ts, to.ts), collapse = " AND")
+  # format time window
+  if (length(from) == 0) {
+    from <- "1970-01-01"
   }
-  if (length(to) != 0) {
-    to      <- as.POSIXct(as.character(to), format = "%Y-%m-%d", tz = tz) +86399
-    to.ts   <- paste0(" ts <= '", format(to, "%Y-%m-%d %H:%M:%S", tz = "UTC"), "'::timestamp")
-    db_time <- paste0(c("", from.ts, to.ts), collapse = " AND")
+  from <- as.POSIXct(as.character(from), format = "%Y-%m-%d", tz = tz)
+  if (length(to) == 0) {
+    to <- lubridate::today() %>% as.character()
   }
-  if (length(last) != 0) {
-    db_time <- paste0(" ORDER BY ts DESC LIMIT ", last)
-  }
+  to <- as.POSIXct(as.character(to), format = "%Y-%m-%d", tz = tz) +86399
 
   # download series
   options(warn = -1)
-  if (temp_ref) {
-    temp_ref_unique <- unique(meta_series$temp_ref)
-    n_temp_ref <- length(temp_ref_unique)
-    n_series <- nrow(meta_series) + n_temp_ref
-    series <- c(meta_series$series, temp_ref_unique)
-  }
-  if (!temp_ref) {
-    n_series <- nrow(meta_series)
-    series <- meta_series$series
-  }
-  server_data <- vector("list", length = n_series)
-  for (i in 1:n_series) {
+
+  # find unique meta_series take first start and last stop date per measure_point
+  #!!!! Assume all other metadata is identical in other rows -----
+  meta_series <- meta_series %>% group_by(measure_point) %>%
+    mutate(start = min(as.POSIXct(series_start, format = "%d.%m.%Y", tz = tz),na.rm=F),
+           stop = max(as.POSIXct(series_stop, format = "%d.%m.%Y", tz = tz)+86399,na.rm=F)) %>%
+    slice(1) %>% ungroup()
+
+  server_data <- vector("list", length = nrow(meta_series))
+  for (i in 1:nrow(meta_series)) {
     if (server == "treenet") {
+
+      # check time window request with available data
+      start <- as.POSIXct(as.character(meta_series$start[i]), format = "%d.%m.%Y", tz = tz)
+      if (is.na(start)) start <- as.POSIXct(as.character("1970-01-01"), format = "%Y-%m-%d", tz = tz)
+      stop  <- as.POSIXct(as.character(meta_series$stop[i]),  format = "%d.%m.%Y", tz = tz) +86399
+      if (is.na(stop)) stop <- lubridate::now(tz=tz)
+
+      # too early
+      if (to < start) {
+        # writeLines(paste0("There is no data for '", meta_series$measure_point[i],
+        #                   "' in specified period."))
+        next
+      }
+      # too late
+      if (from > stop) {
+        # writeLines(paste0("There is no data for '", meta_series$measure_point[i],
+        #                   "' in specified period."))
+        next
+      }
+
+      start <- max(from, start)
+      stop  <- min(to  , stop)
+
+      # specify time window
+      from.ts <- NULL
+      to.ts   <- NULL
+      db_time <- NULL
+      if (length(start) != 0) {
+        from.ts <- paste0(" ts >= '", format(start, "%Y-%m-%d %H:%M:%S", tz = "UTC"), "'::timestamp")
+        db_time <- paste0(c(from.ts, to.ts), collapse = " AND")
+      }
+      if (length(stop) != 0) {
+        to.ts   <- paste0(" ts <= '", format(stop, "%Y-%m-%d %H:%M:%S", tz = "UTC"), "'::timestamp")
+        db_time <- paste0(c(from.ts, to.ts), collapse = " AND")
+      }
+      if (length(last) != 0) {
+        db_time <- paste0(" ORDER BY ts DESC LIMIT ", last)
+      }
+
+
       drv <- RPostgres::Postgres()
       cred <- config::get("treenet_cred", file = path_cred)
       con <- DBI::dbConnect(drv,
-                            dbname = cred$dbname,
-                            host = cred$host,
-                            port = cred$port,
-                            user = cred$user,
+                            dbname   = cred$dbname,
+                            host     = cred$host,
+                            port     = cred$port,
+                            user     = cred$user,
                             password = cred$password)
       setUTC1()
       # check newest data in treenet database
       if ((data_format %in% c("L1","L2","L2M")) & length(data_version) == 0) {
-        data_version <- sqldf::sqldf(paste0("SELECT DISTINCT version FROM ", db_folder," WHERE series = '", series[i], "' ORDER BY version DESC;"),
+        data_version <- sqldf::sqldf(paste0("SELECT DISTINCT version FROM ", db_table,"_summary WHERE measure_point = '", meta_series$measure_point[i], "' ORDER BY version DESC;"),
                                      connection = con)$version[1]
       }
       if (data_format %in% c("LM","L2M")) {
-        data_set <- sqldf::sqldf(paste0("SELECT DISTINCT dataset FROM treenetm WHERE series = '", series[i], "' ORDER BY dataset DESC;"),
+        new_dataset <- sqldf::sqldf(paste0("SELECT DISTINCT dataset FROM treenetm_summary WHERE measure_point = '", meta_series$measure_point[i], "' ORDER BY dataset DESC;"),
                                  connection = con)$dataset[1]
-        if (is.na(data_set)) data_set <- "dummy.value"
+        if (is.na(new_dataset)) new_dataset <- "dummy.value"
       }
-      if (data_format == "L1") {
-        db_version <- paste0("version = '", data_version, "'")
-      }
-      if (data_format == "L2") {
-        db_version <- paste0("version = '", data_version, "'")
-      }
-      if (data_format == "LM") {
-        db_version <- paste0("dataset = '", data_set, "'")
-      }
+      if (data_format == "L0") db_version <- NULL
+      if (data_format == "L1") db_version <- paste0("version = '", data_version, "'")
+      if (data_format == "L2") db_version <- paste0("version = '", data_version, "'")
+      if (data_format == "LM") db_version <- paste0("dataset = '", new_dataset, "'")
       if (data_format == "L2M") {
-        db_dataset <- paste0("dataset = '", data_set, "'")
+        db_dataset <- paste0("dataset = '", new_dataset, "'")
         db_version <- paste0("version = '", data_version, "'")
-      }
-      if (data_format == "L2M") {
-        ts.max.LM <- sqldf::sqldf(paste0("SELECT max(ts) FROM treenetm WHERE series = '", series[i], "' AND ", db_dataset, ";"),
-                                  connection = con)$max
-        ts.max.L2 <- sqldf::sqldf(paste0("SELECT max(ts) FROM ", db_folder ," WHERE series = '", series[i], "' AND ", db_version, ";"),
-                                  connection = con)$max
+        ts.max.LM <- sqldf::sqldf(paste0("SELECT max_ts FROM       treenetm_summary WHERE measure_point = '", meta_series$measure_point[i], "' AND ", db_dataset, ";"),
+                                  connection = con)
+        ts.max.L2 <- sqldf::sqldf(paste0("SELECT max_ts FROM ", db_table ,"_summary WHERE measure_point = '", meta_series$measure_point[i], "' AND ", db_version, ";"),
+                                  connection = con)
         db_time.LM     <- NULL
         db_time.L2     <- NULL
 
 
-        if (is.na(ts.max.L2)) message(paste0("There is no L2 data available for ", series[i], "."))
+        if (is.na(ts.max.L2)) message(paste0("There is no L2 data available for ", meta_series$measure_point[i], "."))
         if (is.na(ts.max.LM)) {
-          message(paste0("There is no LM data available for ", series[i], ". Using L2 data."))
-          foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
-                                     " WHERE series = '", series[i], "' AND ",
+          message(paste0("There is no LM data available for ", meta_series$measure_point[i], ". Using L2 data."))
+          foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_table,
+                                     " WHERE measure_point = '", meta_series$measure_point[i], "' AND ",
                                      db_version,  db_time, ";"), connection = con)
         } else {
-          writeLines(paste0("Data from ", series[i], " is LM (", data_set,") until ", format(ts.max.LM, "%Y-%m-%d %H:%M:%S"), " afterwhich it is L2."))
+          writeLines(paste0("Data from ", meta_series$measure_point[i], " is LM (", new_dataset,") until ", format(ts.max.LM, "%Y-%m-%d %H:%M:%S"), " afterwhich it is L2."))
 
           if (length(from) == 0) from <- as.POSIXct("1970-01-01", format = "%Y-%m-%d", tz = tz)
           if (length(to)   == 0) to   <- as.POSIXct("2100-01-01", format = "%Y-%m-%d", tz = tz)
 
           db_time.LM <-paste0(" AND ts > '", as.POSIXct(min(from, ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp AND ts <= '", as.POSIXct(min(to,ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp")
           db_time.L2 <-paste0(" AND ts > '", as.POSIXct(max(from, ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp AND ts <= '", as.POSIXct(max(to,ts.max.LM, na.rm = T), origin = "1970-01-01", tz = tz), "'::timestamp")
-
-          foo <- sqldf::sqldf(paste0("SELECT * FROM (
-                                     SELECT series, ts, value, version
-                                      FROM treenetm WHERE series = '", series[i],"' AND ", db_dataset, db_time.LM, "
+          if (temp_ref) {
+            foo <- sqldf::sqldf(paste0("SELECT l2m.*, meteom.*
+                            FROM (
+                                SELECT measure_point, sensor_name, ts, value, version
+                                FROM treenetm
+                                WHERE measure_point = '", meta_series$measure_point[i],"' AND ", db_dataset, db_time.LM, "
+                                UNION
+                                SELECT measure_point, sensor_name, ts, value, version
+                                FROM ", db_table ,"
+                                WHERE measure_point = '", meta_series$measure_point[i],"' AND ", db_version, db_time.L2, "
+                                ) l2m
+                            LEFT JOIN meteom ON l2m.ts = meteom.ts
+                                           AND l2m.measure_point = '", meta_series$measure_point[i],"'
+                                           AND meteom.site_id = '", meta_series$site_id[i], "'",
+                                       dplyr::if_else(length(last) != 0, paste0(" WHERE ", db_time), ""), ";"),
+                                connection = con)
+          } else {
+            foo <- sqldf::sqldf(paste0("SELECT * FROM (
+                                     SELECT measure_point, sensor_name, ts, value, version
+                                      FROM treenetm WHERE measure_point = '", meta_series$measure_point[i],"' AND ", db_dataset, db_time.LM, "
                                      UNION
-                                     SELECT series, ts, value, version
-                                      FROM ", db_folder ," WHERE series = '", series[i],"' AND ", db_version, db_time.L2,
-                                     ") l2m ",
-                                     dplyr::if_else(length(last) != 0, paste0(" WHERE ", db_time), ""), ";"),
-                              connection = con)
+                                     SELECT measure_point, sensor_name, ts, value, version
+                                      FROM ", db_table ," WHERE measure_point = '", meta_series$measure_point[i],"' AND ", db_version, db_time.L2,
+                                       ") l2m ",
+                                       dplyr::if_else(length(last) != 0, paste0(" WHERE ", db_time), ""), ";"),
+                                connection = con)
+          }
         }
       } else {
-        foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_folder,
-                                   " WHERE series = '", series[i], "' AND ",
-                                   db_version,  db_time, ";"), connection = con)
+        if (temp_ref) {
+
+          foo <- sqldf::sqldf(paste0("SELECT * FROM ",db_table," LEFT JOIN meteom ON ",
+                                     db_table,".ts = meteom.ts AND ",
+                                     db_table,".measure_point = '", meta_series$measure_point[i], "' AND ",
+                                     "meteom.site_id = '", meta_series$site_id[i], "'",
+                                     paste0(c("", db_version,  db_time), collapse = " AND"), ";"), connection = con)
+        } else {
+          foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_table,
+                                     " WHERE measure_point = '", meta_series$measure_point[i], "'",
+                                     paste0(c("", db_version,  db_time), collapse = " AND "), ";"), connection = con)
+        }
       }
       invisible(DBI::dbDisconnect(con))
     }
     if (server == "decentlab") {
-      series_single <- series[i]
+      series_single <- meta_series$sensor_name[i]
       foo <- get_decentlab(series_single = series_single,
                            path_cred = path_cred, tz = tz) %>%
         dplyr::select(series = uqk, ts = time, value) %>%
@@ -445,14 +475,14 @@ download_series <- function(meta_series, data_format, data_version,
 
     # skip series if there is not data available
     if (all(is.na(df$value))) {
-      writeLines(paste0("There is no data for '", series[i],
+      writeLines(paste0("There is no data for '", meta_series$measure_point[i],
                         "' in specified period."))
       next
     }
 
     # save data to list
     server_data[[i]] <- df
-    names(server_data)[i] <- series[i]
+    names(server_data)[i] <- meta_series$measure_point[i]
   }
   options(warn = 0)
 
@@ -460,7 +490,7 @@ download_series <- function(meta_series, data_format, data_version,
   server_data <- Filter(f = length, x = server_data)
 
   # return error if no data is available
-  m_dendro <- names(server_data) %in% meta_series$series
+  m_dendro <- names(server_data) %in% meta_series$measure_point
   if (length(server_data) == 0 | all(!m_dendro)) {
     if (!use_intl) {
       stop("There is no data available from the specified sensor(s).")
