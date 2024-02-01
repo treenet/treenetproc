@@ -318,10 +318,10 @@ download_series <- function(meta_series, data_format, data_version,
 
   # find unique meta_series take first start and last stop date per measure_point
   #!!!! Assume all other metadata is identical in other rows -----
-  meta_series <- meta_series %>% group_by(measure_point) %>%
-    mutate(start = min(as.POSIXct(series_start, format = "%d.%m.%Y", tz = tz),na.rm=F),
+  meta_series <- meta_series %>% dplyr::group_by(measure_point) %>%
+    dplyr::mutate(start = min(as.POSIXct(series_start, format = "%d.%m.%Y", tz = tz),na.rm=F),
            stop = max(as.POSIXct(series_stop, format = "%d.%m.%Y", tz = tz)+86399,na.rm=F)) %>%
-    slice(1) %>% ungroup()
+    dplyr::slice(1) %>% dplyr::ungroup()
 
   server_data <- vector("list", length = nrow(meta_series))
   for (i in 1:nrow(meta_series)) {
