@@ -65,7 +65,7 @@ select_series <- function(measure_point, site_name, sensor_class, sensor_name, p
                         port = cred$port,
                         user = cred$user,
                         password = cred$password)
-  meta <- DBI::dbGetQuery(paste0("SELECT * FROM metadata LEFT JOIN metadata_sites USING(site_id);"),
+  meta <- DBI::dbGetQuery(paste0("SELECT * FROM view_metadata;"),
                           conn = con) %>%
     dplyr::mutate(id = dplyr::row_number())
   invisible(DBI::dbDisconnect(con))
@@ -293,11 +293,11 @@ download_series <- function(meta_series, data_format, data_version,
   # Download series -----------------------------------------------------------
   # specify format
   if (server == "treenet") {
-    if (data_format == "L0")    db_table  <- "treenet0"
-    if (data_format == "L1")    db_table  <- "treenet1"
-    if (data_format == "L2")    db_table  <- "treenet2"
-    if (data_format == "LM")    db_table  <- "treenetm"
-    if (data_format == "L2M") { db_table  <- "treenet1"; temp_ref   <- T}
+    if (data_format == "L0")    db_table  <- "data_all_l0"
+    if (data_format == "L1")    db_table  <- "data_all_l1"
+    if (data_format == "L2")    db_table  <- "data_dendro_l2"
+    if (data_format == "LM")    db_table  <- "data_dendro_lm"
+    if (data_format == "L2M") { db_table  <- "data_all_l1"; temp_ref   <- T}
   }
   if (server == "decentlab") {
     version_nm <- "L0"
@@ -320,7 +320,7 @@ download_series <- function(meta_series, data_format, data_version,
   #!!!! Assume all other metadata is identical in other rows -----
   meta_series <- meta_series %>% dplyr::group_by(measure_point) %>%
     dplyr::mutate(start = min(as.POSIXct(series_start, format = "%d.%m.%Y", tz = tz),na.rm=F),
-           stop = max(as.POSIXct(series_stop, format = "%d.%m.%Y", tz = tz)+86399,na.rm=F)) %>%
+           stop = max(as.POSIXct(series_stop, format = "%d.%m.%Y", tz = tz) +86399,na.rm=F)) %>%
     dplyr::slice(1) %>% dplyr::ungroup()
 
   server_data <- vector("list", length = nrow(meta_series))
