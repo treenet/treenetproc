@@ -4,12 +4,12 @@
 \alias{select_series}
 \title{Select Series from Metadata File}
 \usage{
-select_series(measure_point, site, sensor_class, sensor_name, path_cred)
+select_series(measure_point, site_name, sensor_class, sensor_name, path_cred)
 }
 \arguments{
 \item{measure_point}{character, specify the measure point. String is not case sensitive.}
 
-\item{site}{character, specify the site. String is not case sensitive.}
+\item{site_name}{character, specify the site name. String is not case sensitive.}
 
 \item{sensor_class}{character, specify a single or multiple sensor
 classes. String does not have to contain the full name of the sensor
@@ -26,7 +26,7 @@ recognition.}
 }
 \description{
 \code{select_series} selects series from the metadata file based on
-  selection criteria specified by the user (i.e. site, sensor_class, etc.).
+  selection criteria specified by the user (i.e. measure_point, site_name, sensor_class, etc.).
   In addition, reference temperature data is selected for all dendrometer
   series.
 }

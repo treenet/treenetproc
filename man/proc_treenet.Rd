@@ -32,8 +32,6 @@ proc_treenet(
 )
 }
 \arguments{
-\item{site}{character, specify the site. String is not case sensitive.}
-
 \item{sensor_name}{character, specify the name of a single or
 multiple sensors (e.g. \code{"LWF-Demo-1.dendrometer.ch0"}).}
 
