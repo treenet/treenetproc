@@ -295,7 +295,7 @@ download_series <- function(meta_series, data_format,
     if (data_format == "L1")    db_table  <- "data_all_l1"
     if (data_format == "L2")    db_table  <- "data_dendro_l2"
     if (data_format == "LM")    db_table  <- "data_dendro_lm"
-    if (data_format == "L2M") { db_table  <- "data_all_l1"; meteo <- T }
+    if (data_format == "L2M") { db_table  <- "data_dendro_l2"; meteo <- T }
   }
   if (meteo) bind_df <- T
   if (server == "decentlab") {
@@ -396,9 +396,26 @@ download_series <- function(meta_series, data_format,
       if (is.na(ts.max.L2)) message(paste0("There is no L2 data available for ", meta_series$measure_point[i], "."))
       if (is.na(ts.max.LM)) {
         message(paste0("There is no LM data available for ", meta_series$measure_point[i], ". Using L2 data."))
-        foo <- sqldf::sqldf(paste0("SELECT * FROM ", db_table,
-                                   " WHERE series_id = ", meta_series$series_id[i], " ",
+        if (meteo) {
+          foo <- sqldf::sqldf(paste0("SELECT l.*, data_meteo_l2.*,
+                            CASE WHEN data_meteo_l2.temp IS NULL THEN data_all_l1.value ELSE data_meteo_l2.temp END AS temperature
+                            FROM (
+                                SELECT series_id, ts, value
+                                FROM ", db_table ,"
+                                WHERE series_id = ", meta_series$series_id[i]," AND", db_time, "
+                                ) l
+                            LEFT JOIN data_meteo_l2 ON l.ts = data_meteo_l2.ts
+                                           AND l.series_id = ", meta_series$series_id[i],"
+                                           AND data_meteo_l2.site_id = ", meta_series$site_id[i], "
+                            LEFT JOIN data_all_l1 ON l.ts = data_all_l1.ts
+                                           AND data_all_l1.series_id = ", meta_series$site_temp_ref[i],
+                                     dplyr::if_else(length(last) != 0, paste0(" WHERE ", db_time), ""), ";"),
+                              connection = con)
+        } else {
+        foo <- sqldf::sqldf(paste0("SELECT * FROM  ", db_table ,"
+                                   WHERE series_id = ", meta_series$series_id[i], " AND",
                                    db_time, ";"), connection = con)
+        }
       } else {
         writeLines(paste0("Data from ", meta_series$measure_point[i], " is LM until ", format(ts.max.LM, "%Y-%m-%d %H:%M:%S"), " afterwhich it is L2."))
 
