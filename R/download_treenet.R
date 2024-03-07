@@ -28,8 +28,7 @@
 download_treenet <- function(measure_point = NULL, site_name = NULL, sensor_name = NULL,
                              sensor_class = NULL, from = NULL, to = NULL,
                              bind_df = TRUE, server = "treenet",
-                             data_format = "L0", data_version = NULL,
-                             path_cred = NULL, export = FALSE, last = NULL,
+                             data_format = "L0", path_cred = NULL, export = FALSE, last = NULL,
                              tz = "Etc/GMT-1", use_intl = FALSE, meteo = FALSE) {
 
   # Check input variables -----------------------------------------------------
