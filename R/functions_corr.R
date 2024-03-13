@@ -107,6 +107,7 @@ forcejump <- function(data_L2, force, n_days = 5) {
     dplyr::mutate(diff = c(NA, diff(value, lag = 1))) %>%
     dplyr::select(ts, diff) %>%
     dplyr::right_join(., data_L2, by = "ts") %>%
+    dplyr::arrange(ts) %>%
     dplyr::select(diff) %>%
     unlist(., use.names = FALSE)
 
