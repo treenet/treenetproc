@@ -14,6 +14,7 @@ corr_dendro_L2(
   n_days = 5,
   plot = TRUE,
   plot_export = TRUE,
+  plot_name = "corr_L2_plot",
   tz = "UTC"
 )
 }
@@ -55,6 +56,9 @@ the gap in data is longer than the default (\code{n_days = 5}).}
 \item{plot_export}{logical, specifies whether the plots are exported as a
 \code{PDF} file to the working directory or are plotted in the console.}
 
+\item{plot_name}{character, specify name of the PDF to which the plots are
+saved.}
+
 \item{tz}{specify the desired time zone. Default is \code{"UTC"}.}
 }
 \value{
@@ -73,7 +77,8 @@ The function returns a \code{data.frame} with corrected \code{L2}
 corr_dendro_L2(dendro_L1 = dendro_data_L1, dendro_L2 = dendro_data_L2,
                reverse = 59:61, force = "2013-08-12",
                delete = c("2013-08-01", "2013-08-04"),
-               series = "site-1_dendro-3", plot_export = FALSE)
+               series = "site-1_dendro-3", plot_export = FALSE,
+               plot_name = "corr_L2_plot")
 
 }
 \seealso{

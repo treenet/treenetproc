@@ -45,11 +45,13 @@
 #' corr_dendro_L2(dendro_L1 = dendro_data_L1, dendro_L2 = dendro_data_L2,
 #'                reverse = 59:61, force = "2013-08-12",
 #'                delete = c("2013-08-01", "2013-08-04"),
-#'                series = "site-1_dendro-3", plot_export = FALSE)
+#'                series = "site-1_dendro-3", plot_export = FALSE,
+#'                plot_name = "corr_L2_plot")
 #'
 corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, reverse = NULL,
                            force = NULL, delete = NULL, series = NULL,
                            n_days = 5, plot = TRUE, plot_export = TRUE,
+                           plot_name = "corr_L2_plot",
                            tz = "UTC") {
 
   # Subset data to selected series --------------------------------------------
@@ -182,7 +184,7 @@ corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, reverse = NULL,
     plot_proc_L2(dendro_L1 = data_L1, dendro_L2 = df,
                  plot_period = "monthly", plot_show = "diff_corr",
                  plot_export = plot_export,
-                 plot_name = "corr_L2_plot", tz = tz)
+                 plot_name = plot_name, tz = tz)
   }
 
   if (n_series > 1) {
