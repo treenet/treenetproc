@@ -121,18 +121,22 @@ corr_dendro_L2 <- function(dendro_L1 = NULL, dendro_L2, reverse = NULL,
                                 reverse = reverse, tz = tz)
     df <- reverse_list[[1]]
     diff_old <- reverse_list[[2]]
+    
+    # unset previous fill / out / jump flags and set the 'rev' flag
+    df <- revflags(df = df)
   }
+  
   if (length(force) != 0) {
     df <- forcejump(data_L2 = df, force = force, n_days = n_days)
   }
+  
   if (length(delete) != 0) {
     df <- deleteperiod(df = df, delete = delete)
   }
 
   df <- calcmax(df = df)
   df <- calctwdgro(df = df, tz = tz)
-  df <- summariseflagscorr(df = df, reverse = reverse, force = force,
-                           delete = delete)
+  df <- summariseflagscorr(df = df, force = force, delete = delete)
 
   df <- df %>%
     dplyr::mutate(gro_yr = ifelse(is.na(value), NA, gro_yr)) %>%

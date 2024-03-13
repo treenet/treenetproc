@@ -176,45 +176,65 @@ deleteperiod <- function(df, delete) {
   return(df)
 }
 
-
-#' Summarise Flags
+#' Reverse flags
 #'
-#' \code{summariseflagscorr} appends the flags of the corrections to the
-#'   existing flags.
+#' \code{revflags} removes all the flag of changes done
+#' by any treenetproc automatic correction and adds instead
+#' the "rev" flag
 #'
 #' @param df input \code{data.frame}.
 #'
 #' @keywords internal
 #'
-summariseflagscorr <- function(df, reverse = NULL, force = NULL,
-                               delete = NULL) {
+revflags <- function(df) {
+    
+  # create flags vector appeding "rev" flag when it's an item where there's a reversed change
+  flags <- paste(df$flags, ifelse(df$flagreversecorr, paste(df$flags,"rev",sep=", "), df$flags), sep=", ")
+  
+  
+  # remove flags of changes that are to be reversed
+  flags <- ifelse(grepl("(.*out|.*fill|.*jump)(.*rev)", flags, perl = TRUE),
+                    gsub("out[[:digit:]]*,[[:blank:]]*|fill,[[:blank:]]*|jump[[:digit:]]*,[[:blank:]]*",
+                        "",
+                        flags),
+                    flags)
+                
+  df$flags <- flags
 
-  list_flags <- vector("list", length = 3)
+  return(df)
+  
+}
 
-  if (length(reverse) != 0) {
-    list_flags[[1]] <- ifelse(df$flagreversecorr, "rev", NA)
+
+
+#' Summarise Flags
+#'
+#' \code{summariseflagscorr} appends the flags of the corrections to the
+#'   existing flags (except for reverse).
+#'
+#' @param df input \code{data.frame}.
+#'
+#' @keywords internal
+#'
+summariseflagscorr <- function(df, force = NULL, delete = NULL) {
+
+  list_flags <- vector("list", length = 2)
+
+  if (length(force) != 0) {
+    list_flags[[1]] <- ifelse(df$flagforcejump, "fjump", NA)
   } else {
     list_flags[[1]] <- NA
   }
-  if (length(force) != 0) {
-    list_flags[[2]] <- ifelse(df$flagforcejump, "fjump", NA)
+  if (length(delete) != 0) {
+    list_flags[[2]] <- ifelse(df$flagdelete, "del", NA)
   } else {
     list_flags[[2]] <- NA
-  }
-  if (length(delete) != 0) {
-    list_flags[[3]] <- ifelse(df$flagdelete, "del", NA)
-  } else {
-    list_flags[[3]] <- NA
   }
 
   flags <- do.call("paste", c(list_flags, sep = ", "))
   list_all <- list(df$flags, flags)
   flags <- do.call("paste", c(list_all, sep = ", "))
-  # remove flags of changes that were reversed
-  flags <- ifelse(grepl("(.*out|.*fill|.*jump)(.*rev)", flags, perl = TRUE),
-                  gsub(".*out[[:digit:]]*|.*fill|.*jump[[:digit:]]*", "",
-                       flags),
-                  flags)
+ 
   # remove all other flags if value was deleted
   flags <- gsub(".*del", "del", flags)
   # remove NA's and single commas
