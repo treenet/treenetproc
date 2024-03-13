@@ -22,7 +22,7 @@ You can install the latest stable version of the package from
 ``` r
 # install.packages("devtools")
 library(devtools)
-devtools::install_github("treenet/treenetproc")
+devtools::install_github("akronix/treenetproc")
 ```
 
 <br>
