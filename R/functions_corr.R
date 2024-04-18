@@ -60,7 +60,13 @@ reversecorr <- function(data_L1, data_L2, reverse, tz) {
 
     # reverse differences
     if (grepl("jump", flag_old[rev])) {
-      val[rev:length(val)] <- val[rev:length(val)] + diff_L1[rev]
+      # if two or more jumps are consecutive, the difference value is accumulated
+      # so when undoing / reversing one of the jumps is equivalent to reversing
+      # altogether. This might have a better fix, but for now let's skip when
+      # there's more than one jump together. Maybe it happens with outliers too?
+      if (!(r > 1 && rev == reverse_row[r-1]+1)) { # Check the time instant is not the successor of the previous one. so they are consecutive.
+        val[rev:length(val)] <- val[rev:length(val)] + diff_L1[rev]
+      }
     }
     # restore deleted values
     if (grepl("out", flag_old[rev])) {
