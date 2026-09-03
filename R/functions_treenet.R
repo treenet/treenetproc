@@ -252,8 +252,7 @@ select_ref_data <- function(meta_list) {
 #'   download including the reference temperature dataset for each series.
 #' @param data_format character, select processing level of data. Can either
 #'   be \code{"L0"} (i.e. raw data), \code{"L1"} (i.e time-aligned),
-#'   \code{"L2"} (i.e. processed), \code{"LM"} (i.e. manually cleaned) or \code{"L2M"} (i.e. L2 and manually
-#'   cleaned when available).
+#'   \code{"L2"} (i.e. auto-cleaned),\code{"L3"} (i.e. gap-filled), \code{"LM"} (i.e. manually cleaned) or \code{"L2M"} (i.e. L2 and LM when available).
 #' @param from character, optional argument to select data after a specific
 #'   date (\code{"YYYY-MM-DD"}).
 #' @param to character, optional argument to select data up to a specific
@@ -312,6 +311,7 @@ download_series <- function(meta_series, data_format,
     if (data_format == "L0")  { db_table  <- "data_all_l0"; meteo <- F }
     if (data_format == "L1")    db_table  <- "data_all_l1"
     if (data_format == "L2")    db_table  <- "data_dendro_l2"
+    if (data_format == "L3")    db_table  <- "data_all_l3"
     if (data_format == "LM")    db_table  <- "data_dendro_lm"
     if (data_format == "L2M")   db_table  <- "data_dendro_l2"
   }
