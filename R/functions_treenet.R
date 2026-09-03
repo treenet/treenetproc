@@ -398,6 +398,7 @@ download_series <- function(meta_series, data_format,
       if (data_format == "L0")   db_version <- NULL
       if (data_format == "L1")   db_version <- NULL
       if (data_format == "L2")   db_version <- NULL
+      if (data_format == "L3")   db_version <- NULL
       if (data_format == "LM")   db_version <- NULL
       if (data_format == "L2M") {db_version <- NULL
       ts.max.LM <- sqldf::sqldf(paste0("SELECT import_until FROM import_log WHERE table_name = 'data_dendro_lm' AND series_id = ", meta_series$series_id[i], " ;"),
