@@ -278,11 +278,20 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = list(), reso = 10,
             dplyr::slice_tail(n = 1)
         }
 
+        # Re-process the anchor row together with the window. Without it the
+        # window starts one sampling interval after the anchor and is then
+        # re-levelled onto the anchor's value, which silently discards the real
+        # stem change over that interval. The row is dropped again further down
+        # because it is already carried in 'prev_unchanged'.
+        include_anchor <- !is.null(prev_anchor) && nrow(prev_anchor) > 0 &&
+          !(!is.null(prev_L2_reprocess_days) && prev_L2_reprocess_days == 0)
+        align_from_ts <- if (include_anchor) prev_anchor$ts else reprocess_from_ts
+
         # Rows inside the window that need to be re-cleaned: convert back to L1
         # format (keep only columns present in df, drop derived L2 columns)
         prev_reprocess <- prev_L2 %>%
           dplyr::filter(series_id == series_vec[s],
-                        ts >= reprocess_from_ts,
+                        ts >= align_from_ts,
                         ts < first_ts_new) %>%
           dplyr::arrange(ts)
 
@@ -383,8 +392,13 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = list(), reso = 10,
       prev_gro  <- prev_anchor$gro_yr
       prev_val  <- prev_anchor$value
 
-      first_new_val <- df$value[which(!is.na(df$value))[1]]
-      val_offset    <- prev_val - first_new_val
+      # Re-level on the anchor timestamp itself when it was re-processed
+      # (see 'include_anchor' above), otherwise on the first re-processed row.
+      i_align <- which(df$ts == prev_anchor$ts & !is.na(df$value))[1]
+      if (is.na(i_align)) {
+        i_align <- which(!is.na(df$value))[1]
+      }
+      val_offset <- prev_val - df$value[i_align]
 
       df <- df %>%
         dplyr::mutate(
@@ -393,21 +407,36 @@ proc_dendro_L2 <- function(dendro_L1, temp_L1 = list(), reso = 10,
           twd   = ifelse(!is.na(value), abs(value - max), twd)
         )
 
+      # gro_yr must be the within-year increase of the CLAMPED max. Re-using the
+      # gro_yr that calctwdgro() computed for the window and only shifting it by
+      # prev_gro counts the recovery of the stem out of the water deficit that
+      # was present at the anchor as new growth (up to twd at the anchor), and
+      # leaves gro_yr inconsistent with max.
       anchor_year <- format(prev_anchor$ts, "%Y")
       df <- df %>%
+        dplyr::mutate(year_ts = format(ts, "%Y")) %>%
+        dplyr::group_by(year_ts) %>%
         dplyr::mutate(
-          year_ts = format(ts, "%Y"),
-          gro_yr  = dplyr::case_when(
-            is.na(gro_yr)          ~ NA_real_,
-            year_ts == anchor_year ~ gro_yr + prev_gro,
-            TRUE                   ~ gro_yr
-          )
+          gro_yr = ifelse(is.na(value), NA_real_,
+                          max - dplyr::first(stats::na.omit(max)))
+        ) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(
+          gro_yr = ifelse(year_ts == anchor_year, gro_yr + prev_gro, gro_yr)
         ) %>%
         dplyr::select(-year_ts)
     }
 
     # append leading and trailing NA's
     df <- append_lead_trail_na(df = df, na = lead_trail_na)
+
+    # Emit only the re-processing window. Everything before it is carried over
+    # verbatim in 'prev_unchanged', so this drops the re-processed anchor row
+    # and lets a caller supply L1 that reaches further back than the window
+    # (extra cleaning context) without duplicating rows in the output.
+    if (!is.null(reprocess_from_ts)) {
+      df <- df %>% dplyr::filter(ts >= reprocess_from_ts)
+    }
 
     df <- df %>%
       dplyr::mutate(gro_yr = ifelse(is.na(value), NA, gro_yr)) %>%
