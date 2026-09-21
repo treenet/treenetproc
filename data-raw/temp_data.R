@@ -10,11 +10,11 @@ frost <- download_treenet(sensor_name = "Jussy-2.sht-temperature.ch0",
                           from = "2019-02-10", to = "2019-03-10",
                           data_format = "L0", server = "decentlab",
                           tz = "UTC") %>%
-  mutate(series = "site-1_temperature")
+  mutate(series_id = "site-1_temperature")
 
 data("dendro_data_L0")
 data_L0 <- dendro_data_L0 %>%
-  filter(series == "site-1_dendro-4") %>%
+  filter(series_id == "site-1_dendro-4") %>%
   select(ts)
 
 # add timestamp of dendrometer data
@@ -44,7 +44,7 @@ temp_L0 <- download_treenet(sensor_name = "Pfynwald-02-12.sht-temperature.ch3",
                                  data_format = "L0", server = "decentlab",
                                  tz = "UTC") %>%
   mutate(ts = ts - 3 * 31556952) %>%
-  mutate(series = "site-1_temperature")
+  mutate(series_id = "site-1_temperature")
 
 ### merge temperature data
 temp_data_L0 <- bind_rows(frost_L0, temp_L0) %>%

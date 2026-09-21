@@ -32,10 +32,10 @@ library(treenetproc)
 data("dendro_data_L1")
 data("dendro_data_L2")
 example_L1 <- dendro_data_L1 %>% 
-  dplyr::filter(series == "site-1_dendro-1") %>% 
+  dplyr::filter(series_id == "site-1_dendro-1") %>% 
   dplyr::filter(ts <= "2013-06-01")
 example_L2 <- dendro_data_L2 %>% 
-  dplyr::filter(series == "site-1_dendro-1") %>% 
+  dplyr::filter(series_id == "site-1_dendro-1") %>% 
   dplyr::filter(ts <= "2013-06-01")
 layout(matrix(c(1, 2), nrow = 2), heights = c(1, 1),
        widths = 1)
@@ -74,7 +74,7 @@ of error detection and processing (cf. Step 2: Providing temperature data).
 
 The raw dendrometer or climate data can be provided in long (Table 1) or wide
 format (Table 2). Data of multiple sensors can either be specified in a column 
-named `series` to separate the sensors (long format, Table 1) or as separate 
+named `series_id` to separate the sensors (long format, Table 1) or as separate 
 columns (wide format, Table 2). Dendrometer data always has to be provided in
 `µm`. In addition, a column named `ts` with timestamps in any standard date 
 format (default is `date_format = "%Y-%m-%d %H:%M:%S"`) is required.
@@ -139,7 +139,7 @@ time-aligned temperature data can optionally be provided to `temp_L1`.
 # reduce size of dendro_data_L1 to make computing of proc_dendro_L2 faster
 data("dendro_data_L1")
 dendro_data_L1 <- dendro_data_L1 %>% 
-  filter(series == "site-1_dendro-1") %>% 
+  filter(series_id == "site-1_dendro-1") %>% 
   filter(ts <= "2013-05-02")
 ```
 
@@ -162,7 +162,7 @@ knitr::kable(dendro_data_L2[1:5, ], caption = "**Table 3**: Cleaned
 
 The output `data.frame` contains the following columns:
 
-* **series**: name of the dendrometer series
+* **series_id**: name of the dendrometer series
 * **ts**: timestamp with format `%Y-%m-%d %H:%M:%S`
 * **value**: dendrometer value (µm)
 * **max**: highest measured dendrometer `value` up to this timestamp
@@ -201,7 +201,7 @@ data("dendro_data_L1")
 
 # Subset dendrometer dataset for example
 dendro_L1 <- dendro_data_L1 %>% 
-  filter(series == "site-1_dendro-1") %>% 
+  filter(series_id == "site-1_dendro-1") %>% 
   filter(ts < "2014-12-31")
 
 # Clean time-aligned (L1) dendrometer data and plot changes
@@ -268,7 +268,7 @@ data("dendro_data_L1")
 
 # Subset dendrometer dataset for example
 dendro_L1 <- dendro_data_L1 %>% 
-  filter(series == "site-1_dendro-2")
+  filter(series_id == "site-1_dendro-2")
 
 # Clean dendrometer data (tol_jump = 1, tol_out = 10)
 proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1, 
@@ -300,7 +300,7 @@ proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1,
 ```{r shrinking example higher tol plot, fig.asp = 0.5, fig.retina=2, out.width = "70%", echo=FALSE}
 data("dendro_data_L2")
 dendro_L2 <- dendro_data_L2 %>% 
-  filter(series == "site-1_dendro-2")
+  filter(series_id == "site-1_dendro-2")
 
 par(mar = c(2.1, 4, 1, 2))
 plot(data = dendro_L2, value ~ ts, type = "n", 
@@ -334,7 +334,7 @@ data("dendro_data_L1")
 
 # Subset dataset for example
 dendro_L1 <- dendro_data_L1 %>% 
-  filter(series == "site-1_dendro-4")
+  filter(series_id == "site-1_dendro-4")
 
 # Clean dendrometer data (without temperature data)
 proc_dendro_L2(dendro_L1 = dendro_L1, plot_export = FALSE)
@@ -415,7 +415,7 @@ data("dendro_data_L1")
 
 # Subset dataset for example
 dendro_L1 <- dendro_data_L1 %>% 
-  filter(series == "site-1_dendro-3")
+  filter(series_id == "site-1_dendro-3")
 
 # Clean dendrometer data
 dendro_L2 <- proc_dendro_L2(dendro_L1 = dendro_L1, temp_L1 = temp_data_L1, 
@@ -472,7 +472,7 @@ data("dendro_data_L2")
 
 # Subset dataset for example
 dendro_L2 <- dendro_data_L2 %>% 
-  filter(series == "site-1_dendro-1")
+  filter(series_id == "site-1_dendro-1")
 
 # Calculate growing season start and end
 grow_seas(dendro_L2 = dendro_L2)
@@ -502,7 +502,7 @@ data("dendro_data_L2")
 
 # Subset dataset for example
 dendro_L2 <- dendro_data_L2 %>% 
-  filter(series == "site-1_dendro-2")
+  filter(series_id == "site-1_dendro-2")
 
 # Calculate phase statistics
 phase_stats(dendro_L2 = dendro_L2, plot_phase = TRUE, plot_export = FALSE)

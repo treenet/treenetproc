@@ -24,7 +24,7 @@ Likewise, \code{1 - tol_seas} is the amount of yearly growth at which
 }
 \value{
 The following variables are returned by \code{grow_seas}:
-    \item{series}{name of the dendrometer series}
+    \item{series_id}{name of the dendrometer series}
     \item{year}{year}
     \item{gro_start}{day of year at which growth starts}
     \item{gro_end}{day of year at which growth ends}

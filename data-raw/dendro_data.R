@@ -14,7 +14,7 @@ jump_L0 <- download_treenet(sensor_name = "Beatenberg-0.dendrometer.ch1",
   mutate(ts = ts - 46828800) %>%
   mutate(value = value - 7000) %>%
   mutate(value = ifelse(value > 7000, value - 7000, value)) %>%
-  mutate(series = "site-1_dendro-1")
+  mutate(series_id = "site-1_dendro-1")
 
 # prepare outlier data
 outlier_L0 <- download_treenet(sensor_name = "Jussy-1.dendrometer.ch5",
@@ -24,7 +24,7 @@ outlier_L0 <- download_treenet(sensor_name = "Jussy-1.dendrometer.ch5",
   # set start of ts to 2013-05-17
   mutate(ts = ts + 26697600) %>%
   mutate(value = value + (last(jump_L0$value) - first(value)) + 5) %>%
-  mutate(series = "site-1_dendro-1")
+  mutate(series_id = "site-1_dendro-1")
 
 # download multiyear dendrometer data
 dendro_L0 <- download_treenet(sensor_name = "Pfynwald-02-11.dendrometer.ch0",
@@ -34,7 +34,7 @@ dendro_L0 <- download_treenet(sensor_name = "Pfynwald-02-11.dendrometer.ch0",
   # set to year 2013
   mutate(ts = ts - 3 * 31556952) %>%
   mutate(value = value + (last(outlier_L0$value) - first(value)) + 0.3) %>%
-  mutate(series = "site-1_dendro-1")
+  mutate(series_id = "site-1_dendro-1")
 
 
 ### prepare shrink data
@@ -44,7 +44,7 @@ shrink_L0 <- download_treenet(sensor_name = "Jussy-1.dendrometer.ch1",
                               tz = "UTC") %>%
   # set ts to year 2013
   mutate(ts = ts - 4 * 31556952) %>%
-  mutate(series = "site-1_dendro-2")
+  mutate(series_id = "site-1_dendro-2")
 
 
 ### prepare delete data
@@ -55,7 +55,7 @@ delete_L0 <- download_treenet(sensor_name = "Lausanne-1.dendrometer.ch2",
   # set start of ts to 2013-08-01
   mutate(ts = ts - 146188800) %>%
   mutate(value = value * 0.1) %>%
-  mutate(series = "site-1_dendro-3")
+  mutate(series_id = "site-1_dendro-3")
 
 # prepare shrink 2 data
 shrink_2_L0 <- download_treenet(sensor_name = "Pfynwald-02-11.dendrometer.ch0",
@@ -65,7 +65,7 @@ shrink_2_L0 <- download_treenet(sensor_name = "Pfynwald-02-11.dendrometer.ch0",
   # set start of ts to 2013-08-04
   mutate(ts = ts - 96076800) %>%
   mutate(value = value + (last(delete_L0$value) - first(value)) - 5) %>%
-  mutate(series = "site-1_dendro-3")
+  mutate(series_id = "site-1_dendro-3")
 
 shrink_2_L0$value[shrink_2_L0$ts >= "2013-08-11" &
                     shrink_2_L0$ts <= "2013-08-12"] <- NA
@@ -93,7 +93,7 @@ frost_L0 <- download_treenet(sensor_name = "Jussy-1.dendrometer.ch1",
                              from = "2013-03-10", to = "2013-03-30",
                              data_format = "L0", server = "decentlab",
                              tz = "UTC") %>%
-  mutate(series = "site-1_dendro-4")
+  mutate(series_id = "site-1_dendro-4")
 
 # increase steepness of frost shrinkage
 frost_L0$value[frost_L0$ts >= "2013-03-16 02:00:00" &
@@ -134,9 +134,9 @@ usethis::use_data(dendro_data_L2, compress = "bzip2", overwrite = TRUE)
 
 # prepare dendro_data_L0_wide -------------------------------------------------
 dendro_data_L0_wide <- dendro_data_L0 %>%
-  full_join(temp_data_L0, by = c("series", "ts", "value")) %>%
+  full_join(temp_data_L0, by = c("series_id", "ts", "value")) %>%
   filter(ts >= "2013-08-01 01:00:00") %>%
   filter(ts <= "2013-08-30") %>%
-  spread(key = series, value = value)
+  spread(key = series_id, value = value)
 
 usethis::use_data(dendro_data_L0_wide, compress = "bzip2", overwrite = TRUE)

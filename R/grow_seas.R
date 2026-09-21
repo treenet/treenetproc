@@ -32,7 +32,7 @@
 #'   (2020) for a graphical example.
 #'
 #' @return The following variables are returned by \code{grow_seas}:
-#'     \item{series}{name of the dendrometer series}
+#'     \item{series_id}{name of the dendrometer series}
 #'     \item{year}{year}
 #'     \item{gro_start}{day of year at which growth starts}
 #'     \item{gro_end}{day of year at which growth ends}
@@ -78,7 +78,8 @@ grow_seas <- function(dendro_L2, tol_seas = 0.05, agg_yearly = TRUE,
   df_seas <- df
   for (s in 1:length(series_vec)) {
     df <- df_seas %>%
-      dplyr::filter(series_id == series_vec[s])
+      dplyr::filter(series_id == series_vec[s]) %>%
+      dplyr::mutate(year = as.numeric(substr(ts, 1, 4)))
 
     # find complete years
     complete_yrs <- df %>%
@@ -116,15 +117,10 @@ grow_seas <- function(dendro_L2, tol_seas = 0.05, agg_yearly = TRUE,
       dplyr::select(series_id, ts, gro_start, gro_end)
 
     if (agg_yearly) {
-      df_gro <- df_gro %>%
-        dplyr::mutate(year = as.character(strftime(ts, format = "%Y"))) %>%
-        dplyr::select(series_id, year, gro_start, gro_end) %>%
-        dplyr::arrange(series_id, year)
-    } else {
-      df_seas <- df_gro %>%
-        dplyr::select(series_id, ts, gro_start, gro_end)
-      df <- dplyr::full_join(df_seas, df, by = c("series_id", "ts")) %>%
-        dplyr::arrange(series_id, ts)
+      grow_seas <- grow_seas %>%
+        dplyr::mutate(year = as.numeric(substr(ts, 1, 4))) %>%
+        dplyr::arrange(series_id, year) %>%
+        dplyr::select(series_id, year, gro_start, gro_end)
     }
 
     list_seas[[s]] <- grow_seas
@@ -132,7 +128,17 @@ grow_seas <- function(dendro_L2, tol_seas = 0.05, agg_yearly = TRUE,
 
   df <- dplyr::bind_rows(list_seas)
 
+  if (!agg_yearly) {
+    if (length(df) == 0) {
+      df <- df_seas %>%
+        dplyr::mutate(gro_start = NA) %>%
+        dplyr::mutate(gro_end = NA)
 
+      return(df)
+    }
+    df <- dplyr::full_join(df_seas, df, by = c("series_id", "ts")) %>%
+      dplyr::arrange(series_id, ts)
+  }
 
   if (length(df) == 0) {
     stop("All series were too short to calculate growth start and end")

@@ -9,7 +9,7 @@
 #'
 #' @format A data frame with 152469 rows and 3 variables:
 #' \describe{
-#'   \item{series}{name of the data series}
+#'   \item{series_id}{name of the data series}
 #'   \item{ts}{timestamp of the measurements}
 #'   \item{value}{measured values}
 #' }
@@ -87,7 +87,7 @@
 #'
 #' @format A data frame with 145770 rows and 3 variables.
 #' \describe{
-#'   \item{series}{name of the data series}
+#'   \item{series_id}{name of the data series}
 #'   \item{ts}{timestamp of the measurements}
 #'   \item{value}{measured values}
 #' }
