@@ -234,6 +234,7 @@ select_ref_data <- function(meta_list) {
                   series_stop   = series_stop,
                   site_id       = site_id,
                   sensor_name   = sensor_name,
+                  sensor_class  = sensor_class,
                   site_temp_ref = site_temp_ref,
                   tol_out       = series_proc_tol_out,
                   tol_jump      = series_proc_tol_jump,
@@ -311,7 +312,6 @@ download_series <- function(meta_series, data_format,
     if (data_format == "L0")  { db_table  <- "data_all_l0"; meteo <- F }
     if (data_format == "L1")    db_table  <- "data_all_l1"
     if (data_format == "L2")    db_table  <- "data_dendro_l2"
-    if (data_format == "L3")    db_table  <- "data_all_l3"
     if (data_format == "LM")    db_table  <- "data_dendro_lm"
     if (data_format == "L2M")   db_table  <- "data_dendro_l2"
   }
@@ -366,6 +366,11 @@ download_series <- function(meta_series, data_format,
       start <- max(from, start)
       stop  <- min(to  , stop)
 
+      # check if L3 dendrometer or environmental data is requested
+      if (data_format == "L3") {
+        db_table  <- "data_all_l3"
+        if (grepl("dendro", meta_series$sensor_class[i], ignore.case = TRUE)) db_table  <- "data_dendro_l3"
+      }
       # specify time window
       db_time <- paste0(db_table, ".ts BETWEEN '",
                         format(start, "%Y-%m-%d %H:%M:%S", tz = "Etc/GMT-1"),
@@ -398,7 +403,7 @@ download_series <- function(meta_series, data_format,
       if (data_format == "L0")   db_version <- NULL
       if (data_format == "L1")   db_version <- NULL
       if (data_format == "L2")   db_version <- NULL
-      if (data_format == "L3")   db_version <- NULL
+      if (data_format == "L3")   db_version <- "dataset_id = 11" #TreeNetAI v1
       if (data_format == "LM")   db_version <- NULL
       if (data_format == "L2M") {db_version <- NULL
       ts.max.LM <- sqldf::sqldf(paste0("SELECT import_until FROM import_log WHERE table_name = 'data_dendro_lm' AND series_id = ", meta_series$series_id[i], " ;"),
